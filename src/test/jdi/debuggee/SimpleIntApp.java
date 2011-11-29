@@ -25,17 +25,6 @@ public class SimpleIntApp {
 		System.out.println(currentTime);
 		System.out.println("randomized number value: " + number);
 
-		File logFile = new File("c:\\tmp\\output.txt");
-
-		try {
-			Writer writer = new FileWriter(logFile, true);
-			writer.append("\n" + currentTime);
-			writer.append("\nrandomized number value: " + number);
-			writer.close();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
 		try {
 			Thread.sleep(100000000);
 		} catch (InterruptedException e) {
