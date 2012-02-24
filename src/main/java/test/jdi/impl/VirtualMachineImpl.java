@@ -31,8 +31,9 @@ public class VirtualMachineImpl implements VirtualMachine {
 	private JVM jvm;
 
 	public VirtualMachineImpl(JPF jpf) {
-		jpf.run();
+		
 		this.jvm = jpf.getVM();
+		jpf.run();
 	}
 
 	@Override
