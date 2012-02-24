@@ -13,6 +13,14 @@
 			<version>1.2.16</version>
 			<!-- <packaging>bundle</packaging> -->
 		</dependency>
+		
+		<dependency>
+			<scope>system</scope>
+			<artifactId>tools</artifactId>
+			<groupId>com.sun</groupId>
+			<version>1.6</version>
+			<systemPath>c:\Program Files\Java\jdk1.6.0_22\lib\tools.jar</systemPath>
+		</dependency>
 
 	</dependencies>
 	
