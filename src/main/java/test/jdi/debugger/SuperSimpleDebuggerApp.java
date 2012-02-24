@@ -17,6 +17,8 @@ import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.VMStartEvent;
 
 public class SuperSimpleDebuggerApp {
 
@@ -76,16 +78,32 @@ public class SuperSimpleDebuggerApp {
 		args.get("main").setValue("test.jdi.debuggee.SimpleIntApp");
 		VirtualMachine vm = lc.launch(args);
 
-//		for (ThreadReference threadReference : vm.allThreads()) {
-//			if (threadReference.name().contains("main")) {
-//				threadReference.suspend();
-//				System.out.println(threadReference.name());
-//				for (StackFrame frame : threadReference.frames()) {
-//					System.out.println(frame.toString());
-//				}
-//				threadReference.resume();
-//			}
-//		}
+		while (true) {
+			boolean vmStartEventReceived = false;
+			for (Event event : vm.eventQueue().remove()) {
+				if (event instanceof VMStartEvent) {
+					System.out.println("VM started");
+					vmStartEventReceived = true;
+					break;
+				} else {
+					System.out.println("received event: " + event);
+				}
+			}
+			if (vmStartEventReceived) {
+				break;
+			}
+		}
+
+		// for (ThreadReference threadReference : vm.allThreads()) {
+		// if (threadReference.name().contains("main")) {
+		// threadReference.suspend();
+		// System.out.println(threadReference.name());
+		// for (StackFrame frame : threadReference.frames()) {
+		// System.out.println(frame.toString());
+		// }
+		// threadReference.resume();
+		// }
+		// }
 
 		Field field;
 		for (ReferenceType referenceType : vm.allClasses()) {
