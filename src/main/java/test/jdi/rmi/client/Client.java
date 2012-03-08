@@ -54,6 +54,7 @@ public class Client {
 			
 			while (true) {
 				System.out.println(ro.sayHello());
+				Thread.sleep(2000);
 			}
 			
 //			RemoteModelMgr stub2 = (RemoteModelMgr) registry.lookup("foo");

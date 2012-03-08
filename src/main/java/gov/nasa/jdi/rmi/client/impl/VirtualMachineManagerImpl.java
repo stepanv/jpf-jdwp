@@ -13,10 +13,11 @@ import com.sun.jdi.connect.spi.Connection;
 
 public class VirtualMachineManagerImpl implements VirtualMachineManager {
 
+	private LaunchingConnectorImpl launchingConnector = new LaunchingConnectorImpl();
+	
 	@Override
 	public LaunchingConnector defaultConnector() {
-		// TODO Auto-generated method stub
-		return null;
+		return launchingConnector;
 	}
 
 	@Override

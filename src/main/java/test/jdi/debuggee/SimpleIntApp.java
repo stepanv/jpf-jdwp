@@ -25,16 +25,25 @@ public class SimpleIntApp {
 		System.out.println("initial number value: " + number);
 
 		number = generateRandom();
+		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		String currentTime  = SimpleDateFormat.getTimeInstance(SimpleDateFormat.LONG).format(new Date());
 		System.out.println(currentTime);
 		System.out.println("randomized number value: " + number);
 
-//		try {
-//			Thread.sleep(10);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Program ended");
 
 	}
 

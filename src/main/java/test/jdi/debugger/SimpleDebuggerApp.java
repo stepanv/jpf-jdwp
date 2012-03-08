@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -19,8 +22,11 @@ import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.event.BreakpointEvent;
+import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.VMStartEvent;
+import com.sun.jdi.request.BreakpointRequest;
 
 public class SimpleDebuggerApp {
 
@@ -82,7 +88,7 @@ public class SimpleDebuggerApp {
 		args.get("main").setValue("test.jdi.debuggee.SimpleIntApp");
 		args.get("options")
 				.setValue(
-						"-classpath C:\\Users\\stepan\\Data\\workspaces\\mthesis\\jdi-test\\bin");
+						"-classpath C:\\Users\\stepan\\Data\\workspaces\\mthesis\\jdi-test\\target\\classes");
 		VirtualMachine vm = lc.launch(args);
 
 		while (true) {
@@ -107,8 +113,48 @@ public class SimpleDebuggerApp {
 		Thread processErrorGobbler = new Thread(new StreamGobbler(vm.process()
 				.getErrorStream()));
 		processErrorGobbler.start();
+		
+		
+		
+		List<Location> locations = null;
+		for (ReferenceType referenceType : vm.allClasses()) {
+			String name = referenceType.name();
+			if (name.contains("SimpleIntApp")) {
+				try {
+					locations = referenceType.locationsOfLine(30);
+				} catch (AbsentInformationException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+//		Location wantedLocation = locations.get(1);
+//		vm.eventRequestManager().createBreakpointRequest(wantedLocation);		
 
+		for (ReferenceType referenceType : vm.classesByName("test.jdi.debuggee.SimpleIntApp")) {
+			System.out.println("found");
+		}
+		
 		vm.resume();
+		
+		outer_loop: while (true) {
+			for (ReferenceType referenceType : vm.classesByName("test.jdi.debuggee.SimpleIntApp")) {
+				vm.suspend();
+				System.out.println("found");
+				try {
+					locations = referenceType.locationsOfLine(38);
+					Location wantedLocation = locations.get(0);
+					BreakpointRequest br = vm.eventRequestManager().createBreakpointRequest(wantedLocation);
+					br.enable();
+				} catch (AbsentInformationException e) {
+					e.printStackTrace();
+				}
+				
+				vm.resume();
+				break outer_loop;
+			}
+			//System.out.println("next iteration");
+		}
 
 		for (ThreadReference threadReference : vm.allThreads()) {
 			if (threadReference.name().contains("main")) {
@@ -126,9 +172,25 @@ public class SimpleDebuggerApp {
 			String name = referenceType.name();
 			if (name.contains("SimpleIntApp")) {
 				field = referenceType.fieldByName("number");
-
+				
 				System.out.println("Found value: "
 						+ referenceType.getValue(field));
+			}
+		}
+		
+		for (ReferenceType referenceType : vm.classesByName("test.jdi.debuggee.SimpleIntApp")) {
+			System.out.println("found");
+		}
+		
+		outer: while (true) {
+			for (Event event : vm.eventQueue().remove()) {
+				if (event instanceof BreakpointEvent) {
+					System.out.println("Breakpoint reached");
+					vm.resume();
+					break outer;
+				} else {
+					System.out.println("received event: " + event);
+				}
 			}
 		}
 

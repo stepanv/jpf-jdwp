@@ -1,22 +1,15 @@
 package gov.nasa.jdi.rmi.client.impl;
 
-import gov.nasa.jpf.Config;
-import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.JPFConfigException;
-import gov.nasa.jpf.JPFException;
-import gov.nasa.jpf.ListenerAdapter;
-import gov.nasa.jpf.inspector.JPFInspectorFacade;
-import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
-import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
-import gov.nasa.jpf.inspector.interfaces.exceptions.JPFInspectorGenericErrorException;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.VMListener;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jdi.rmi.common.VirtualMachineRemote;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.rmi.NotBoundException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -69,42 +62,60 @@ public class LaunchingConnectorImpl implements LaunchingConnector {
 			throws IOException, IllegalConnectorArgumentsException,
 			VMStartException {
 		
-
-		List<String> args = new ArrayList<String>();
-
-		args.add("+target=" + paramMap.get("main").value());
-		args.add("+classpath=+," + System.getProperty("java.class.path"));
+		ProcessBuilder pb = new ProcessBuilder("c:/Programs/Java/jdk1.7.0_02/bin/java.exe", "-Djava.rmi.server.codebase=file:/c:/Users/stepan/Data/workspaces/mthesis/jdi-test/target/classes/", "-classpath", System.getProperty("java.class.path"), "gov.nasa.jdi.rmi.server.Agent");
+		Process process = pb.start();
 		
-		JPFInspectorClientInterface inspector = JPFInspectorFacade.getInspectorClient(paramMap.get("main").value(), System.out);
-
-		JPF jpf = null;
-
+		Thread processStdoutGobbler = new Thread(new StreamGobbler(process
+				.getInputStream()));
+		processStdoutGobbler.start();
+		Thread processErrorGobbler = new Thread(new StreamGobbler(process
+				.getErrorStream()));
+		processErrorGobbler.start();
+		
+		// TODO check for startup of Agent
 		try {
-			// this initializes the JPF configuration from default.properties,
-			// site.properties
-			// configured extensions (jpf.properties), current directory
-			// (jpf.properies) and
-			// command line args ("+<key>=<value>" options and *.jpf)
-			Config conf = JPF
-					.createConfig(args.toArray(new String[args.size()]));
-
-
-			jpf = new JPF(conf);
-			
-			inspector.connect2JPF(jpf);
-
-		} catch (JPFConfigException cx) {
-			throw new IllegalConnectorArgumentsException(cx.getMessage(), cx
-					.getStackTrace().toString());
-		} catch (JPFException jx) {
-			throw new VMStartException(jx.getMessage(), null);
-		} catch (JPFInspectorGenericErrorException e) {
-			throw new VMStartException(e.getMessage(), null);
-		}		
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		//VirtualMachineImpl vm = new VirtualMachineImpl(inspector, jpf);
+		// obtain first object through RMI
+		Registry registry = LocateRegistry.getRegistry(null);
+		VirtualMachineRemote vmRemote;
+		try {
+			vmRemote = (VirtualMachineRemote) registry.lookup("VirtualMachineRemote");
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			throw new VMStartException(e.toString(), process);
+		}
 
-		return null;
+		// remote virtual machine object
+		
+		return new VitualMachineImpl(vmRemote);
+	}
+	
+	private static class StreamGobbler implements Runnable {
+
+		private BufferedReader br;
+
+		public StreamGobbler(InputStream is) {
+			br = new BufferedReader(new InputStreamReader(is));
+		}
+
+		@Override
+		public void run() {
+			String line;
+			try {
+				while ((line = br.readLine()) != null) {
+					System.out.println("Gobblered line: " + line);
+				}
+			} catch (IOException e) {
+				System.err.println("Gobbler ended");
+			}
+
+		}
+
 	}
 	
 

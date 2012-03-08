@@ -67,7 +67,7 @@ public class Server implements Hello {
 
 	@Override
 	public LocalObject receiveLocalObject() throws RemoteException {
-		return new LocalObject();
+		return new LocalObject(new LocalObject.Nonserializable("Foo"));
 	}
 
 	@Override

@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
 
 import gov.nasa.jdi.rmi.client.impl.Bootstrap;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
@@ -19,6 +22,7 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.VMStartEvent;
+import com.sun.jdi.request.BreakpointRequest;
 
 public class SuperSimpleDebuggerApp {
 
@@ -42,6 +46,9 @@ public class SuperSimpleDebuggerApp {
 			throw new RuntimeException("Program ended", e);
 		} catch (IncompatibleThreadStateException e) {
 			throw new RuntimeException("Program ended", e);
+		} catch (NullPointerException e) {
+			System.out.println(e.getLocalizedMessage());
+			throw e;
 		}
 	}
 
@@ -78,43 +85,36 @@ public class SuperSimpleDebuggerApp {
 		args.get("main").setValue("test.jdi.debuggee.SimpleIntApp");
 		VirtualMachine vm = lc.launch(args);
 
-		while (true) {
+		outer: while (true) {
 			boolean vmStartEventReceived = false;
 			for (Event event : vm.eventQueue().remove()) {
 				if (event instanceof VMStartEvent) {
 					System.out.println("VM started");
-					vmStartEventReceived = true;
-					break;
+					break outer;
 				} else {
 					System.out.println("received event: " + event);
 				}
 			}
-			if (vmStartEventReceived) {
-				break;
-			}
 		}
 
-		// for (ThreadReference threadReference : vm.allThreads()) {
-		// if (threadReference.name().contains("main")) {
-		// threadReference.suspend();
-		// System.out.println(threadReference.name());
-		// for (StackFrame frame : threadReference.frames()) {
-		// System.out.println(frame.toString());
-		// }
-		// threadReference.resume();
-		// }
-		// }
-
-		Field field;
-		for (ReferenceType referenceType : vm.allClasses()) {
-			String name = referenceType.name();
-			if (name.contains("SimpleIntApp")) {
-				field = referenceType.fieldByName("number");
-
-				System.out.println("Found value: "
-						+ referenceType.getValue(field));
+		
+		outer_loop: while (true) {
+			for (ReferenceType referenceType : vm.classesByName("test.jdi.debuggee.SimpleIntApp")) {
+				vm.suspend();
+				System.out.println("found");
+				try {
+					List<Location> locations = referenceType.locationsOfLine(38);
+					Location wantedLocation = locations.get(0);
+					BreakpointRequest br = vm.eventRequestManager().createBreakpointRequest(wantedLocation);
+					br.enable();
+				} catch (AbsentInformationException e) {
+					e.printStackTrace();
+				}
+				
+				vm.resume();
+				break outer_loop;
 			}
+			//System.out.println("next iteration");
 		}
-
 	}
 }
