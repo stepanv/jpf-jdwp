@@ -4,20 +4,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Iterator;
 import java.util.Map;
 
 import test.jdi.impl.Bootstrap;
+import test.jdi.impl.VirtualMachineImpl;
 
-import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.VMStartEvent;
 
 public class SuperSimpleDebuggerApp {
@@ -75,45 +77,53 @@ public class SuperSimpleDebuggerApp {
 
 		LaunchingConnector lc = vmm.defaultConnector();
 		Map<String, Argument> args = lc.defaultArguments();
-		args.get("main").setValue("test.jdi.debuggee.SimpleIntApp");
+		args.get("main").setValue("oldclassic");
 		VirtualMachine vm = lc.launch(args);
+		
+		EventSet nonprocessedEventSet = vm.eventQueue().remove();
 
-		while (true) {
-			boolean vmStartEventReceived = false;
-			for (Event event : vm.eventQueue().remove()) {
+		outer: while (true) {
+			Iterator<Event> iterator = nonprocessedEventSet.iterator();
+			while (iterator.hasNext()) {
+				Event event = iterator.next();
 				if (event instanceof VMStartEvent) {
-					System.out.println("VM started");
-					vmStartEventReceived = true;
-					break;
+					System.out.println("received VM started");
+					iterator.remove();
+					break outer;
 				} else {
 					System.out.println("received event: " + event);
 				}
+				
 			}
-			if (vmStartEventReceived) {
-				break;
+			EventSet eventSet = vm.eventQueue().remove();
+			for (Event event : eventSet) {
+				nonprocessedEventSet.add(event);
 			}
+			System.out.println("Walked through: " + eventSet);
 		}
+		
+		System.out.println("READY TO DEBUG");
 
-		// for (ThreadReference threadReference : vm.allThreads()) {
-		// if (threadReference.name().contains("main")) {
-		// threadReference.suspend();
-		// System.out.println(threadReference.name());
-		// for (StackFrame frame : threadReference.frames()) {
-		// System.out.println(frame.toString());
-		// }
-		// threadReference.resume();
-		// }
-		// }
-
-		Field field;
-		for (ReferenceType referenceType : vm.allClasses()) {
-			String name = referenceType.name();
-			if (name.contains("SimpleIntApp")) {
-				field = referenceType.fieldByName("number");
-
-				System.out.println("Found value: "
-						+ referenceType.getValue(field));
+		outer: while (true) {
+			Iterator<Event> iterator = nonprocessedEventSet.iterator();
+			while (iterator.hasNext()) {
+				Event event = iterator.next();
+				if (event instanceof BreakpointEvent) {
+					System.out.println("Breakpoint reached");
+					
+					((VirtualMachineImpl)vm).debugTmp();
+					vm.resume();
+					break outer;
+				} else {
+					System.out.println("received event: " + event + " .. removing..");
+					iterator.remove();
+				}
 			}
+			EventSet eventSet = vm.eventQueue().remove();
+			for (Event event : eventSet) {
+				nonprocessedEventSet.add(event);
+			}
+			System.out.println("Walked through: " + eventSet);
 		}
 
 	}

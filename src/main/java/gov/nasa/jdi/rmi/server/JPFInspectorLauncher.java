@@ -3,6 +3,9 @@ package gov.nasa.jdi.rmi.server;
 import java.util.ArrayList;
 import java.util.List;
 
+import test.jdi.impl.JDIClientInspectorCallbackHandler;
+import test.jdi.impl.VirtualMachineImpl;
+
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.VMStartException;
 
@@ -30,17 +33,18 @@ import gov.nasa.jpf.inspector.interfaces.exceptions.JPFInspectorGenericErrorExce
 public class JPFInspectorLauncher {
 	
 	private JPFInspectorBackEndInterface inspector;
+	private List<String> args;
 	
+	
+	
+	public JPFInspectorLauncher(List<String> args) {
+		this.args = args;
+	}
 	private JPF prepareJPF() {
-		List<String> args = new ArrayList<String>();
 
-		args.add("+target=oldclassic");
-		args.add("+classpath=+," + System.getProperty("java.class.path"));
+//		args.add("+target=oldclassic");
+//		args.add("+classpath=+," + System.getProperty("java.class.path"));
 		
-		JPFInspectorClientInterface inspector = JPFInspectorFacade.getInspectorClient("oldclassic", System.err);
-
-		JPF jpf = null;
-
 			// this initializes the JPF configuration from default.properties,
 			// site.properties
 			// configured extensions (jpf.properties), current directory
@@ -50,12 +54,12 @@ public class JPFInspectorLauncher {
 					.createConfig(args.toArray(new String[args.size()]));
 
 
-			jpf = new JPF(conf);
+			JPF jpf = new JPF(conf);
 			return jpf;
 
 	}
-	public JPF launch() throws InvocationException {
-		InspectorCallBacks callBacks = new JPFClientCallbackHandler(System.err);
+	public JPF launch(VirtualMachineImpl virtualMachineImpl) throws InvocationException {
+		InspectorCallBacks callBacks = new JDIClientInspectorCallbackHandler(virtualMachineImpl);
 		
 		inspector = JPFInspectorFacade.getInspectorBackend(callBacks);
 		JPF jpf = prepareJPF();

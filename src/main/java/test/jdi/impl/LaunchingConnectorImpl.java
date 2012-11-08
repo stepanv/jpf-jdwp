@@ -1,5 +1,7 @@
 package test.jdi.impl;
 
+import gov.nasa.jdi.rmi.server.InvocationException;
+import gov.nasa.jdi.rmi.server.JPFInspectorLauncher;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
@@ -74,34 +76,19 @@ public class LaunchingConnectorImpl implements LaunchingConnector {
 		args.add("+target=" + paramMap.get("main").value());
 		args.add("+classpath=+," + System.getProperty("java.class.path"));
 		
-		JPFInspectorClientInterface inspector = JPFInspectorFacade.getInspectorClient(paramMap.get("main").value(), System.out);
-
-		JPF jpf = null;
-
-		try {
-			// this initializes the JPF configuration from default.properties,
-			// site.properties
-			// configured extensions (jpf.properties), current directory
-			// (jpf.properies) and
-			// command line args ("+<key>=<value>" options and *.jpf)
-			Config conf = JPF
-					.createConfig(args.toArray(new String[args.size()]));
-
-
-			jpf = new JPF(conf);
-			
-			inspector.connect2JPF(jpf);
-
-		} catch (JPFConfigException cx) {
-			throw new IllegalConnectorArgumentsException(cx.getMessage(), cx
-					.getStackTrace().toString());
-		} catch (JPFException jx) {
-			throw new VMStartException(jx.getMessage(), null);
-		} catch (JPFInspectorGenericErrorException e) {
-			throw new VMStartException(e.getMessage(), null);
-		}		
 		
-		VirtualMachineImpl vm = new VirtualMachineImpl(inspector, jpf);
+		JPFInspectorLauncher inspectorLauncher = new JPFInspectorLauncher(args);
+		
+
+		
+		VirtualMachineImpl vm;
+		try {
+			vm = new VirtualMachineImpl(inspectorLauncher);
+		} catch (InvocationException e) {
+			throw new VMStartException("Cannot start VM: " + e.getMessage(), null);
+		}
+		
+		vm.start();
 
 		return vm;
 	}

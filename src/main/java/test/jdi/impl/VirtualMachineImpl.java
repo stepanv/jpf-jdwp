@@ -1,8 +1,11 @@
 package test.jdi.impl;
 
+import gov.nasa.jdi.rmi.server.InvocationException;
+import gov.nasa.jdi.rmi.server.JPFInspectorLauncher;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
 import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
+import gov.nasa.jpf.inspector.interfaces.JPFInspectorException;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StaticElementInfo;
 
@@ -27,36 +30,39 @@ import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VoidValue;
+import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.request.EventRequestManager;
 
-public class VirtualMachineImpl implements VirtualMachine {
+public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	public static final Logger log = org.apache.log4j.Logger.getLogger(VirtualMachineImpl.class);
 	
 	private JVM jvm;
-	private JPFInspectorClientInterface inspector;
 
-	public VirtualMachineImpl(JPFInspectorClientInterface inspector, JPF jpf) {
-		log.debug("Entering method 'VirtualMachineImpl'");
+	JPFRunner jpfRunner;
+	JPFInspectorLauncher inspectorLauncher;
+	
+	public VirtualMachineImpl(JPFInspectorLauncher inspectorLauncher) throws InvocationException {
+		super(inspectorLauncher);
+		JPF jpf = inspectorLauncher.launch(this);
 		
-		this.inspector = inspector;
-		this.jvm = jpf.getVM();
-		jpf.run();
+		jpfRunner = new JPFRunner(jpf);
+		jvm = jpf.getVM();
+		
+		jvm.addListener(new JDIListener(this));
+		
+		this.inspectorLauncher = inspectorLauncher;
+		
+		inspectorLauncher.executeCommand("cr bp state=en pos=oldclassic.java:127");
+		inspectorLauncher.executeCommand("show bp");
+		
+		log.debug("Breakpoint is set");
+		
 	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		log.debug("Entering method 'virtualMachine'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<ReferenceType> classesByName(String paramString) {
-		log.debug("Entering method 'classesByName'");
-		// TODO Auto-generated method stub
-		return null;
+	
+	public void start() {
+		jpfRunner.start();
 	}
 
 	@Override
@@ -72,352 +78,74 @@ public class VirtualMachineImpl implements VirtualMachine {
 	}
 
 	@Override
-	public void redefineClasses(Map<? extends ReferenceType, byte[]> paramMap) {
-		log.debug("Entering method 'redefineClasses'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public List<ThreadReference> allThreads() {
-		log.debug("Entering method 'allThreads'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void suspend() {
-		log.debug("Entering method 'suspend'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void resume() {
 		log.debug("Entering method 'resume'");
-		// TODO Auto-generated method stub
+		try {
+			inspectorLauncher.getInspector().start();
+		} catch (JPFInspectorException e) {
+			throw new RuntimeException("Cannot resume", e);
+		}
 	}
 
-	@Override
-	public List<ThreadGroupReference> topLevelThreadGroups() {
-		log.debug("Entering method 'topLevelThreadGroups'");
-		// TODO Auto-generated method stub
-		return null;
-	}
+	private EventQueueImpl eventQueue = new EventQueueImpl(this);
+
+	private boolean started;
 
 	@Override
 	public EventQueue eventQueue() {
-		log.debug("Entering method 'eventQueue'");
-		// TODO Auto-generated method stub
-		return null;
+		//log.debug("Entering method 'eventQueue'");
+		return eventQueue;
 	}
 
-	@Override
-	public EventRequestManager eventRequestManager() {
-		log.debug("Entering method 'eventRequestManager'");
-		// TODO Auto-generated method stub
-		return null;
+	private class JPFRunner implements Runnable {
+
+		private JPF jpf;
+		public JPFRunner(JPF jpf) {
+			this.jpf = jpf;
+		}
+		@Override
+		public void run() {
+			jpf.run();
+			
+		}
+		
+		private Thread thread;
+		public Thread start() {
+			thread = new Thread(this);
+			thread.start();
+			return thread;
+		}
+		public void joinHard() {
+			while (true) {
+				try {
+					thread.join();
+					return;
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		
 	}
 
-	@Override
-	public BooleanValue mirrorOf(boolean paramBoolean) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
+	public void started() {
+		if (started == false) {
+			log.debug("adding event VM started");
+			eventQueue.addEvent(new VMStartEventImpl());
+			started = true;
+			log.debug("adding event VM started .. done");
+		}
+		
 	}
-
-	@Override
-	public ByteValue mirrorOf(byte paramByte) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
+	
+	public void addEvent(Event event) {
+		eventQueue.addEvent(event);
 	}
-
-	@Override
-	public CharValue mirrorOf(char paramChar) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ShortValue mirrorOf(short paramShort) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public IntegerValue mirrorOf(int paramInt) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public LongValue mirrorOf(long paramLong) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public FloatValue mirrorOf(float paramFloat) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public DoubleValue mirrorOf(double paramDouble) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public StringReference mirrorOf(String paramString) {
-		log.debug("Entering method 'mirrorOf'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public VoidValue mirrorOfVoid() {
-		log.debug("Entering method 'mirrorOfVoid'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Process process() {
-		log.debug("Entering method 'process'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void dispose() {
-		log.debug("Entering method 'dispose'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void exit(int paramInt) {
-		log.debug("Entering method 'exit'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean canWatchFieldModification() {
-		log.debug("Entering method 'canWatchFieldModification'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canWatchFieldAccess() {
-		log.debug("Entering method 'canWatchFieldAccess'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetBytecodes() {
-		log.debug("Entering method 'canGetBytecodes'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetSyntheticAttribute() {
-		log.debug("Entering method 'canGetSyntheticAttribute'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetOwnedMonitorInfo() {
-		log.debug("Entering method 'canGetOwnedMonitorInfo'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetCurrentContendedMonitor() {
-		log.debug("Entering method 'canGetCurrentContendedMonitor'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetMonitorInfo() {
-		log.debug("Entering method 'canGetMonitorInfo'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUseInstanceFilters() {
-		log.debug("Entering method 'canUseInstanceFilters'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRedefineClasses() {
-		log.debug("Entering method 'canRedefineClasses'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canAddMethod() {
-		log.debug("Entering method 'canAddMethod'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUnrestrictedlyRedefineClasses() {
-		log.debug("Entering method 'canUnrestrictedlyRedefineClasses'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canPopFrames() {
-		log.debug("Entering method 'canPopFrames'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetSourceDebugExtension() {
-		log.debug("Entering method 'canGetSourceDebugExtension'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRequestVMDeathEvent() {
-		log.debug("Entering method 'canRequestVMDeathEvent'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetMethodReturnValues() {
-		log.debug("Entering method 'canGetMethodReturnValues'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetInstanceInfo() {
-		log.debug("Entering method 'canGetInstanceInfo'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canUseSourceNameFilters() {
-		log.debug("Entering method 'canUseSourceNameFilters'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canForceEarlyReturn() {
-		log.debug("Entering method 'canForceEarlyReturn'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canBeModified() {
-		log.debug("Entering method 'canBeModified'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canRequestMonitorEvents() {
-		log.debug("Entering method 'canRequestMonitorEvents'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetMonitorFrameInfo() {
-		log.debug("Entering method 'canGetMonitorFrameInfo'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetClassFileVersion() {
-		log.debug("Entering method 'canGetClassFileVersion'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean canGetConstantPool() {
-		log.debug("Entering method 'canGetConstantPool'");
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setDefaultStratum(String paramString) {
-		log.debug("Entering method 'setDefaultStratum'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String getDefaultStratum() {
-		log.debug("Entering method 'getDefaultStratum'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public long[] instanceCounts(List<? extends ReferenceType> paramList) {
-		log.debug("Entering method 'instanceCounts'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String description() {
-		log.debug("Entering method 'description'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String version() {
-		log.debug("Entering method 'version'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String name() {
-		log.debug("Entering method 'name'");
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setDebugTraceMode(int paramInt) {
-		log.debug("Entering method 'setDebugTraceMode'");
-		// TODO Auto-generated method stub
-
+	
+	public void debugTmp() {
+		inspectorLauncher.executeCommand("del bp 1");
+		
+		inspectorLauncher.executeCommand("print #thread[1]");
+		inspectorLauncher.executeCommand("print #thread[2]");
 	}
 
 }

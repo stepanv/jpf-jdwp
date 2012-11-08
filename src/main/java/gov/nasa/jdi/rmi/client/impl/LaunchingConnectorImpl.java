@@ -62,7 +62,7 @@ public class LaunchingConnectorImpl implements LaunchingConnector {
 			throws IOException, IllegalConnectorArgumentsException,
 			VMStartException {
 		
-		ProcessBuilder pb = new ProcessBuilder("c:/Programs/Java/jdk1.7.0_02/bin/java.exe", "-Djava.rmi.server.codebase=file:/c:/Users/stepan/Data/workspaces/mthesis/jdi-test/target/classes/", "-classpath", System.getProperty("java.class.path"), "gov.nasa.jdi.rmi.server.Agent");
+		ProcessBuilder pb = new ProcessBuilder("c:/Programs/Java/jdk1.7.0_04/bin/java.exe", "-Djava.rmi.server.codebase=file:/c:/Users/stepan/Data/workspaces/mthesis/jdi-test/target/classes/", "-classpath", System.getProperty("java.class.path"), "gov.nasa.jdi.rmi.server.Agent");
 		Process process = pb.start();
 		
 		Thread processStdoutGobbler = new Thread(new StreamGobbler(process

@@ -27,14 +27,14 @@ import gov.nasa.jpf.shell.ShellManager;
 public class Agent {
 	
 	private RMIRegistryLauncher registryLauncher = new RMIRegistryLauncher();
-	private JPFInspectorLauncher inspectorLauncher = new JPFInspectorLauncher();
+	//private JPFInspectorLauncher inspectorLauncher = new JPFInspectorLauncher();
 	
 	public JPF jpf;
 
 	private Agent() throws InvocationException {
 		registryLauncher.launch();
 		
-		jpf = inspectorLauncher.launch();
+		//jpf = inspectorLauncher.launch();
 		
 		try {
 			Registry registry = LocateRegistry.getRegistry();
@@ -78,8 +78,8 @@ public class Agent {
 	}
 	
 	private JPFRunner prepare() {
-		inspectorLauncher.executeCommand("cr bp state=en pos=oldclassic.java:127");
-		inspectorLauncher.executeCommand("show bp");
+//		inspectorLauncher.executeCommand("cr bp state=en pos=oldclassic.java:127");
+//		inspectorLauncher.executeCommand("show bp");
 		
 		return new JPFRunner(jpf);
 	}
@@ -88,17 +88,17 @@ public class Agent {
 //		inspectorLauncher.executeCommand("step_over");
 //		inspectorLauncher.executeCommand("step_over");
 		
-		try {
-			
-			inspectorLauncher.executeCommand("del bp 1");
-			
-			inspectorLauncher.executeCommand("print #thread[1]");
-			inspectorLauncher.executeCommand("print #thread[2]");
-					
-			inspectorLauncher.getInspector().start();
-		} catch (JPFInspectorException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			
+////			inspectorLauncher.executeCommand("del bp 1");
+////			
+////			inspectorLauncher.executeCommand("print #thread[1]");
+////			inspectorLauncher.executeCommand("print #thread[2]");
+////					
+////			inspectorLauncher.getInspector().start();
+//		} catch (JPFInspectorException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void run() {

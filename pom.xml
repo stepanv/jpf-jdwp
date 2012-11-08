@@ -8,6 +8,12 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
@@ -19,8 +25,39 @@
 			<artifactId>tools</artifactId>
 			<groupId>com.sun</groupId>
 			<version>1.6</version>
-			<systemPath>c:\Program Files\Java\jdk1.6.0_22\lib\tools.jar</systemPath>
+			<systemPath>c:\Programs\Java\jdk1.6.0_32\lib\tools.jar</systemPath>
 		</dependency>
+		
+		<dependency>
+    <groupId>org.antlr</groupId>
+    <artifactId>antlr-runtime</artifactId>
+    <version>3.4</version>
+</dependency>
+
+		<dependency>
+			<scope>system</scope>
+			<artifactId>jpf-core</artifactId>
+			<groupId>jpf-core</groupId>
+			<version>none</version>
+			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-core\build\jpf.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<scope>system</scope>
+			<artifactId>jpf-inspector</artifactId>
+			<groupId>jpf-inspector</groupId>
+			<version>none</version>
+			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-inspector\build\jpf-inspector.jar</systemPath>
+		</dependency>
+		<dependency>
+			<scope>system</scope>
+			<artifactId>jpf-shell</artifactId>
+			<groupId>jpf-shell</groupId>
+			<version>none</version>
+			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-shell\build\jpf-shell.jar</systemPath>
+		</dependency>
+
+
 
 	</dependencies>
 
@@ -39,6 +76,18 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+
+			<plugin>    <!-- (2) START -->
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<instructions>
+						<Export-Package>test.jdi.impl</Export-Package>
+						<Private-Package>gov.nasa.*</Private-Package>
+					</instructions>
+				</configuration>
+			</plugin>    <!-- (2) END -->
 		</plugins>
 	</build>
 </project>
