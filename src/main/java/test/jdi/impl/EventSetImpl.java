@@ -2,6 +2,7 @@ package test.jdi.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +20,8 @@ public class EventSetImpl implements EventSet {
 		this.vmImpl = vmImpl;
 	}
 
-	Set<Event> eventSetInternal = Collections.newSetFromMap(new ConcurrentHashMap<Event,Boolean>());
+	//Set<Event> eventSetInternal = Collections.newSetFromMap(new ConcurrentHashMap<Event,Boolean>());
+	Set<Event> eventSetInternal = new HashSet<Event>();
 
 	@Override
 	public VirtualMachine virtualMachine() {

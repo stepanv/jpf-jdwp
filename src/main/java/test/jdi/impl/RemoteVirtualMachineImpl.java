@@ -66,7 +66,7 @@ public class RemoteVirtualMachineImpl implements VirtualMachine {
 		
 		for (Iterator<StaticElementInfo> it = jvm.getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
 			StaticElementInfo elInfo = it.next();
-			classes.add(new ReferenceTypeImpl(elInfo));
+			classes.add(new ReferenceTypeImpl(elInfo, this));
 		}
 		return classes;
 	}

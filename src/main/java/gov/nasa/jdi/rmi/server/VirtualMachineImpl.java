@@ -25,7 +25,6 @@ import com.sun.jdi.VoidValue;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.request.EventRequestManager;
 
-import gov.nasa.jdi.rmi.common.VirtualMachineRemote;
 import gov.nasa.jdi.rmi.server.EventQueueImpl;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StaticElementInfo;
@@ -50,7 +49,7 @@ public class VirtualMachineImpl implements VirtualMachine {
 		
 		for (Iterator<StaticElementInfo> it = vm.getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
 			StaticElementInfo elInfo = it.next();
-			classes.add(new ReferenceTypeImpl(elInfo));
+			classes.add(new ReferenceTypeImpl(elInfo, this));
 		}
 		return classes;
 	}

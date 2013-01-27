@@ -47,29 +47,6 @@ public class SuperSimpleDebuggerApp {
 		}
 	}
 
-	private static class StreamGobbler implements Runnable {
-
-		private BufferedReader br;
-
-		public StreamGobbler(InputStream is) {
-			br = new BufferedReader(new InputStreamReader(is));
-		}
-
-		@Override
-		public void run() {
-			String line;
-			try {
-				while ((line = br.readLine()) != null) {
-					System.out.println("Gobblered line: " + line);
-				}
-			} catch (IOException e) {
-				System.err.println("Gobbler ended");
-			}
-
-		}
-
-	}
-
 	private void init() throws IOException, IllegalConnectorArgumentsException,
 			VMStartException, InterruptedException,
 			IncompatibleThreadStateException {

@@ -22,7 +22,9 @@ private static Registry registry;
 	public static Object lookup(String className) {
 		try {
 			return registry.lookup(className);
-		} catch (RemoteException|NotBoundException e) {
+		} catch (RemoteException e) {
+			throw new RuntimeException("Cannot lookup " + className, e);
+		} catch (NotBoundException e) {
 			throw new RuntimeException("Cannot lookup " + className, e);
 		}
 	}

@@ -2,6 +2,8 @@ package test.jdi.impl;
 
 import org.apache.log4j.Logger;
 
+import com.sun.jdi.request.BreakpointRequest;
+
 import gov.nasa.jpf.inspector.client.JPFClientCallbackHandler;
 import gov.nasa.jpf.inspector.interfaces.BreakPointStatus;
 import gov.nasa.jpf.inspector.interfaces.InspectorCallBacks;
@@ -41,7 +43,9 @@ public class JDIClientInspectorCallbackHandler implements InspectorCallBacks {
 	@Override
 	public void notifyBreakpointHit(BreakPointStatus bp) {
 		log.debug("Creating event breakpoint HIT");
-		vmImpl.addEvent(new BreakpointEventImpl(bp, vmImpl));
+		
+		vmImpl.eventRequestManager.pairAndAddBreakpointEvent(bp);
+		
 		log.debug("Creating event breakpoint HIT .. done");
 		decoratedCallback.notifyBreakpointHit(bp);
 

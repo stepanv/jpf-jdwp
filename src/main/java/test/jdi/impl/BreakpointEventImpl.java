@@ -1,5 +1,7 @@
 package test.jdi.impl;
 
+import org.apache.log4j.Logger;
+
 import gov.nasa.jpf.inspector.interfaces.BreakPointStatus;
 
 import com.sun.jdi.Location;
@@ -11,35 +13,38 @@ import com.sun.jdi.request.EventRequest;
 public class BreakpointEventImpl implements BreakpointEvent {
 
 	private BreakPointStatus bp;
-	private VirtualMachineImpl vmImpl;
+	private VirtualMachine vm;
+	private BreakpointRequestImpl bRequest;
+	
+	public static final Logger log = org.apache.log4j.Logger.getLogger(BreakpointEventImpl.class);
 
-	public BreakpointEventImpl(BreakPointStatus bp, VirtualMachineImpl vmImpl) {
+	public BreakpointEventImpl(BreakPointStatus bp, VirtualMachine vm, BreakpointRequestImpl bRequest) {
 		this.bp = bp;
-		this.vmImpl = vmImpl;
+		this.vm = vm;
+		this.bRequest = bRequest;
 	}
 
 	@Override
 	public VirtualMachine virtualMachine() {
-		// TODO Auto-generated method stub
-		return null;
+		log.debug("method entering");
+		return vm;
 	}
 
 	@Override
 	public EventRequest request() {
-		// TODO Auto-generated method stub
-		return null;
+		log.debug("method entering");
+		return bRequest;
 	}
 
 	@Override
 	public ThreadReference thread() {
-		// TODO Auto-generated method stub
+		log.debug("method entering");
 		return null;
 	}
 
 	@Override
 	public Location location() {
-		// TODO Auto-generated method stub
-		return null;
+		return bRequest.location();
 	}
 
 }

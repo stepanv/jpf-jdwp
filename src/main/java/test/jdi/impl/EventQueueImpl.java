@@ -43,8 +43,9 @@ public class EventQueueImpl implements EventQueue {
 
 	@Override
 	public synchronized EventSet remove(long paramLong) throws InterruptedException {
-		// TODO Auto-generated method stub
-		return null;
+		log.debug("removing events");
+		Thread.sleep(paramLong);
+		return remove();
 	}
 
 

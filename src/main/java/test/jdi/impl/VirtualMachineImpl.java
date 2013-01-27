@@ -6,15 +6,27 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
 import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
 import gov.nasa.jpf.inspector.interfaces.JPFInspectorException;
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StaticElementInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.ThreadList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+
+import test.jdi.impl.internal.JPFManager;
 
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
@@ -42,15 +54,29 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	JPFRunner jpfRunner;
 	JPFInspectorLauncher inspectorLauncher;
+	JPFManager jpfManager;
+
+	private JPF jpf;
 	
+	public JVM getJvm() {
+		return jvm;
+	}
+
+	public void setJvm(JVM jvm) {
+		this.jvm = jvm;
+	}
+
 	public VirtualMachineImpl(JPFInspectorLauncher inspectorLauncher) throws InvocationException {
 		super(inspectorLauncher);
-		JPF jpf = inspectorLauncher.launch(this);
+		
+		jpfManager = new JPFManager(this);
+		
+		jpf = inspectorLauncher.launch(this);
 		
 		jpfRunner = new JPFRunner(jpf);
-		jvm = jpf.getVM();
+		setJvm(jpf.getVM());
 		
-		jvm.addListener(new JDIListener(this));
+		getJvm().addListener(new JDIListener(this));
 		
 		this.inspectorLauncher = inspectorLauncher;
 		
@@ -61,8 +87,45 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		
 	}
 	
+	
+	//List<ThreadReferenceImpl> threads = new ArrayList<ThreadReferenceImpl>();
+	
+	LinkedHashMap<ThreadInfo, ThreadReferenceImpl> threads = new LinkedHashMap<ThreadInfo, ThreadReferenceImpl>();
+	
+	@Override
+	public List<ThreadReference> allThreads() {
+		log.debug("Entering method 'allThreads'");
+		
+		LinkedHashMap<ThreadInfo, ThreadReferenceImpl> currentThreads = new LinkedHashMap<ThreadInfo, ThreadReferenceImpl>();
+		
+		
+		ThreadList tl = getJvm().getThreadList();
+		for (ThreadInfo ti : tl.getThreads()) {
+			if (threads.containsKey(ti)) {
+				currentThreads.put(ti, threads.get(ti));
+			} else {
+				ThreadReferenceImpl threadReference = new ThreadReferenceImpl(this, ti);
+				currentThreads.put(ti, threadReference);
+			}
+		}
+		threads = currentThreads;
+		
+		List<ThreadReference> threadsToReturn = new ArrayList<ThreadReference>();
+		for (ThreadReferenceImpl tr : threads.values()) {
+			threadsToReturn.add(tr);
+		}
+		
+		return null;
+	}
+	
 	public void start() {
 		jpfRunner.start();
+	}
+	
+	@Override
+	public void exit(int paramInt) {
+		log.debug("Entering method 'exit'");
+		jpfRunner.exit();
 	}
 
 	@Override
@@ -70,10 +133,32 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		log.debug("Entering method 'allClasses'");
 		List<ReferenceType> classes = new ArrayList<ReferenceType>();
 		
-		for (Iterator<StaticElementInfo> it = jvm.getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
+		for (Iterator<StaticElementInfo> it = getJvm().getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
 			StaticElementInfo elInfo = it.next();
-			classes.add(new ReferenceTypeImpl(elInfo));
+			classes.add(new ReferenceTypeImpl(elInfo, this));
 		}
+		return classes;
+	}
+	
+	@Override
+	public VirtualMachine virtualMachine() {
+		log.debug("Entering method 'virtualMachine'");
+		return this;
+	}
+
+	@Override
+	public List<ReferenceType> classesByName(String paramString) {
+		List<ReferenceType> classes = new ArrayList<ReferenceType>();
+		
+//		for (Iterator<StaticElementInfo> it = jvm.getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
+//			StaticElementInfo elInfo = it.next();
+//			classes.add(new ReferenceTypeImpl(elInfo));
+//		}
+//		classes.get(75);
+		
+		log.debug("Entering method 'classesByName'");
+		classes.add(new ReferenceTypeImpl(ClassInfo.getResolvedClassInfo(paramString), this));
+		// TODO Auto-generated method stub
 		return classes;
 	}
 
@@ -96,6 +181,19 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		//log.debug("Entering method 'eventQueue'");
 		return eventQueue;
 	}
+	
+	EventRequestManagerImpl eventRequestManager = new EventRequestManagerImpl(this);
+	
+	public EventRequestManagerImpl getEventRequestManager() {
+		return eventRequestManager;
+	}
+
+	@Override
+	public EventRequestManager eventRequestManager() {
+		log.debug("Entering method 'eventRequestManager'");
+		// TODO Auto-generated method stub
+		return eventRequestManager;
+	}
 
 	private class JPFRunner implements Runnable {
 
@@ -107,6 +205,11 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		public void run() {
 			jpf.run();
 			
+		}
+		
+		public void exit() {
+			jpf.exit();
+			thread.stop();
 		}
 		
 		private Thread thread;
@@ -137,6 +240,11 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		
 	}
 	
+	@Override
+	public String name() {
+		return "Java Path Finder";
+	}
+	
 	public void addEvent(Event event) {
 		eventQueue.addEvent(event);
 	}
@@ -146,6 +254,11 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		
 		inspectorLauncher.executeCommand("print #thread[1]");
 		inspectorLauncher.executeCommand("print #thread[2]");
+	}
+
+	public JPFManager getJPFManager() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

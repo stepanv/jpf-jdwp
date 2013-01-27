@@ -30,7 +30,9 @@ public class Client {
 	public static Object lookup(String className) {
 		try {
 			return registry.lookup(className);
-		} catch (RemoteException|NotBoundException e) {
+		} catch (NotBoundException e) {
+			throw new RuntimeException("Cannot lookup " + className, e);
+		} catch (RemoteException e) {
 			throw new RuntimeException("Cannot lookup " + className, e);
 		}
 	}

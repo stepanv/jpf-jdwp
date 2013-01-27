@@ -7,55 +7,54 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.apache.felix</groupId> -->
+<!-- 			<artifactId>org.osgi.core</artifactId> -->
+<!-- 			<version>1.0.0</version> -->
+<!-- 		</dependency> -->
 
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.16</version>
-			<!-- <packaging>bundle</packaging> -->
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>log4j</groupId> -->
+<!-- 			<artifactId>log4j</artifactId> -->
+<!-- 			<version>1.2.16</version> -->
+<!-- 		</dependency> -->
 
-		<dependency>
-			<scope>system</scope>
-			<artifactId>tools</artifactId>
-			<groupId>com.sun</groupId>
-			<version>1.6</version>
-			<systemPath>c:\Programs\Java\jdk1.6.0_32\lib\tools.jar</systemPath>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<scope>system</scope> -->
+<!-- 			<artifactId>tools</artifactId> -->
+<!-- 			<groupId>com.sun</groupId> -->
+<!-- 			<version>1.6</version> -->
+<!-- 			<systemPath>c:\Programs\Java\jdk1.6.0_32\lib\tools.jar</systemPath> -->
+<!-- 		</dependency> -->
 		
-		<dependency>
-    <groupId>org.antlr</groupId>
-    <artifactId>antlr-runtime</artifactId>
-    <version>3.4</version>
-</dependency>
+<!-- 		<dependency> -->
+<!--     <groupId>org.antlr</groupId> -->
+<!--     <artifactId>antlr-runtime</artifactId> -->
+<!--     <version>3.4</version> -->
+<!-- </dependency> -->
 
-		<dependency>
-			<scope>system</scope>
-			<artifactId>jpf-core</artifactId>
-			<groupId>jpf-core</groupId>
-			<version>none</version>
-			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-core\build\jpf.jar</systemPath>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<scope>system</scope> -->
+<!-- 			<artifactId>jpf-core</artifactId> -->
+<!-- 			<groupId>jpf-core</groupId> -->
+<!-- 			<version>none</version> -->
+<!-- 			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-core\build\jpf.jar</systemPath> -->
+<!-- 		</dependency> -->
 
-		<dependency>
-			<scope>system</scope>
-			<artifactId>jpf-inspector</artifactId>
-			<groupId>jpf-inspector</groupId>
-			<version>none</version>
-			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-inspector\build\jpf-inspector.jar</systemPath>
-		</dependency>
-		<dependency>
-			<scope>system</scope>
-			<artifactId>jpf-shell</artifactId>
-			<groupId>jpf-shell</groupId>
-			<version>none</version>
-			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-shell\build\jpf-shell.jar</systemPath>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<scope>system</scope> -->
+<!-- 			<artifactId>jpf-inspector</artifactId> -->
+<!-- 			<groupId>jpf-inspector</groupId> -->
+<!-- 			<version>none</version> -->
+<!-- 			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-inspector\build\jpf-inspector.jar</systemPath> -->
+<!-- 		</dependency> -->
+<!-- 		<dependency> -->
+<!-- 			<scope>system</scope> -->
+<!-- 			<artifactId>jpf-shell</artifactId> -->
+<!-- 			<groupId>jpf-shell</groupId> -->
+<!-- 			<version>none</version> -->
+<!-- 			<systemPath>c:\Users\stepan\Data\mff\mthesis\sources\jpf-shell\build\jpf-shell.jar</systemPath> -->
+<!-- 		</dependency> -->
 
 
 
@@ -72,8 +71,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 

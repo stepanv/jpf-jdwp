@@ -1,19 +1,13 @@
 package gov.nasa.jdi.rmi.server;
 
-import java.rmi.AccessException;
+import gov.nasa.jdi.rmi.common.VirtualMachineRemote;
+import gov.nasa.jdi.rmi.common.impl.VirtualMachineRemoteImpl;
+import gov.nasa.jpf.JPF;
+
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-
-import test.jdi.rmi.common.Hello;
-
-import gov.nasa.jdi.rmi.common.VirtualMachineRemote;
-import gov.nasa.jdi.rmi.common.impl.VirtualMachineRemoteImpl;
-import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.inspector.interfaces.JPFInspectorException;
-import gov.nasa.jpf.shell.ShellManager;
 
 /**
  * Main program of JPF which runs Agent first.
@@ -40,10 +34,11 @@ public class Agent {
 			Registry registry = LocateRegistry.getRegistry();
 			VirtualMachineRemote vmr = new VirtualMachineRemoteImpl(new VirtualMachineImpl(jpf.getVM()));
 			registry.bind("VirtualMachineRemote", vmr);
-		} catch (RemoteException | AlreadyBoundException e) {
+		} catch (RemoteException e) {
+			throw new InvocationException(e);
+		} catch (AlreadyBoundException e) {
 			throw new InvocationException(e);
 		}
-		
 		
 	}
 	
