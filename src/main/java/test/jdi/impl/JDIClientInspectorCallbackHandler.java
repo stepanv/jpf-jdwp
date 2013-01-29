@@ -44,7 +44,7 @@ public class JDIClientInspectorCallbackHandler implements InspectorCallBacks {
 	public void notifyBreakpointHit(BreakPointStatus bp) {
 		log.debug("Creating event breakpoint HIT");
 		
-		vmImpl.eventRequestManager.pairAndAddBreakpointEvent(bp);
+//		vmImpl.eventRequestManager.pairAndAddBreakpointEvent(bp);
 		
 		log.debug("Creating event breakpoint HIT .. done");
 		decoratedCallback.notifyBreakpointHit(bp);

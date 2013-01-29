@@ -49,6 +49,9 @@ public abstract class VirtualMachineBaseImpl implements VirtualMachine {
 		
 	}
 	
+	public VirtualMachineBaseImpl(JPF jpf) {
+	}
+
 	@Override
 	public void redefineClasses(Map<? extends ReferenceType, byte[]> paramMap) {
 		log.debug("Entering method 'redefineClasses'");

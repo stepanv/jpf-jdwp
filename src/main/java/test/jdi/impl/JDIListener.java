@@ -12,6 +12,7 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	
 	public JDIListener(VirtualMachineImpl vmJdi) {
 		this.vmJdi = vmJdi;
+		jpfManager = vmJdi.getJPFManager();
 	}
 	
 	@Override
@@ -21,6 +22,8 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	
 	@Override
 	public void executeInstruction(JVM vm) {
+		vmJdi.started();
+		jpfManager.suspendIfSuspended();
 		jpfManager.handlePossibleBreakpointHit();
 	}
 }

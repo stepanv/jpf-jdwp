@@ -287,7 +287,8 @@ public class ReferenceTypeImpl implements ReferenceType {
 			throws AbsentInformationException {
 		List<Location> locations = new ArrayList<Location>();
 		for (Instruction instruction : classInfo.getMatchingInstructions(LocationSpec.createLocationSpec(classInfo.getSourceFileName() + ":" + paramInt))) {
-			locations.add(new LocationImpl(instruction, vm));
+			log.debug("Requesting location at reference type: " + name() +" line: " + paramInt);
+			locations.add(new LocationImpl(instruction, paramInt, this, vm));
 		}
 		return locations;
 	}

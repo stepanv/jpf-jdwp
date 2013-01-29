@@ -15,11 +15,15 @@ public class LocationImpl implements Location {
 	public static final Logger log = org.apache.log4j.Logger.getLogger(LocationImpl.class);
 	private Instruction instruction;
 	private VirtualMachine vm;
+	private int lineNumber;
+	private ReferenceTypeImpl referenceType;
 	
 	
-	public LocationImpl(Instruction instruction, VirtualMachine vm) {
+	public LocationImpl(Instruction instruction, int lineNumber, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
 		this.setInstruction(instruction);
 		this.vm = vm;
+		this.lineNumber = lineNumber;
+		this.referenceType = referenceTypeImpl;
 	}
 
 	@Override
@@ -55,7 +59,7 @@ public class LocationImpl implements Location {
 	@Override
 	public String sourceName() throws AbsentInformationException {
 		log.debug("method entering");
-		return null;
+		return referenceType.name();
 	}
 
 	@Override
@@ -81,7 +85,7 @@ public class LocationImpl implements Location {
 	@Override
 	public int lineNumber() {
 		log.debug("method entering");
-		return 0;
+		return lineNumber;
 	}
 
 	@Override

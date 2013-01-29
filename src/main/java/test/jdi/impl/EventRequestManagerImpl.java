@@ -274,16 +274,16 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	List<BreakPointStatus> pendingBps = new ArrayList<BreakPointStatus>();
 	
 	
-	public void pairAndAddBreakpointEvent(BreakPointStatus bp) {
-		if (breakpointRequests.size() == 0) {
-			pendingBps.add(bp);
-		} else {
-			BreakpointRequestImpl bRequest = breakpointRequests.get(0);
-			BreakpointEventImpl bpEvent = new BreakpointEventImpl(bp, vm, bRequest);
-			vm.addEvent(bpEvent);
-		}
-		
-		
-	}
+//	public void pairAndAddBreakpointEvent(BreakPointStatus bp) {
+//		if (breakpointRequests.size() == 0) {
+//			pendingBps.add(bp);
+//		} else {
+//			BreakpointRequestImpl bRequest = breakpointRequests.get(0);
+//			BreakpointEventImpl bpEvent = new BreakpointEventImpl(bp, vm, bRequest);
+//			vm.addEvent(bpEvent);
+//		}
+//		
+//		
+//	}
 
 }

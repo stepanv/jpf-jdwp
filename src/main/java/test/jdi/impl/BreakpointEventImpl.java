@@ -18,8 +18,7 @@ public class BreakpointEventImpl implements BreakpointEvent {
 	
 	public static final Logger log = org.apache.log4j.Logger.getLogger(BreakpointEventImpl.class);
 
-	public BreakpointEventImpl(BreakPointStatus bp, VirtualMachine vm, BreakpointRequestImpl bRequest) {
-		this.bp = bp;
+	public BreakpointEventImpl(BreakpointRequestImpl bRequest, VirtualMachine vm) {
 		this.vm = vm;
 		this.bRequest = bRequest;
 	}
