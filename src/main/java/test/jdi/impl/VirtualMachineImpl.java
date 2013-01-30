@@ -3,6 +3,7 @@ package test.jdi.impl;
 import gov.nasa.jdi.rmi.server.InvocationException;
 import gov.nasa.jdi.rmi.server.JPFInspectorLauncher;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.JPF.ExitException;
 import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
 import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
 import gov.nasa.jpf.inspector.interfaces.JPFInspectorException;
@@ -27,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import sun.tools.tree.ThisExpression;
+import test.jdi.impl.internal.JDIListener;
 import test.jdi.impl.internal.JPFManager;
 import test.jdi.impl.internal.ThreadManager;
 
@@ -256,7 +258,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 				jpf.run();
 			} catch (Throwable t) {
 				// Catching all possible exceptions
-				
+				t.printStackTrace();
 			} finally {
 				log.info("JPF stopped");
 				VMDeathRequest vmDeathRequest = null;
@@ -270,8 +272,12 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		}
 
 		public void exit() {
+			try {
 			jpf.exit();
 			thread.stop();
+			} catch (ExitException ee) {
+				log.debug("Exit exception caught TODO"); // TODO [for PJA] how to end JPF correctly?
+			}
 		}
 
 		private Thread thread;
@@ -301,12 +307,19 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 	 */
 	public void started() {
 		if (started.equals(Boolean.FALSE)) {
-		synchronized (started) {
+			synchronized (started) {
 			
 				log.debug("adding event VM started");
 				eventQueue.addEvent(new VMStartEventImpl());
 				log.debug("adding event VM started .. done");
 				started = true;
+			}
+		
+			// we also want to send ThreadStarted Event because for the MAIN thread .. JPF listener doesn't work as expected
+			// TODO [for PJA] is this really desired behavior of JPF?
+			if (getEventRequestManager().threadStartRequests().size() > 0) {
+				ThreadStartEvent te = new ThreadStartEventImpl(this, jvm.getCurrentThread(), getEventRequestManager().threadStartRequests().remove(0));
+				addEvent(te);
 			}
 		
 			if (suspendOnStart) {

@@ -42,6 +42,7 @@ public class MethodImpl implements Method {
 	
 	@Override
 	public ReferenceType declaringType() {
+		// TODO [for PJA] getClassInfo() sometimes returns null .. how is that possible? bug?
 		return ReferenceTypeImpl.factory(methodInfo.getClassInfo(), vm);
 	}
 

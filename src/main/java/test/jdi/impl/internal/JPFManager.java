@@ -47,6 +47,7 @@ public class JPFManager {
 
 	public void resumeAllThreads() {
 		synchronized (this) {
+			log.debug("Resuming all threads");
 			this.notify();
 		}
 	}
@@ -54,6 +55,7 @@ public class JPFManager {
 	public void suspendAllThreads() {
 		synchronized (this) {
 			try {
+				log.debug("Suspending all threads");
 				allThreadsSuspended = true;
 				wait();
 			} catch (InterruptedException e) {
