@@ -26,16 +26,21 @@ public class JPFManager {
 		Instruction instruction = jvm.getNextInstruction();
 
 		Breakpoint breakpoint = vm.getEventRequestManager().getBreakpointManager()
-				.breakpoint(instruction);
+				.breakpoint(instruction, ti);
 		
 		if (breakpoint != null) {
 			log.debug("Breakpoint hit .. supspending all threads");
 			
-			vm.addEvent(new BreakpointEventImpl(breakpoint.getBr(), vm));
+			vm.addEvent(new BreakpointEventImpl(breakpoint.getBr(), vm, ti));
+			vm.getThreadManager().setIsAtBreakpoint(ti);
 			
 			suspendAllThreads();
 		}
 
+	}
+
+	public boolean isAllThreadsSuspended() {
+		return allThreadsSuspended;
 	}
 
 	boolean allThreadsSuspended = false;

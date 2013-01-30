@@ -24,14 +24,12 @@ public class FieldImpl implements Field {
 
 	@Override
 	public String signature() {
-		// TODO Auto-generated method stub
-		return null;
+		return fieldInfo.getSignature();
 	}
 
 	@Override
 	public String genericSignature() {
-		// TODO Auto-generated method stub
-		return null;
+		return fieldInfo.getSignature(); // TODO possible not ok
 	}
 
 	@Override
@@ -42,14 +40,12 @@ public class FieldImpl implements Field {
 
 	@Override
 	public boolean isStatic() {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldInfo.isStatic();
 	}
 
 	@Override
 	public boolean isFinal() {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldInfo.isFinal();
 	}
 
 	@Override
@@ -72,8 +68,7 @@ public class FieldImpl implements Field {
 
 	@Override
 	public boolean isPrivate() {
-		// TODO Auto-generated method stub
-		return false;
+		return !fieldInfo.isPublic(); // TODO that's weird
 	}
 
 	@Override
@@ -90,8 +85,7 @@ public class FieldImpl implements Field {
 
 	@Override
 	public boolean isPublic() {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldInfo.isPublic();
 	}
 
 	@Override
@@ -114,14 +108,12 @@ public class FieldImpl implements Field {
 
 	@Override
 	public boolean isTransient() {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldInfo.isTransient();
 	}
 
 	@Override
 	public boolean isVolatile() {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldInfo.isVolatile();
 	}
 
 	@Override

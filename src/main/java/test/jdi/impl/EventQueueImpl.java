@@ -36,14 +36,11 @@ public class EventQueueImpl implements EventQueue {
 		EventSet removedEventSet = currentEvents;
 		currentEvents = new EventSetImpl(vm);
 		
-		log.debug("returning event set: " + removedEventSet);
-
 		return removedEventSet;
 	}
 
 	@Override
 	public synchronized EventSet remove(long paramLong) throws InterruptedException {
-		log.debug("removing events");
 		Thread.sleep(paramLong);
 		return remove();
 	}

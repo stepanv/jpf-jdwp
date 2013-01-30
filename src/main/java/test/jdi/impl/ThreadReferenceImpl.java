@@ -3,6 +3,8 @@ package test.jdi.impl;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 	private VirtualMachineImpl vm;
 	private ThreadInfo ti;
 	private ThreadGroupReference threadGroupReference;
+	private ReferenceTypeImpl referenceType;
 	
 	public ThreadReferenceImpl(VirtualMachineImpl vm, ThreadInfo ti) {
 		this.vm = vm;
@@ -37,6 +40,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 		
 		ElementInfo ei = ti.getElementInfo(ti.getThreadObjectRef());
 	    this.threadGroupReference = new ThreadGroupReferenceImpl(vm, ei.getReferenceField("group"));
+	    this.referenceType = new ReferenceTypeImpl(ti.getClassInfo(), vm);
 	}
 
 	@Override
@@ -94,7 +98,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 	@Override
 	public ReferenceType referenceType() {
 		log.debug("method entering");
-		return null;
+		return referenceType;
 	}
 
 	@Override
@@ -184,12 +188,12 @@ public class ThreadReferenceImpl implements ThreadReference {
 	@Override
 	public boolean isAtBreakpoint() {
 		log.debug("method entering");
-		return false;
+		return vm.getThreadManager().getAdditionalInfo(ti).isAtBreakpoint();
 	}
 
 	@Override
 	public boolean isSuspended() {
-		return ti.isSuspended();
+		return vm.getJPFManager().isAllThreadsSuspended();
 	}
 
 	@Override
@@ -201,14 +205,14 @@ public class ThreadReferenceImpl implements ThreadReference {
 	public List<ObjectReference> ownedMonitors()
 			throws IncompatibleThreadStateException {
 		log.debug("method entering");
-		return null;
+		return new ArrayList<ObjectReference>();
 	}
 
 	@Override
 	public List<MonitorInfo> ownedMonitorsAndFrames()
 			throws IncompatibleThreadStateException {
 		log.debug("method entering");
-		return null;
+		return new ArrayList<MonitorInfo>(); // TODO implement this
 	}
 
 	@Override

@@ -38,6 +38,12 @@ public class ReferenceTypeImpl implements ReferenceType {
 	private ClassInfo classInfo;
 	private VirtualMachine vm;
 
+	/**
+	 * TODO remove this
+	 * 
+	 * @param elInfo
+	 * @param vm
+	 */
 	public ReferenceTypeImpl(StaticElementInfo elInfo, VirtualMachine vm) {
 		this.elInfo = elInfo;
 		this.vm = vm;
@@ -198,13 +204,24 @@ public class ReferenceTypeImpl implements ReferenceType {
 		return null;
 	}
 
-	private Map<String, FieldImpl> fields = new HashMap<String, FieldImpl>();
+	private Map<FieldInfo, FieldImpl> fields = new HashMap<FieldInfo, FieldImpl>();
 	@Override
 	public Field fieldByName(String paramString) {
-		if (!fields.containsKey(paramString)) {
-			fields.put(paramString, new FieldImpl(elInfo.getFieldInfo(paramString)));
+		FieldInfo fi = classInfo.getDeclaredInstanceField(paramString);
+		if (fi == null) {
+			fi = classInfo.getInstanceField(paramString);
 		}
-		return fields.get(paramString);
+		if (fi == null) {
+			fi = classInfo.getStaticField(paramString);
+		}
+		if (fi == null) {
+			return null;
+		}
+		
+		if (!fields.containsKey(fi)) {
+			fields.put(fi, new FieldImpl(fi));
+		}
+		return fields.get(fi);
 	}
 
 	@Override

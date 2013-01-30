@@ -37,6 +37,28 @@ import com.sun.jdi.request.VMDeathRequest;
 
 public class EventRequestManagerImpl implements EventRequestManager {
 
+	private static class EventRequestType<RT extends EventRequest> {
+
+		private ArrayList<RT> requests;
+
+		private EventRequestType() {
+			requests= new ArrayList<RT>();
+		}
+		
+		public List<RT> getUnmodifiableList() {
+			return Collections.unmodifiableList(requests);
+		}
+		
+		public void clear() {
+			requests.clear();
+		}
+	}
+	
+	private List<ThreadStartRequest> threadStartRequests = new ArrayList<ThreadStartRequest>();
+	private List<ThreadDeathRequest> threadDeathRequests = new ArrayList<ThreadDeathRequest>();
+	private List<MethodEntryRequest> methodEntryRequests = new ArrayList<MethodEntryRequest>();
+	private List<MethodExitRequest> methodExitRequests = new ArrayList<MethodExitRequest>();
+	
 	private List<ClassPrepareRequest> classPrepareRequests = new ArrayList<ClassPrepareRequest>();
 	private List<ClassUnloadRequest> classUnloadRequests = new ArrayList<ClassUnloadRequest>();
 	
@@ -62,7 +84,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public List<BreakpointRequest> breakpointRequests() {
 		log.debug("method entering");
-		return null;
+		return null; //Collections.unmodifiableList(breakpointManager.getBreakpointRequests());
 	}
 
 	@Override
@@ -103,7 +125,8 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public ClassUnloadRequest createClassUnloadRequest() {
 		ClassUnloadRequest classUnloadRequest = new ClassUnloadRequestImpl();
-		return null;
+		classUnloadRequests.add(classUnloadRequest);
+		return classUnloadRequest;
 	}
 
 	@Override
@@ -116,13 +139,15 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public MethodEntryRequest createMethodEntryRequest() {
 		MethodEntryRequest methodEntryRequest = new MethodEntryRequestImpl();
+		methodEntryRequests.add(methodEntryRequest);
 		return methodEntryRequest;
 	}
 
 	@Override
 	public MethodExitRequest createMethodExitRequest() {
-		MethodExitRequest monitorContendedEnteredRequest = new MethodExitRequestImpl();
-		return monitorContendedEnteredRequest;
+		MethodExitRequest methodExitRequest = new MethodExitRequestImpl();
+		methodExitRequests.add(methodExitRequest);
+		return methodExitRequest;
 	}
 
 	@Override
@@ -166,12 +191,14 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public ThreadDeathRequest createThreadDeathRequest() {
 		ThreadDeathRequest threadDeathRequest = new ThreadDeathRequestImpl();
+		threadDeathRequests.add(threadDeathRequest);
 		return threadDeathRequest;
 	}
 
 	@Override
 	public ThreadStartRequest createThreadStartRequest() {
 		ThreadStartRequest threadStartRequest = new ThreadStartRequestImpl();
+		threadStartRequests.add(threadStartRequest);
 		return threadStartRequest;
 	}
 
@@ -208,13 +235,13 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public List<MethodEntryRequest> methodEntryRequests() {
 		log.debug("method entering");
-		return null;
+		return methodEntryRequests;
 	}
 
 	@Override
 	public List<MethodExitRequest> methodExitRequests() {
 		log.debug("method entering");
-		return null;
+		return methodExitRequests;
 	}
 
 	@Override
@@ -232,13 +259,13 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public List<ThreadDeathRequest> threadDeathRequests() {
 		log.debug("method entering");
-		return null;
+		return threadDeathRequests;
 	}
 
 	@Override
 	public List<ThreadStartRequest> threadStartRequests() {
 		log.debug("method entering");
-		return null;
+		return threadStartRequests;
 	}
 
 	@Override

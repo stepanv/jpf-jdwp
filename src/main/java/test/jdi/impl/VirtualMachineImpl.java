@@ -28,6 +28,7 @@ import org.apache.log4j.PatternLayout;
 
 import sun.tools.tree.ThisExpression;
 import test.jdi.impl.internal.JPFManager;
+import test.jdi.impl.internal.ThreadManager;
 
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
@@ -56,6 +57,11 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	JPFRunner jpfRunner;
 	JPFManager jpfManager;
+	ThreadManager threadManager;
+
+	public ThreadManager getThreadManager() {
+		return threadManager;
+	}
 
 	private JPF jpf;
 
@@ -74,7 +80,8 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		super(inspectorLauncher);
 
 		jpfManager = new JPFManager(this);
-
+		threadManager = new ThreadManager(this);
+		
 		jpf = inspectorLauncher.launch(this);
 
 		jpfRunner = new JPFRunner(jpf);
@@ -99,6 +106,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 		this.jpf = jpf;
 		jpfManager = new JPFManager(this);
+		threadManager = new ThreadManager(this);
 		jpfRunner = new JPFRunner(jpf);
 		setJvm(jpf.getVM());
 
@@ -113,6 +121,17 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 	public List<ThreadReference> allThreads() {
 		log.debug("Entering method 'allThreads'");
 
+		updateThreads();
+
+		List<ThreadReference> threadsToReturn = new ArrayList<ThreadReference>();
+		for (ThreadReferenceImpl tr : threads.values()) {
+			threadsToReturn.add(tr);
+		}
+
+		return threadsToReturn;
+	}
+
+	private void updateThreads() {
 		LinkedHashMap<ThreadInfo, ThreadReferenceImpl> currentThreads = new LinkedHashMap<ThreadInfo, ThreadReferenceImpl>();
 
 		ThreadList tl = getJvm().getThreadList();
@@ -126,13 +145,11 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 			}
 		}
 		threads = currentThreads;
-
-		List<ThreadReference> threadsToReturn = new ArrayList<ThreadReference>();
-		for (ThreadReferenceImpl tr : threads.values()) {
-			threadsToReturn.add(tr);
-		}
-
-		return null;
+	}
+	
+	public LinkedHashMap<ThreadInfo, ThreadReferenceImpl> getThreads() {
+		updateThreads();
+		return threads;
 	}
 
 	public void start() {

@@ -1,7 +1,10 @@
 package test.jdi.impl.internal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -37,13 +40,14 @@ public class BreakpointManager {
 		this.eventRequestManager = eventRequestManagerImpl;
 		this.vm = vm;
 	}
-
+	
 	/**
 	 * If breakpoint is managed for the instruction
 	 * @param instruction
+	 * @param ti 
 	 * @return null or Breakpoint if exists
 	 */
-	public Breakpoint breakpoint(Instruction instruction) {
+	public Breakpoint breakpoint(Instruction instruction, ThreadInfo ti) {
 		for (Breakpoint breakpoint : breakpoints) {
 			if (instruction.equals(breakpoint.getInstruction())) {
 				try {

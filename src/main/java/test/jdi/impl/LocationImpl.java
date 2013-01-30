@@ -66,13 +66,13 @@ public class LocationImpl implements Location {
 	public String sourceName(String paramString)
 			throws AbsentInformationException {
 		log.debug("method entering");
-		return null;
+		return instruction.getSourceLocation(); // TODO is not possibly correct
 	}
 
 	@Override
 	public String sourcePath() throws AbsentInformationException {
 		log.debug("method entering");
-		return null;
+		return instruction.getFileLocation(); // TODO is not possibly correct
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class LocationImpl implements Location {
 	@Override
 	public int lineNumber() {
 		log.debug("method entering");
-		return lineNumber;
+		return instruction.getLineNumber();
 	}
 
 	@Override
