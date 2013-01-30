@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -49,7 +50,21 @@ public class ReferenceTypeImpl implements ReferenceType {
 		this.vm = vm;
 	}
 
-	public ReferenceTypeImpl(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+	private static Map<ClassInfo,ReferenceTypeImpl> allReferenceTypes = new ConcurrentHashMap<ClassInfo,ReferenceTypeImpl>();
+
+	public static ReferenceTypeImpl factory(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+		synchronized (allReferenceTypes) {
+			if (allReferenceTypes.containsKey(resolvedClassInfo)) {
+				return allReferenceTypes.get(resolvedClassInfo);
+			} else {
+				ReferenceTypeImpl referenceTypeImpl = new ReferenceTypeImpl(resolvedClassInfo, vm);
+				allReferenceTypes.put(resolvedClassInfo, referenceTypeImpl);
+				return referenceTypeImpl;
+			}
+		}
+	}
+	
+	private ReferenceTypeImpl(ClassInfo resolvedClassInfo, VirtualMachine vm) {
 		this.classInfo = resolvedClassInfo;
 		this.vm = vm;
 	}
@@ -305,7 +320,7 @@ public class ReferenceTypeImpl implements ReferenceType {
 		List<Location> locations = new ArrayList<Location>();
 		for (Instruction instruction : classInfo.getMatchingInstructions(LocationSpec.createLocationSpec(classInfo.getSourceFileName() + ":" + paramInt))) {
 			log.debug("Requesting location at reference type: " + name() +" line: " + paramInt);
-			locations.add(new LocationImpl(instruction, paramInt, this, vm));
+			locations.add(LocationImpl.factory(instruction, this, vm));
 		}
 		return locations;
 	}

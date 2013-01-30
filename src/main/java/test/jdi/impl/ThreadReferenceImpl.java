@@ -1,10 +1,13 @@
 package test.jdi.impl;
 
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +34,10 @@ public class ThreadReferenceImpl implements ThreadReference {
 	public static final Logger log = org.apache.log4j.Logger.getLogger(ThreadReferenceImpl.class);
 	private VirtualMachineImpl vm;
 	private ThreadInfo ti;
+	public ThreadInfo getThreadInfo() {
+		return ti;
+	}
+
 	private ThreadGroupReference threadGroupReference;
 	private ReferenceTypeImpl referenceType;
 	
@@ -40,7 +47,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 		
 		ElementInfo ei = ti.getElementInfo(ti.getThreadObjectRef());
 	    this.threadGroupReference = new ThreadGroupReferenceImpl(vm, ei.getReferenceField("group"));
-	    this.referenceType = new ReferenceTypeImpl(ti.getClassInfo(), vm);
+	    this.referenceType = ReferenceTypeImpl.factory(ti.getClassInfo(), vm);
 	}
 
 	@Override
@@ -63,7 +70,14 @@ public class ThreadReferenceImpl implements ThreadReference {
 
 	@Override
 	public Value getValue(Field sig) {
-		log.debug("method entering");
+//		FieldImpl fi = (FieldImpl)sig;
+		log.debug("method entering"); // [for PJA] How to get a value for a filed .. dig it from the heap if not static ??
+//		ClassInfo ci = fi.getFieldInfo().getClassInfo();
+//		ElementInfo ei = JVM.getVM().getHeap().get(ci. getClassObjectRef())
+//		ci.getInstanceField()
+//		fi.getFieldInfo().get
+//		ci.getClassObject()
+//		ci.getClassObject().getBooleanField(fi.getFieldInfo());
 		return null;
 	}
 
@@ -160,13 +174,17 @@ public class ThreadReferenceImpl implements ThreadReference {
 	@Override
 	public int frameCount() throws IncompatibleThreadStateException {
 		log.debug("method entering");
-		return 0;
+		return ti.countStackFrames();
 	}
 
 	@Override
 	public List<StackFrame> frames() throws IncompatibleThreadStateException {
 		log.debug("method entering");
-		return null;
+		List<StackFrame> frames = new ArrayList<StackFrame>();
+		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = ti.iterator(); stackIterator.hasNext();) {
+			frames.add(new StackFrameImpl(stackIterator.next(), this, vm));
+		}
+		return frames;
 	}
 
 	@Override
@@ -225,7 +243,8 @@ public class ThreadReferenceImpl implements ThreadReference {
 	@Override
 	public void resume() {
 		log.debug("method entering");
-
+		// TODO now, we're supposed to resume just this thread instead of all threads
+		vm.jpfManager.resumeAllThreads();
 	}
 
 	@Override

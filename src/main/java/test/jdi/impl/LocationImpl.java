@@ -1,5 +1,10 @@
 package test.jdi.impl;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import org.apache.log4j.Logger;
@@ -9,21 +14,34 @@ import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.Event;
 
 public class LocationImpl implements Location {
 
 	public static final Logger log = org.apache.log4j.Logger.getLogger(LocationImpl.class);
 	private Instruction instruction;
 	private VirtualMachine vm;
-	private int lineNumber;
 	private ReferenceTypeImpl referenceType;
 	
 	
-	public LocationImpl(Instruction instruction, int lineNumber, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
+	private LocationImpl(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
 		this.setInstruction(instruction);
 		this.vm = vm;
-		this.lineNumber = lineNumber;
 		this.referenceType = referenceTypeImpl;
+	}
+	
+	private static Map<Instruction,LocationImpl> allLocations = new ConcurrentHashMap<Instruction,LocationImpl>();
+
+	public static LocationImpl factory(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
+		synchronized (allLocations) {
+			if (allLocations.containsKey(instruction)) {
+				return allLocations.get(instruction);
+			} else {
+				LocationImpl locationImpl = new LocationImpl(instruction, referenceTypeImpl, vm);
+				allLocations.put(instruction, locationImpl);
+				return locationImpl;
+			}
+		}
 	}
 
 	@Override
@@ -47,7 +65,7 @@ public class LocationImpl implements Location {
 	@Override
 	public Method method() {
 		log.debug("method entering");
-		return null;
+		return MethodImpl.factory(instruction.getMethodInfo(), vm);
 	}
 
 	@Override

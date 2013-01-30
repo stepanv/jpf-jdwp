@@ -46,7 +46,10 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VoidValue;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
+import com.sun.jdi.event.ThreadStartEvent;
+import com.sun.jdi.event.VMDeathEvent;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.VMDeathRequest;
 
 public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
@@ -84,7 +87,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		
 		jpf = inspectorLauncher.launch(this);
 
-		jpfRunner = new JPFRunner(jpf);
+		jpfRunner = new JPFRunner(jpf, this);
 		setJvm(jpf.getVM());
 
 		getJvm().addListener(new JDIListener(this));
@@ -107,8 +110,8 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		this.jpf = jpf;
 		jpfManager = new JPFManager(this);
 		threadManager = new ThreadManager(this);
-		jpfRunner = new JPFRunner(jpf);
-		setJvm(jpf.getVM());
+		jpfRunner = new JPFRunner(jpf, this);
+		jvm = jpf.getVM();
 
 		getJvm().addListener(new JDIListener(this));
 	}
@@ -193,7 +196,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		// classes.get(75);
 
 		log.debug("Entering method 'classesByName'");
-		classes.add(new ReferenceTypeImpl(ClassInfo
+		classes.add(ReferenceTypeImpl.factory(ClassInfo
 				.getResolvedClassInfo(paramString), this));
 		// TODO Auto-generated method stub
 		return classes;
@@ -240,14 +243,29 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 	private class JPFRunner implements Runnable {
 
 		private JPF jpf;
+		private VirtualMachineImpl virtualMachineImpl;
 
-		public JPFRunner(JPF jpf) {
+		public JPFRunner(JPF jpf, VirtualMachineImpl virtualMachineImpl) {
 			this.jpf = jpf;
+			this.virtualMachineImpl = virtualMachineImpl;
 		}
 
 		@Override
 		public void run() {
-			jpf.run();
+			try {
+				jpf.run();
+			} catch (Throwable t) {
+				// Catching all possible exceptions
+				
+			} finally {
+				log.info("JPF stopped");
+				VMDeathRequest vmDeathRequest = null;
+				if (virtualMachineImpl.eventRequestManager.vmDeathRequests().size() > 0) {
+					vmDeathRequest = virtualMachineImpl.eventRequestManager.vmDeathRequests().remove(0);
+				}
+				VMDeathEvent vmDeath = new VMDeathEventImpl(virtualMachineImpl, vmDeathRequest);
+				virtualMachineImpl.addEvent(vmDeath);
+			}
 
 		}
 

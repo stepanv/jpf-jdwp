@@ -58,6 +58,8 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	private List<ThreadDeathRequest> threadDeathRequests = new ArrayList<ThreadDeathRequest>();
 	private List<MethodEntryRequest> methodEntryRequests = new ArrayList<MethodEntryRequest>();
 	private List<MethodExitRequest> methodExitRequests = new ArrayList<MethodExitRequest>();
+	private List<VMDeathRequest> vmDeathRequests = new ArrayList<VMDeathRequest>();
+	
 	
 	private List<ClassPrepareRequest> classPrepareRequests = new ArrayList<ClassPrepareRequest>();
 	private List<ClassUnloadRequest> classUnloadRequests = new ArrayList<ClassUnloadRequest>();
@@ -205,6 +207,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public VMDeathRequest createVMDeathRequest() {
 		VMDeathRequest vmDeathRequest = new VMDeathRequestImpl();
+		vmDeathRequests.add(vmDeathRequest);
 		return vmDeathRequest;
 	}
 
@@ -271,7 +274,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public List<VMDeathRequest> vmDeathRequests() {
 		log.debug("method entering");
-		return null;
+		return vmDeathRequests;
 	}
 
 	@Override
