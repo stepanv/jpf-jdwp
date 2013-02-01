@@ -3,6 +3,7 @@ package test.jdi.impl;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -41,13 +43,27 @@ public class ThreadReferenceImpl implements ThreadReference {
 	private ThreadGroupReference threadGroupReference;
 	private ReferenceTypeImpl referenceType;
 	
-	public ThreadReferenceImpl(VirtualMachineImpl vm, ThreadInfo ti) {
+	private ThreadReferenceImpl(ThreadInfo ti, VirtualMachineImpl vm) {
 		this.vm = vm;
 		this.ti = ti;
 		
 		ElementInfo ei = ti.getElementInfo(ti.getThreadObjectRef());
 	    this.threadGroupReference = new ThreadGroupReferenceImpl(vm, ei.getReferenceField("group"));
 	    this.referenceType = ClassTypeImpl.factory(ti.getClassInfo(), vm);
+	}
+	
+	private static Map<ThreadInfo,ThreadReferenceImpl> allThreads = new ConcurrentHashMap<ThreadInfo,ThreadReferenceImpl>();
+
+	public static ThreadReferenceImpl factory(ThreadInfo ti, VirtualMachineImpl vm) {
+		synchronized (allThreads) {
+			if (allThreads.containsKey(ti)) {
+				return allThreads.get(ti);
+			} else {
+				ThreadReferenceImpl threadReferenceImpl = new ThreadReferenceImpl(ti, vm);
+				allThreads.put(ti, threadReferenceImpl);
+				return threadReferenceImpl;
+			}
+		}
 	}
 
 	@Override

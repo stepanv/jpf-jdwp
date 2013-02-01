@@ -30,7 +30,7 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void threadStarted(JVM vm) {
 		if (vmJdi.getEventRequestManager().threadStartRequests().size() > 0) {
-			ThreadStartEvent te = new ThreadStartEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadStartRequests().remove(0));
+			ThreadStartEvent te = new ThreadStartEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadStartRequests().get(0));
 			vmJdi.addEvent(te);
 		}
 	}
@@ -38,7 +38,7 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void threadTerminated(JVM vm) {
 		if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0) {
-			ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().remove(0));
+			ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().get(0));
 			vmJdi.addEvent(td);
 		}
 	}

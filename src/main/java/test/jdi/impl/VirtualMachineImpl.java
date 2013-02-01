@@ -94,8 +94,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 			if (threads.containsKey(ti)) {
 				currentThreads.put(ti, threads.get(ti));
 			} else {
-				ThreadReferenceImpl threadReference = new ThreadReferenceImpl(
-						this, ti);
+				ThreadReferenceImpl threadReference = ThreadReferenceImpl.factory(ti, this);
 				currentThreads.put(ti, threadReference);
 			}
 		}
@@ -265,7 +264,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 			// we also want to send ThreadStarted Event because for the MAIN thread .. JPF listener doesn't work as expected
 			// TODO [for PJA] is this really desired behavior of JPF?
 			if (getEventRequestManager().threadStartRequests().size() > 0) {
-				ThreadStartEvent te = new ThreadStartEventImpl(this, jvm.getCurrentThread(), getEventRequestManager().threadStartRequests().remove(0));
+				ThreadStartEvent te = new ThreadStartEventImpl(this, jvm.getCurrentThread(), getEventRequestManager().threadStartRequests().get(0));
 				addEvent(te);
 			}
 		
