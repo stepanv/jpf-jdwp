@@ -179,12 +179,13 @@ public class ThreadReferenceImpl implements ThreadReference {
 
 	@Override
 	public List<StackFrame> frames() throws IncompatibleThreadStateException {
-		log.debug("method entering");
+		log.debug("method entering2");
+		
 		List<StackFrame> frames = new ArrayList<StackFrame>();
 		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = ti.iterator(); stackIterator.hasNext();) {
 			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
-				frames.add(new StackFrameImpl(stackIterator.next(), this, vm));
+				frames.add(new StackFrameImpl(stackFrame, this, vm));
 			}
 		}
 		return frames;

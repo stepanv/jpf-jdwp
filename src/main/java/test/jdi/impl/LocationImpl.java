@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import org.apache.log4j.Logger;
@@ -90,7 +92,13 @@ public class LocationImpl implements Location {
 	@Override
 	public String sourcePath() throws AbsentInformationException {
 		log.debug("method entering");
-		return instruction.getFileLocation(); // TODO is not possibly correct
+		
+		ClassInfo ci = instruction.getMethodInfo().getClassInfo();
+	    if (ci != null) {
+	      return ci.getSourceFileName();
+	    } else {
+	    	throw new AbsentInformationException("Cannot fetch source path for synthetic method!");
+	    }
 	}
 
 	@Override
