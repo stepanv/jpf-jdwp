@@ -1,9 +1,8 @@
 package test.jdi.impl;
 
-import org.apache.log4j.Logger;
-
-import gov.nasa.jpf.inspector.interfaces.BreakPointStatus;
 import gov.nasa.jpf.jvm.ThreadInfo;
+
+import org.apache.log4j.Logger;
 
 import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
@@ -13,7 +12,6 @@ import com.sun.jdi.request.EventRequest;
 
 public class BreakpointEventImpl implements BreakpointEvent {
 
-	private BreakPointStatus bp;
 	private VirtualMachineImpl vm;
 	private BreakpointRequestImpl bRequest;
 	private ThreadInfo ti;

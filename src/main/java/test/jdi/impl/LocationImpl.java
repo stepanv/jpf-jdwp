@@ -25,7 +25,7 @@ public class LocationImpl implements Location {
 	
 	
 	private LocationImpl(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
-		this.setInstruction(instruction);
+		this.instruction = instruction;
 		this.vm = vm;
 		this.referenceType = referenceTypeImpl;
 	}

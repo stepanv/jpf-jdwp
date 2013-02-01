@@ -49,7 +49,7 @@ public class VirtualMachineImpl implements VirtualMachine {
 		
 		for (Iterator<StaticElementInfo> it = vm.getKernelState().getStaticArea().iterator(); it.hasNext(); ) {
 			StaticElementInfo elInfo = it.next();
-			classes.add(new ReferenceTypeImpl(elInfo, this));
+			//classes.add(ReferenceTypeImpl(elInfo, this));
 		}
 		return classes;
 	}

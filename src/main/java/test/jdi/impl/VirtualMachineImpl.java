@@ -1,12 +1,7 @@
 package test.jdi.impl;
 
-import gov.nasa.jdi.rmi.server.InvocationException;
-import gov.nasa.jdi.rmi.server.JPFInspectorLauncher;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPF.ExitException;
-import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
-import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
-import gov.nasa.jpf.inspector.interfaces.JPFInspectorException;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StaticElementInfo;
@@ -14,38 +9,20 @@ import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.ThreadList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
-import sun.tools.tree.ThisExpression;
+import test.jdi.impl.internal.ClassesManager;
 import test.jdi.impl.internal.JDIListener;
 import test.jdi.impl.internal.JPFManager;
 import test.jdi.impl.internal.ThreadManager;
 
-import com.sun.jdi.BooleanValue;
-import com.sun.jdi.ByteValue;
-import com.sun.jdi.CharValue;
-import com.sun.jdi.DoubleValue;
-import com.sun.jdi.FloatValue;
-import com.sun.jdi.IntegerValue;
-import com.sun.jdi.LongValue;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ShortValue;
-import com.sun.jdi.StringReference;
-import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.VoidValue;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.ThreadStartEvent;
@@ -70,8 +47,6 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	private JPF jpf;
 
-	private JPFInspectorLauncher inspectorLauncher;
-
 	public JVM getJvm() {
 		return jvm;
 	}
@@ -80,32 +55,6 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		this.jvm = jvm;
 	}
 
-	public VirtualMachineImpl(JPFInspectorLauncher inspectorLauncher)
-			throws InvocationException {
-		super(inspectorLauncher);
-
-		jpfManager = new JPFManager(this);
-		threadManager = new ThreadManager(this);
-		
-		jpf = inspectorLauncher.launch(this);
-
-		jpfRunner = new JPFRunner(jpf, this);
-		setJvm(jpf.getVM());
-
-		getJvm().addListener(new JDIListener(this));
-
-		this.inspectorLauncher = inspectorLauncher;
-
-		inspectorLauncher
-				.executeCommand("cr bp state=en pos=oldclassic.java:127");
-		inspectorLauncher.executeCommand("show bp");
-
-		log.debug("Breakpoint is set");
-
-	}
-
-	// List<ThreadReferenceImpl> threads = new ArrayList<ThreadReferenceImpl>();
-
 	public VirtualMachineImpl(JPF jpf) {
 		super(jpf);
 
@@ -113,6 +62,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		jpfManager = new JPFManager(this);
 		threadManager = new ThreadManager(this);
 		jpfRunner = new JPFRunner(jpf, this);
+		classesManager = new ClassesManager(this);
 		jvm = jpf.getVM();
 
 		getJvm().addListener(new JDIListener(this));
@@ -169,15 +119,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	@Override
 	public List<ReferenceType> allClasses() {
-		log.debug("Entering method 'allClasses'");
-		List<ReferenceType> classes = new ArrayList<ReferenceType>();
-
-		for (Iterator<StaticElementInfo> it = getJvm().getKernelState()
-				.getStaticArea().iterator(); it.hasNext();) {
-			StaticElementInfo elInfo = it.next();
-			classes.add(new ReferenceTypeImpl(elInfo, this));
-		}
-		return classes;
+		return null;
 	}
 
 	@Override
@@ -197,10 +139,12 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 		// }
 		// classes.get(75);
 
-		log.debug("Entering method 'classesByName'");
-		classes.add(ReferenceTypeImpl.factory(ClassInfo
-				.getResolvedClassInfo(paramString), this));
-		// TODO Auto-generated method stub
+		log.debug("Entering method 'classesByName' for: " + paramString);
+		for (ClassInfo classInfo : classesManager.getLoadedClasses()) {
+			if (paramString.equals(classInfo.getName())) {
+				classes.add(ClassTypeImpl.factory(classInfo, this));
+			}
+		}
 		return classes;
 	}
 
@@ -230,6 +174,8 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 	EventRequestManagerImpl eventRequestManager = new EventRequestManagerImpl(
 			this);
+
+	private ClassesManager classesManager;
 
 	public EventRequestManagerImpl getEventRequestManager() {
 		return eventRequestManager;
@@ -284,6 +230,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 
 		public Thread start() {
 			thread = new Thread(this);
+			thread.setName("JPF Runner thread");
 			thread.start();
 			return thread;
 		}
@@ -338,14 +285,15 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 	}
 
 	public void debugTmp() {
-		inspectorLauncher.executeCommand("del bp 1");
-
-		inspectorLauncher.executeCommand("print #thread[1]");
-		inspectorLauncher.executeCommand("print #thread[2]");
+		log.debug("NOT REALLY DEBUGGING ANYTHING...");
 	}
 
 	public JPFManager getJPFManager() {
 		return jpfManager;
+	}
+
+	public ClassesManager getClassesManager() {
+		return classesManager;
 	}
 
 }

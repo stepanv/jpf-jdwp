@@ -43,11 +43,18 @@ public class MethodImpl implements Method {
 	@Override
 	public ReferenceType declaringType() {
 		// TODO [for PJA] getClassInfo() sometimes returns null .. how is that possible? bug?
-		return ReferenceTypeImpl.factory(methodInfo.getClassInfo(), vm);
+		return ClassTypeImpl.factory(methodInfo.getClassInfo(), vm);
 	}
 
 	@Override
 	public String genericSignature() {
+		// TODO [for PJA] methodInfo.getGenericSignature() contains sometimes "" ... that's definitively not correct is it?
+		if ("".equals(methodInfo.getGenericSignature())) {
+			if ("".equals(methodInfo.getSignature())) {
+				return null;
+			}
+			return methodInfo.getSignature();
+		}
 		return methodInfo.getGenericSignature();
 	}
 
@@ -202,7 +209,8 @@ public class MethodImpl implements Method {
 
 	@Override
 	public Location location() {
-		return LocationImpl.factory(methodInfo.getLastInsn(), ReferenceTypeImpl.factory(methodInfo.getClassInfo(), vm), vm);
+		Instruction instruction = methodInfo.getLastInsn();
+		return LocationImpl.factory(instruction, ClassTypeImpl.factory(methodInfo.getClassInfo(), vm), vm);
 	}
 
 	@Override

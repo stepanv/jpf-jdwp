@@ -1,19 +1,7 @@
 package test.jdi.impl;
 
-import gov.nasa.jdi.rmi.server.InvocationException;
-import gov.nasa.jdi.rmi.server.JPFInspectorLauncher;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.JPFConfigException;
-import gov.nasa.jpf.JPFException;
-import gov.nasa.jpf.ListenerAdapter;
-import gov.nasa.jpf.inspector.JPFInspectorFacade;
-import gov.nasa.jpf.inspector.client.JPFInspectorClientInterface;
-import gov.nasa.jpf.inspector.interfaces.JPFInspectorBackEndInterface;
-import gov.nasa.jpf.inspector.interfaces.exceptions.JPFInspectorGenericErrorException;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.VMListener;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +11,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.sun.jdi.Location;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;

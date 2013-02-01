@@ -3,6 +3,7 @@ package test.jdi.impl;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 
 import java.util.List;
 import java.util.Map;
@@ -64,11 +65,15 @@ public class StackFrameImpl implements StackFrame {
 	@Override
 	public Location location() {
 		log.debug("method entering");
-		ClassInfo badCi = threadReference.getThreadInfo().getClassInfo(); // TODO [for PJA] need to find a way how to get correct ClassInfo for this frame
 //		stackFrame.getMethodInfo().getClassInfo()
 //		stackFrame.getPC().getPrev().getMethodInfo().getClassInfo()
 //		stackFrame.getPrevious().getMethodInfo().getClassInfo()
-		LocationImpl location = LocationImpl.factory(stackFrame.getPC(), ReferenceTypeImpl.factory(badCi, vm), vm);
+		Instruction instruction = stackFrame.getPC();
+		
+		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+			instruction = instruction.getNext(threadReference.getThreadInfo());
+		}
+		LocationImpl location = LocationImpl.factory(instruction, ClassTypeImpl.factory(instruction.getMethodInfo().getClassInfo(), vm), vm);
 		return location;
 	}
 

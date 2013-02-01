@@ -47,7 +47,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 		
 		ElementInfo ei = ti.getElementInfo(ti.getThreadObjectRef());
 	    this.threadGroupReference = new ThreadGroupReferenceImpl(vm, ei.getReferenceField("group"));
-	    this.referenceType = ReferenceTypeImpl.factory(ti.getClassInfo(), vm);
+	    this.referenceType = ClassTypeImpl.factory(ti.getClassInfo(), vm);
 	}
 
 	@Override
@@ -182,7 +182,10 @@ public class ThreadReferenceImpl implements ThreadReference {
 		log.debug("method entering");
 		List<StackFrame> frames = new ArrayList<StackFrame>();
 		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = ti.iterator(); stackIterator.hasNext();) {
-			frames.add(new StackFrameImpl(stackIterator.next(), this, vm));
+			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+			if (!stackFrame.isSynthetic()) {
+				frames.add(new StackFrameImpl(stackIterator.next(), this, vm));
+			}
 		}
 		return frames;
 	}

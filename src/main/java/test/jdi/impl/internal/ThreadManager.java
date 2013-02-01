@@ -23,7 +23,7 @@ public class ThreadManager {
 	public void setIsAtBreakpoint(ThreadInfo ti) {
 		AdditionalThreadInfo ati = additionalInfo(ti);
 		ati.setAtBreakpoint(true);
-	}	
+	}
 	
 	private AdditionalThreadInfo additionalInfo(ThreadInfo ti) {
 		synchronized (threads) {

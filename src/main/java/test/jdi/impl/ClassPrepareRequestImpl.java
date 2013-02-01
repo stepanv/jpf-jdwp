@@ -1,5 +1,8 @@
 package test.jdi.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -7,25 +10,29 @@ import com.sun.jdi.request.InvalidRequestStateException;
 
 public class ClassPrepareRequestImpl implements ClassPrepareRequest {
 
-	public ClassPrepareRequestImpl() {
-		// TODO Auto-generated constructor stub
+	private VirtualMachineImpl vm;
+
+	public ClassPrepareRequestImpl(VirtualMachineImpl vm) {
+		this.vm = vm;
 	}
-	
+
 	@Override
 	public void addCountFilter(int arg1) throws InvalidRequestStateException {
 		// TODO Auto-generated method stub
 
 	}
 
+	boolean enabled = false;
+	private int suspendPolicy;
+
 	@Override
 	public void disable() {
-		// TODO Auto-generated method stub
-
+		enabled = false;
 	}
 
 	@Override
 	public void enable() {
-		// TODO Auto-generated method stub
+		enabled = true;
 
 	}
 
@@ -37,8 +44,7 @@ public class ClassPrepareRequestImpl implements ClassPrepareRequest {
 
 	@Override
 	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
+		return enabled;
 	}
 
 	@Override
@@ -49,26 +55,22 @@ public class ClassPrepareRequestImpl implements ClassPrepareRequest {
 
 	@Override
 	public void setEnabled(boolean arg1) {
-		// TODO Auto-generated method stub
-
+		enabled = arg1;
 	}
 
 	@Override
 	public void setSuspendPolicy(int arg1) {
-		// TODO Auto-generated method stub
-
+		suspendPolicy = arg1;
 	}
 
 	@Override
 	public int suspendPolicy() {
-		// TODO Auto-generated method stub
-		return 0;
+		return suspendPolicy;
 	}
 
 	@Override
 	public VirtualMachine virtualMachine() {
-		// TODO Auto-generated method stub
-		return null;
+		return vm;
 	}
 
 	@Override
@@ -77,22 +79,39 @@ public class ClassPrepareRequestImpl implements ClassPrepareRequest {
 
 	}
 
+	Set<ReferenceType> classFilterReference = new HashSet<ReferenceType>();
+
 	@Override
 	public void addClassFilter(ReferenceType arg1) {
-		// TODO Auto-generated method stub
-
+		classFilterReference.add(arg1);
 	}
+
+	Set<String> classFilterString = new HashSet<String>();
 
 	@Override
 	public void addClassFilter(String arg1) {
-		// TODO Auto-generated method stub
-
+		classFilterString.add(arg1);
 	}
+
+	Set<String> sourceNameFilter = new HashSet<String>();
 
 	@Override
 	public void addSourceNameFilter(String arg1) {
-		// TODO Auto-generated method stub
-
+		sourceNameFilter.add(arg1);
 	}
+
+	public Set<ReferenceType> getClassFilterReference() {
+		return classFilterReference;
+	}
+
+	public Set<String> getClassFilterString() {
+		return classFilterString;
+	}
+
+	public Set<String> getSourceNameFilter() {
+		return sourceNameFilter;
+	}
+	
+	
 
 }

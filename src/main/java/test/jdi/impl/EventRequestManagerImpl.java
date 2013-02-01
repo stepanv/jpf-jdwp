@@ -1,10 +1,7 @@
 package test.jdi.impl;
 
-import gov.nasa.jpf.inspector.interfaces.BreakPointStatus;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -120,7 +117,15 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	@Override
 	public ClassPrepareRequest createClassPrepareRequest() {
-		ClassPrepareRequest classPrepareRequest = new ClassPrepareRequestImpl();
+		
+		ClassPrepareRequest classPrepareRequest = new ClassPrepareRequestImpl(this.vm);
+		synchronized (classPrepareRequests) {
+			// reqests list needs to be synchronized 
+			// sometimes we can iterate over requests and new request is added and then
+			// concurrent change of list exception is thrown by jre
+			// TODO synchronized should be all the lists
+			classPrepareRequests.add(classPrepareRequest);
+		}
 		return classPrepareRequest;
 	}
 
@@ -300,8 +305,6 @@ public class EventRequestManagerImpl implements EventRequestManager {
 		log.debug("method entering");
 		return null;
 	}
-	
-	List<BreakPointStatus> pendingBps = new ArrayList<BreakPointStatus>();
 	
 	
 //	public void pairAndAddBreakpointEvent(BreakPointStatus bp) {

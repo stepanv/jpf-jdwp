@@ -22,49 +22,47 @@ import org.apache.log4j.Logger;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassLoaderReference;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InterfaceType;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 
-public class ReferenceTypeImpl implements ReferenceType {
+public class ClassTypeImpl extends ReferenceTypeImpl implements ClassType {
 
-	public static final Logger log = org.apache.log4j.Logger.getLogger(ReferenceTypeImpl.class);
+	public static final Logger log = org.apache.log4j.Logger.getLogger(ClassTypeImpl.class);
 	
 	private StaticElementInfo elInfo;
 	private ClassInfo classInfo;
 	private VirtualMachine vm;
 
-	/**
-	 * TODO remove this
-	 * 
-	 * @param elInfo
-	 * @param vm
-	 */
-	private ReferenceTypeImpl(StaticElementInfo elInfo, VirtualMachine vm) {
-		this.elInfo = elInfo;
-		this.vm = vm;
-	}
 
-	private static Map<ClassInfo,ReferenceTypeImpl> allReferenceTypes = new ConcurrentHashMap<ClassInfo,ReferenceTypeImpl>();
+	private static Map<ClassInfo,ClassTypeImpl> allReferenceTypes = new ConcurrentHashMap<ClassInfo,ClassTypeImpl>();
 
-	public static ReferenceTypeImpl factory(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+	public static ClassTypeImpl factory(ClassInfo resolvedClassInfo, VirtualMachine vm) {
 		synchronized (allReferenceTypes) {
 			if (allReferenceTypes.containsKey(resolvedClassInfo)) {
 				return allReferenceTypes.get(resolvedClassInfo);
 			} else {
-				ReferenceTypeImpl referenceTypeImpl = new ReferenceTypeImpl(resolvedClassInfo, vm);
+				ClassTypeImpl referenceTypeImpl = new ClassTypeImpl(resolvedClassInfo, vm);
 				allReferenceTypes.put(resolvedClassInfo, referenceTypeImpl);
 				return referenceTypeImpl;
 			}
 		}
 	}
 	
-	protected ReferenceTypeImpl(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+	private ClassTypeImpl(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+		super(resolvedClassInfo, vm);
 		this.classInfo = resolvedClassInfo;
 		this.vm = vm;
 	}
@@ -345,8 +343,7 @@ public class ReferenceTypeImpl implements ReferenceType {
 
 	@Override
 	public String defaultStratum() {
-		log.debug("method entering");
-		return null;
+		return "Java"; //TODO we should get this info dynamically (see 'strata' section for Location JavaDoc) ... JPF doesn't work with strata at all though.
 	}
 
 	@Override
@@ -376,6 +373,67 @@ public class ReferenceTypeImpl implements ReferenceType {
 	@Override
 	public byte[] constantPool() {
 		log.debug("method entering");
+		return null;
+	}
+
+	@Override
+	public List<InterfaceType> allInterfaces() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Method concreteMethodByName(String name, String signature) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<InterfaceType> interfaces() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Value invokeMethod(ThreadReference thread, Method method,
+			List<? extends Value> arguments, int options)
+			throws InvalidTypeException, ClassNotLoadedException,
+			IncompatibleThreadStateException, InvocationException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isEnum() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ObjectReference newInstance(ThreadReference thread, Method method,
+			List<? extends Value> arguments, int options)
+			throws InvalidTypeException, ClassNotLoadedException,
+			IncompatibleThreadStateException, InvocationException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setValue(Field field, Value value) throws InvalidTypeException,
+			ClassNotLoadedException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public List<ClassType> subclasses() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ClassType superclass() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

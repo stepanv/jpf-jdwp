@@ -14,10 +14,12 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 
 	VirtualMachineImpl vmJdi;
 	JPFManager jpfManager;
+	ClassesManager classesManager;
 	
 	public JDIListener(VirtualMachineImpl vmJdi) {
 		this.vmJdi = vmJdi;
 		jpfManager = vmJdi.getJPFManager();
+		classesManager = vmJdi.getClassesManager();
 	}
 	
 	@Override
@@ -39,6 +41,11 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 			ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().remove(0));
 			vmJdi.addEvent(td);
 		}
+	}
+	
+	@Override
+	public void classLoaded(JVM vm) {
+		classesManager.notifyClassLoadded(vm.getLastClassInfo());
 	}
 	
 	@Override
