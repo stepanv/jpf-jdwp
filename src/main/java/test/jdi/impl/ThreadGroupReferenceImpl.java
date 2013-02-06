@@ -2,6 +2,7 @@ package test.jdi.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -26,9 +27,23 @@ public class ThreadGroupReferenceImpl implements ThreadGroupReference {
 	private VirtualMachineImpl vm;
 	private int referenceField;
 
-	public ThreadGroupReferenceImpl(VirtualMachineImpl vm, int referenceField) {
+	private ThreadGroupReferenceImpl(int referenceField, VirtualMachineImpl vm) {
 		this.vm = vm;
 		this.referenceField = referenceField;
+	}
+	
+	private static Map<Integer, ThreadGroupReferenceImpl> allThreadGroups = new ConcurrentHashMap<Integer, ThreadGroupReferenceImpl>();
+
+	public static ThreadGroupReferenceImpl factory(int referenceField, VirtualMachineImpl vm) {
+		synchronized (allThreadGroups) {
+			if (allThreadGroups.containsKey(referenceField)) {
+				return allThreadGroups.get(referenceField);
+			} else {
+				ThreadGroupReferenceImpl threadReferenceImpl = new ThreadGroupReferenceImpl(referenceField, vm);
+				allThreadGroups.put(referenceField, threadReferenceImpl);
+				return threadReferenceImpl;
+			}
+		}
 	}
 
 	@Override

@@ -1,13 +1,9 @@
 package test.jdi.impl;
 
-import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +44,7 @@ public class ThreadReferenceImpl implements ThreadReference {
 		this.ti = ti;
 		
 		ElementInfo ei = ti.getElementInfo(ti.getThreadObjectRef());
-	    this.threadGroupReference = new ThreadGroupReferenceImpl(vm, ei.getReferenceField("group"));
+	    this.threadGroupReference = ThreadGroupReferenceImpl.factory(ei.getReferenceField("group"), vm);
 	    this.referenceType = ClassTypeImpl.factory(ti.getClassInfo(), vm);
 	}
 	
@@ -190,7 +186,14 @@ public class ThreadReferenceImpl implements ThreadReference {
 	@Override
 	public int frameCount() throws IncompatibleThreadStateException {
 		log.debug("method entering");
-		return ti.countStackFrames();
+		int frameCount = 0;
+		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = ti.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+			if (!stackFrame.isSynthetic()) {
+				++frameCount;
+			}
+		}
+		return frameCount;
 	}
 
 	@Override

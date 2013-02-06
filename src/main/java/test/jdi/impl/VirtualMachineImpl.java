@@ -273,6 +273,12 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 			}
 		}
 	}
+	
+	@Override
+	public void suspend() {
+		log.debug("Entering method 'suspend'");
+		jpfManager.suspendAllThreads();
+	}
 
 	@Override
 	public String name() {

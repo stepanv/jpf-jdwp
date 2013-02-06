@@ -9,6 +9,8 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
+import test.jdi.impl.internal.JPFManager;
+
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
@@ -43,13 +45,6 @@ public abstract class VirtualMachineBaseImpl implements VirtualMachine {
 	@Override
 	public void redefineClasses(Map<? extends ReferenceType, byte[]> paramMap) {
 		log.debug("Entering method 'redefineClasses'");
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void suspend() {
-		log.debug("Entering method 'suspend'");
 		// TODO Auto-generated method stub
 
 	}
