@@ -20,4 +20,4 @@ Export-Package: com.sun.java.example1,
  test.foo
 Import-Package: org.apache.log4j;version="1.2.15"
 Require-Bundle: com.sun.jdi;bundle-version="1.0.0",
- gov.nasa.jpf;bundle-version="1.0.0"
+ gov.nasa.jpf.core;bundle-version="1.0.0"
