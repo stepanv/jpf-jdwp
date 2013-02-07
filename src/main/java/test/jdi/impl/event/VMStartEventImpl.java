@@ -1,4 +1,4 @@
-package test.jdi.impl;
+package test.jdi.impl.event;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;

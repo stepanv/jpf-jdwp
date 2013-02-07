@@ -12,12 +12,12 @@ import com.sun.jdi.event.ThreadStartEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 
 import gov.nasa.jpf.jvm.ClassInfo;
-import test.jdi.impl.ClassPrepareEventImpl;
-import test.jdi.impl.ClassPrepareRequestImpl;
 import test.jdi.impl.ClassTypeImpl;
 import test.jdi.impl.ReferenceTypeImpl;
-import test.jdi.impl.ThreadStartEventImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.ClassPrepareEventImpl;
+import test.jdi.impl.event.ThreadStartEventImpl;
+import test.jdi.impl.request.ClassPrepareRequestImpl;
 
 public class ClassesManager {
 
@@ -32,7 +32,7 @@ public class ClassesManager {
 
 	Set<ClassInfo> loadedClasses = new HashSet<ClassInfo>();
 
-	private void generateClassPrepareEvent(ClassPrepareRequest request, ClassInfo classInfo) {
+	private void generateClassPrepareEvent(ClassPrepareRequestImpl request, ClassInfo classInfo) {
 		log.debug("Generating class prepare event for :" + request);
 		ClassPrepareEvent te = new ClassPrepareEventImpl(virtualMachine,
 				virtualMachine.getJvm().getLastThreadInfo(), request, ClassTypeImpl.factory(classInfo, virtualMachine));
@@ -68,7 +68,7 @@ public class ClassesManager {
 					ClassPrepareRequestImpl requestImpl = (ClassPrepareRequestImpl) request;
 					for (String classFilter : requestImpl.getClassFilterString()) {
 						if (simpleMatch(classInfo.getName(), classFilter)) {
-							generateClassPrepareEvent(request, classInfo);
+							generateClassPrepareEvent((ClassPrepareRequestImpl)request, classInfo);
 						}
 					}
 				}

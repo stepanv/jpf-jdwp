@@ -1,15 +1,16 @@
 package test.jdi.impl.internal;
 
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.ThreadDeathEvent;
-import com.sun.jdi.event.ThreadStartEvent;
-
-import test.jdi.impl.ThreadDeathEventImpl;
-import test.jdi.impl.ThreadStartEventImpl;
-import test.jdi.impl.VirtualMachineImpl;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.VMListener;
+import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.MethodEntryEventImpl;
+import test.jdi.impl.event.ThreadStartEventImpl;
+import test.jdi.impl.request.MethodEntryRequestImpl;
+import test.jdi.impl.request.ThreadStartRequestImpl;
+
+import com.sun.jdi.event.MethodEntryEvent;
+import com.sun.jdi.event.ThreadStartEvent;
 
 public class JDIListener extends ListenerAdapter implements VMListener {
 
@@ -27,7 +28,7 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	public void methodEntered (JVM vm) {
 		vmJdi.started();
 		if (vmJdi.getEventRequestManager().methodEntryRequests().size() > 0) {
-			MethodEntryEvent te = new MethodEntryEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().methodEntryRequests().get(0), vmJdi.getJvm().getNextInstruction(), vmJdi.getJvm().getCurrentThread());
+			MethodEntryEvent te = new MethodEntryEventImpl(vmJdi, vm.getLastThreadInfo(), (MethodEntryRequestImpl) vmJdi.getEventRequestManager().methodEntryRequests().get(0), vmJdi.getJvm().getNextInstruction(), vmJdi.getJvm().getCurrentThread());
 			vmJdi.addEvent(te);
 		}
 	}
@@ -35,7 +36,7 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void threadStarted(JVM vm) {
 		if (vmJdi.getEventRequestManager().threadStartRequests().size() > 0) {
-			ThreadStartEvent te = new ThreadStartEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadStartRequests().get(0));
+			ThreadStartEvent te = new ThreadStartEventImpl(vmJdi, vm.getLastThreadInfo(), (ThreadStartRequestImpl) vmJdi.getEventRequestManager().threadStartRequests().get(0));
 			vmJdi.addEvent(te);
 		}
 	}

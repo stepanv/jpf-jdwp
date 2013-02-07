@@ -1,9 +1,12 @@
-package test.jdi.impl;
+package test.jdi.impl.request;
 
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.request.ClassUnloadRequest;
+import com.sun.jdi.request.StepRequest;
 
-public class ClassUnloadRequestImpl implements ClassUnloadRequest {
+public class StepRequestImpl implements StepRequest {
 
 	@Override
 	public void addCountFilter(int count) {
@@ -72,9 +75,39 @@ public class ClassUnloadRequestImpl implements ClassUnloadRequest {
 	}
 
 	@Override
+	public void addClassFilter(ReferenceType refType) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
 	public void addClassFilter(String classPattern) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public void addInstanceFilter(ObjectReference instance) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public int depth() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int size() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public ThreadReference thread() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -12,10 +12,10 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.request.BreakpointRequest;
 
-import test.jdi.impl.BreakpointRequestImpl;
 import test.jdi.impl.EventRequestManagerImpl;
 import test.jdi.impl.LocationImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.request.BreakpointRequestImpl;
 
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.ThreadInfo;

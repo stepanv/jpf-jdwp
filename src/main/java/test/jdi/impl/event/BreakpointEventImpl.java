@@ -1,39 +1,25 @@
-package test.jdi.impl;
+package test.jdi.impl.event;
 
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import org.apache.log4j.Logger;
 
+import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.request.BreakpointRequestImpl;
+
 import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.BreakpointEvent;
-import com.sun.jdi.request.EventRequest;
 
-public class BreakpointEventImpl implements BreakpointEvent {
+public class BreakpointEventImpl extends EventImpl implements BreakpointEvent {
 
-	private VirtualMachineImpl vm;
-	private BreakpointRequestImpl bRequest;
 	private ThreadInfo ti;
 	
 	public static final Logger log = org.apache.log4j.Logger.getLogger(BreakpointEventImpl.class);
 
 	public BreakpointEventImpl(BreakpointRequestImpl bRequest, VirtualMachineImpl vm, ThreadInfo ti) {
-		this.vm = vm;
-		this.bRequest = bRequest;
+		super(vm, bRequest);
 		this.ti = ti;
-	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		log.debug("method entering");
-		return vm;
-	}
-
-	@Override
-	public EventRequest request() {
-		log.debug("method entering");
-		return bRequest;
 	}
 
 	@Override
@@ -44,7 +30,7 @@ public class BreakpointEventImpl implements BreakpointEvent {
 
 	@Override
 	public Location location() {
-		return bRequest.location();
+		return ((BreakpointRequestImpl)request).location();
 	}
 
 }

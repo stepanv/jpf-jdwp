@@ -318,7 +318,12 @@ public class ClassTypeImpl extends ReferenceTypeImpl implements ClassType {
 		List<Location> locations = new ArrayList<Location>();
 		// TODO [for PJA] what to do, if location contain more than 1 instruction?
 		// in such case, we would hit the breakpoint more times ... how to handle this?
-		for (Instruction instruction : classInfo.getMatchingInstructions(LocationSpec.createLocationSpec(classInfo.getSourceFileName() + ":" + paramInt))) {
+		Instruction[] instructions = classInfo.getMatchingInstructions(LocationSpec.createLocationSpec(classInfo.getSourceFileName() + ":" + paramInt));
+		if (instructions == null) {
+			log.debug("Location NOT FOUND at reference type: " + name() +" line: " + paramInt);
+			return null;
+		}
+		for (Instruction instruction : instructions) {
 			log.debug("Requesting location at reference type: " + name() +" line: " + paramInt);
 			locations.add(LocationImpl.factory(instruction, this, vm));
 			log.debug("Returning just one location in the list .. TODO");

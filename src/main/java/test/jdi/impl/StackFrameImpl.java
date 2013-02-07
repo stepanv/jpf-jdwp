@@ -73,6 +73,7 @@ public class StackFrameImpl implements StackFrame {
 		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
 			instruction = instruction.getNext(threadReference.getThreadInfo());
 		}
+		log.debug("Using instruction: " + instruction + " at line: " + instruction.getLineNumber());
 		LocationImpl location = LocationImpl.factory(instruction, ClassTypeImpl.factory(instruction.getMethodInfo().getClassInfo(), vm), vm);
 		return location;
 	}

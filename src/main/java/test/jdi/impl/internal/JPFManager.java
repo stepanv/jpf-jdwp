@@ -2,9 +2,9 @@ package test.jdi.impl.internal;
 
 import org.apache.log4j.Logger;
 
-import test.jdi.impl.BreakpointEventImpl;
-import test.jdi.impl.BreakpointRequestImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.BreakpointEventImpl;
+import test.jdi.impl.request.BreakpointRequestImpl;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;

@@ -1,5 +1,6 @@
-package test.jdi.impl;
+package test.jdi.impl.event;
 
+import test.jdi.impl.VirtualMachineImpl;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import com.sun.jdi.ThreadReference;

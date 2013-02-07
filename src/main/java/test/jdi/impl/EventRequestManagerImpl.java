@@ -7,6 +7,20 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import test.jdi.impl.internal.BreakpointManager;
+import test.jdi.impl.request.ClassPrepareRequestImpl;
+import test.jdi.impl.request.ClassUnloadRequestImpl;
+import test.jdi.impl.request.ExceptionRequestImpl;
+import test.jdi.impl.request.MethodEntryRequestImpl;
+import test.jdi.impl.request.MethodExitRequestImpl;
+import test.jdi.impl.request.ModificationWatchpointRequestImpl;
+import test.jdi.impl.request.MonitorContendedEnterRequestImpl;
+import test.jdi.impl.request.MonitorContendedEnteredRequestImpl;
+import test.jdi.impl.request.MonitorWaitRequestImpl;
+import test.jdi.impl.request.MonitorWaitedRequestImpl;
+import test.jdi.impl.request.StepRequestImpl;
+import test.jdi.impl.request.ThreadDeathRequestImpl;
+import test.jdi.impl.request.ThreadStartRequestImpl;
+import test.jdi.impl.request.VMDeathRequestImpl;
 
 import com.sun.jdi.Field;
 import com.sun.jdi.Location;
@@ -118,7 +132,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public ClassPrepareRequest createClassPrepareRequest() {
 		
-		ClassPrepareRequest classPrepareRequest = new ClassPrepareRequestImpl(this.vm);
+		ClassPrepareRequest classPrepareRequest = new ClassPrepareRequestImpl(vm);
 		synchronized (classPrepareRequests) {
 			// reqests list needs to be synchronized 
 			// sometimes we can iterate over requests and new request is added and then
@@ -131,7 +145,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	@Override
 	public ClassUnloadRequest createClassUnloadRequest() {
-		ClassUnloadRequest classUnloadRequest = new ClassUnloadRequestImpl();
+		ClassUnloadRequest classUnloadRequest = new ClassUnloadRequestImpl(vm);
 		classUnloadRequests.add(classUnloadRequest);
 		return classUnloadRequest;
 	}
@@ -139,20 +153,20 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public ExceptionRequest createExceptionRequest(ReferenceType arg1,
 			boolean arg2, boolean arg3) {
-		ExceptionRequest exceptionRequest = new ExceptionRequestImpl();
+		ExceptionRequest exceptionRequest = new ExceptionRequestImpl(vm);
 		return exceptionRequest;
 	}
 
 	@Override
 	public MethodEntryRequest createMethodEntryRequest() {
-		MethodEntryRequest methodEntryRequest = new MethodEntryRequestImpl();
+		MethodEntryRequest methodEntryRequest = new MethodEntryRequestImpl(vm);
 		methodEntryRequests.add(methodEntryRequest);
 		return methodEntryRequest;
 	}
 
 	@Override
 	public MethodExitRequest createMethodExitRequest() {
-		MethodExitRequest methodExitRequest = new MethodExitRequestImpl();
+		MethodExitRequest methodExitRequest = new MethodExitRequestImpl(vm);
 		methodExitRequests.add(methodExitRequest);
 		return methodExitRequest;
 	}
@@ -184,7 +198,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public ModificationWatchpointRequest createModificationWatchpointRequest(
 			Field arg1) {
-		ModificationWatchpointRequest modificationWatchpointRequest = new ModificationWatchpointRequestImpl();
+		ModificationWatchpointRequest modificationWatchpointRequest = new ModificationWatchpointRequestImpl(vm);
 		return modificationWatchpointRequest;
 	}
 
@@ -197,21 +211,21 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	@Override
 	public ThreadDeathRequest createThreadDeathRequest() {
-		ThreadDeathRequest threadDeathRequest = new ThreadDeathRequestImpl();
+		ThreadDeathRequest threadDeathRequest = new ThreadDeathRequestImpl(vm);
 		threadDeathRequests.add(threadDeathRequest);
 		return threadDeathRequest;
 	}
 
 	@Override
 	public ThreadStartRequest createThreadStartRequest() {
-		ThreadStartRequest threadStartRequest = new ThreadStartRequestImpl();
+		ThreadStartRequest threadStartRequest = new ThreadStartRequestImpl(vm);
 		threadStartRequests.add(threadStartRequest);
 		return threadStartRequest;
 	}
 
 	@Override
 	public VMDeathRequest createVMDeathRequest() {
-		VMDeathRequest vmDeathRequest = new VMDeathRequestImpl();
+		VMDeathRequest vmDeathRequest = new VMDeathRequestImpl(vm);
 		vmDeathRequests.add(vmDeathRequest);
 		return vmDeathRequest;
 	}
@@ -225,6 +239,7 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	@Override
 	public void deleteEventRequest(EventRequest arg1) {
 		log.debug("method entering");
+		
 
 	}
 

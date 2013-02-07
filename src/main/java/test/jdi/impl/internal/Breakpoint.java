@@ -1,8 +1,8 @@
 package test.jdi.impl.internal;
 
 import gov.nasa.jpf.jvm.bytecode.Instruction;
-import test.jdi.impl.BreakpointRequestImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.request.BreakpointRequestImpl;
 
 public class Breakpoint {
 

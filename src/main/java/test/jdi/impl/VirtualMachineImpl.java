@@ -15,10 +15,15 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import test.jdi.impl.event.ThreadStartEventImpl;
+import test.jdi.impl.event.VMDeathEventImpl;
+import test.jdi.impl.event.VMStartEventImpl;
 import test.jdi.impl.internal.ClassesManager;
 import test.jdi.impl.internal.JDIListener;
 import test.jdi.impl.internal.JPFManager;
 import test.jdi.impl.internal.ThreadManager;
+import test.jdi.impl.request.ThreadStartRequestImpl;
+import test.jdi.impl.request.VMDeathRequestImpl;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
@@ -210,7 +215,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 				if (virtualMachineImpl.eventRequestManager.vmDeathRequests().size() > 0) {
 					vmDeathRequest = virtualMachineImpl.eventRequestManager.vmDeathRequests().remove(0);
 				}
-				VMDeathEvent vmDeath = new VMDeathEventImpl(virtualMachineImpl, vmDeathRequest);
+				VMDeathEvent vmDeath = new VMDeathEventImpl(virtualMachineImpl, (VMDeathRequestImpl) vmDeathRequest);
 				virtualMachineImpl.addEvent(vmDeath);
 			}
 
@@ -264,7 +269,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 			// we also want to send ThreadStarted Event because for the MAIN thread .. JPF listener doesn't work as expected
 			// TODO [for PJA] is this really desired behavior of JPF?
 			if (getEventRequestManager().threadStartRequests().size() > 0) {
-				ThreadStartEvent te = new ThreadStartEventImpl(this, jvm.getCurrentThread(), getEventRequestManager().threadStartRequests().get(0));
+				ThreadStartEvent te = new ThreadStartEventImpl(this, jvm.getCurrentThread(), (ThreadStartRequestImpl) getEventRequestManager().threadStartRequests().get(0));
 				addEvent(te);
 			}
 		
