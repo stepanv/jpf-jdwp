@@ -1,5 +1,6 @@
 package test.jdi.impl.internal;
 
+import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.ThreadDeathEvent;
 import com.sun.jdi.event.ThreadStartEvent;
 
@@ -25,6 +26,10 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void methodEntered (JVM vm) {
 		vmJdi.started();
+		if (vmJdi.getEventRequestManager().methodEntryRequests().size() > 0) {
+			MethodEntryEvent te = new MethodEntryEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().methodEntryRequests().get(0), vmJdi.getJvm().getNextInstruction(), vmJdi.getJvm().getCurrentThread());
+			vmJdi.addEvent(te);
+		}
 	}
 	
 	@Override
@@ -37,9 +42,10 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	
 	@Override
 	public void threadTerminated(JVM vm) {
+		// TODO [for PJA] there is not relation 1:1 between thread start and thread death events. (e.g. one thread can die multiple times) and JDI doesn't know what to do about that.
 		if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0) {
-			ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().get(0));
-			vmJdi.addEvent(td);
+			//ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().get(0));
+			//vmJdi.addEvent(td);
 		}
 	}
 	
