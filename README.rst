@@ -1,7 +1,10 @@
-                      Java PathFinder JPDA README
-                      ===========================
+                      
+===========================
+Java PathFinder JPDA README
+===========================
 
-========General Information about JPF JPDA ==============
+General Information about JPF JPDA 
+==================================
 
 All sources here, at BitBucket such as:
  * gov.nasa.jpf.core
@@ -9,11 +12,13 @@ All sources here, at BitBucket such as:
  * eclipse.jdt.debug
 and including this repository are intended for my thesis.
 
-========Building and Installing =========================
+Building and Installing
+=======================
 
-Right now, everything works with Eclipse Juno 20120920-0800 only!
+**Right now, everything works with Eclipse Juno 20120920-0800 only!**
 
 To prepare Eclipse workspace:
+-----------------------------
 
  1. clone com.sun.jdi and import it into Eclipse as existing project 
  #. clone 'eclipse-plugin' branch of gov.nasa.jpf.core and import it into Eclipse
@@ -25,10 +30,14 @@ If you are having problems installing and running JPF
 please look at the documentation on the wiki at:
 
 To fix Eclipse workspace:
+-------------------------
 
  1. Ensure you have jdk 1.6 installed and available in workspace
  #. Change Missing API baseline Error to Warning in Preferences -> Plug-in Development -> API Baselines
- #. Debug one of the plugins as a Eclipse Application
+
+To run the setup:
+-----------------
+ 1. Debug one of the plugins as a Eclipse Application (i.e. all the plugins must be enabled in the target Eclipse instance)
    a. Don't forget to increase PermSize: -XX:MaxPermSize=256m
  #. When new Eclipse is running, create a java project and debug it.
 
