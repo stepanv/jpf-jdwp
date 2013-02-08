@@ -25,7 +25,7 @@ public class Breakpoint {
 	}
 
 
-	public BreakpointRequestImpl getBr() {
+	public BreakpointRequestImpl getRequest() {
 		return br;
 	}
 

@@ -1,10 +1,16 @@
 package test.jdi.impl.request;
 
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.JVM;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
+import test.jdi.impl.ClassTypeImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.ClassPrepareEventImpl;
+import test.jdi.impl.event.EventImpl;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -53,6 +59,20 @@ public class ClassPrepareRequestImpl extends EventRequestImpl implements ClassPr
 
 	public Set<String> getSourceNameFilter() {
 		return sourceNameFilter;
+	}
+
+	@Override
+	protected EventImpl conditionallyGenerateEvent(VirtualMachineImpl vm, JVM jvm) {
+		ClassInfo lastClassInfo = jvm.getLastClassInfo();
+		
+		for (String classFilter : classFilterString) {
+			if (simpleMatch(lastClassInfo.getName(), classFilter)) {
+				return new ClassPrepareEventImpl(vm,
+						jvm.getLastThreadInfo(), this,
+						ClassTypeImpl.factory(lastClassInfo, vm));
+			}
+		}
+		return null;
 	}
 	
 	

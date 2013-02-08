@@ -1,9 +1,13 @@
 package test.jdi.impl.request;
 
+import gov.nasa.jpf.jvm.JVM;
+
 import org.apache.log4j.Logger;
 
 import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.EventImpl;
+import test.jdi.impl.event.MethodEntryEventImpl;
 
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
@@ -46,6 +50,11 @@ public class MethodEntryRequestImpl extends EventRequestImpl implements MethodEn
 	public void addThreadFilter(ThreadReference thread) {
 		log.debug("method entering");
 
+	}
+
+	@Override
+	protected EventImpl conditionallyGenerateEvent(VirtualMachineImpl vm, JVM jvm) {
+		return new MethodEntryEventImpl(vm, this, jvm.getNextInstruction(), jvm.getCurrentThread());
 	}
 
 }

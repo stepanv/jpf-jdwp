@@ -31,7 +31,7 @@ public class JPFManager {
 		if (breakpoint != null) {
 			log.debug("Breakpoint hit .. supspending all threads");
 			
-			vm.addEvent(new BreakpointEventImpl(breakpoint.getBr(), vm, ti));
+			vm.addEvent(new BreakpointEventImpl(breakpoint.getRequest(), vm, ti));
 			vm.getThreadManager().setIsAtBreakpoint(ti);
 			
 			suspendAllThreads();

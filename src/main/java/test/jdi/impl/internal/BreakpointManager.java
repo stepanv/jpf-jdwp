@@ -47,11 +47,11 @@ public class BreakpointManager {
 		for (Breakpoint breakpoint : breakpoints) {
 			if (instruction.equals(breakpoint.getInstruction())) {
 				try {
-					log.debug(("Breakpoint found for instruction " + instruction + " at " + breakpoint.getBr().location().sourceName() + ":" + breakpoint.getBr().location().lineNumber()));
+					log.debug(("Breakpoint found for instruction " + instruction + " at " + breakpoint.getRequest().location().sourceName() + ":" + breakpoint.getRequest().location().lineNumber()));
 					
 				} catch (AbsentInformationException e) {
 				}
-				if (breakpoint.getBr().isEnabled()) {
+				if (breakpoint.getRequest().isEnabled()) {
 					return breakpoint;
 				} else {
 					log.debug("Breakpoint is disabled");

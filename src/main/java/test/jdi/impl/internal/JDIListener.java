@@ -1,51 +1,34 @@
 package test.jdi.impl.internal;
 
-import java.util.List;
-
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.VMListener;
+import test.jdi.impl.EventRequestManagerImpl;
 import test.jdi.impl.VirtualMachineImpl;
-import test.jdi.impl.event.MethodEntryEventImpl;
-import test.jdi.impl.event.ThreadStartEventImpl;
-import test.jdi.impl.request.MethodEntryRequestImpl; 
-import test.jdi.impl.request.ThreadStartRequestImpl;
-
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.ThreadStartEvent;
-import com.sun.jdi.request.MethodEntryRequest;
-import com.sun.jdi.request.ThreadStartRequest;
 
 public class JDIListener extends ListenerAdapter implements VMListener {
 
 	VirtualMachineImpl vmJdi;
 	JPFManager jpfManager;
 	ClassesManager classesManager;
+	private EventRequestManagerImpl eventRequestManager;
 	
 	public JDIListener(VirtualMachineImpl vmJdi) {
 		this.vmJdi = vmJdi;
 		jpfManager = vmJdi.getJPFManager();
 		classesManager = vmJdi.getClassesManager();
+		eventRequestManager = vmJdi.getEventRequestManager();
 	}
 	
 	@Override
 	public void methodEntered (JVM vm) {
 		vmJdi.started();
-		
-		List<MethodEntryRequest> requests = vmJdi.getEventRequestManager().methodEntryRequests();
-		if (requests.size() > 0) {
-			MethodEntryEvent te = new MethodEntryEventImpl(vmJdi, vm.getLastThreadInfo(), (MethodEntryRequestImpl) requests.get(0), vmJdi.getJvm().getNextInstruction(), vmJdi.getJvm().getCurrentThread());
-			vmJdi.addEvent(te);
-		}
+		eventRequestManager.getMethodEntryRequestContainer().dispatch();
 	}
 	
 	@Override
 	public void threadStarted(JVM vm) {
-		List<ThreadStartRequest> requests = vmJdi.getEventRequestManager().threadStartRequests();
-		if (requests.size() > 0) {
-			ThreadStartEvent te = new ThreadStartEventImpl(vmJdi, vm.getLastThreadInfo(), (ThreadStartRequestImpl) requests.get(0));
-			vmJdi.addEvent(te);
-		}
+		eventRequestManager.getThreadStartRequestContainer().dispatch();
 	}
 	
 	@Override
@@ -60,12 +43,13 @@ public class JDIListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void classLoaded(JVM vm) {
 		classesManager.notifyClassLoadded(vm.getLastClassInfo());
+		eventRequestManager.getClassPrepareRequestContainer().dispatch();
 	}
 	
 	@Override
 	public void executeInstruction(JVM vm) {
 		vmJdi.started();
 		jpfManager.suspendIfSuspended();
-		jpfManager.handlePossibleBreakpointHit();
+		eventRequestManager.getBreakpointRequestContainer().dispatch();
 	}
 }

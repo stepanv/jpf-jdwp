@@ -6,6 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.log4j.Logger;
 
+import test.jdi.impl.event.ThreadStartEventImpl;
 import test.jdi.impl.internal.BreakpointManager;
 import test.jdi.impl.request.AccessWatchpointRequestImpl;
 import test.jdi.impl.request.BreakpointRequestImpl;
@@ -30,6 +31,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.ThreadStartEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -53,10 +55,11 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	public static class EventRequestContainer<R extends EventRequest> {
 
-		private CopyOnWriteArrayList<R> requests;
+		private CopyOnWriteArrayList<R> requests = new CopyOnWriteArrayList<R>();
+		private VirtualMachineImpl vm;
 
-		private EventRequestContainer() {
-			requests= new CopyOnWriteArrayList<R>();
+		private EventRequestContainer(VirtualMachineImpl vm) {
+			this.vm = vm;
 		}
 		
 		public List<R> getUnmodifiableList() {
@@ -83,32 +86,118 @@ public class EventRequestManagerImpl implements EventRequestManager {
 				requests.remove(request);
 			}
 		}
+
+		public void dispatch() {
+			boolean suspendAll = false;
+			
+			synchronized (requests) {
+				for (EventRequest request : requests) {
+					if (request.isEnabled()) {
+						if (((EventRequestImpl)request).dispatch() != EventRequest.SUSPEND_NONE) {
+							suspendAll = true;
+						}	
+					}
+				}
+			}
+			
+			// suspending outside of synchronized block
+			if (suspendAll) {
+				vm.jpfManager.suspendAllThreads();
+			}
+		}
 	}
-	
-	private EventRequestContainer<AccessWatchpointRequest> accessWatchpointRequestContainer = new EventRequestContainer<AccessWatchpointRequest>();
-	private EventRequestContainer<BreakpointRequest> breakpointRequestContainer = new EventRequestContainer<BreakpointRequest>();
-	private EventRequestContainer<ClassPrepareRequest> classPrepareRequestContainer = new EventRequestContainer<ClassPrepareRequest>();
-	private EventRequestContainer<ClassUnloadRequest> classUnloadRequestContainer = new EventRequestContainer<ClassUnloadRequest>();
-	private EventRequestContainer<MethodEntryRequest> methodEntryRequestContainer = new EventRequestContainer<MethodEntryRequest>();
-	private EventRequestContainer<MethodExitRequest> methodExitRequestContainer = new EventRequestContainer<MethodExitRequest>();
-	private EventRequestContainer<ExceptionRequest> exceptionRequestContainer = new EventRequestContainer<ExceptionRequest>();
-	private EventRequestContainer<ModificationWatchpointRequest> modificationWatchpointRequestContainer = new EventRequestContainer<ModificationWatchpointRequest>();
-	private EventRequestContainer<StepRequest> stepRequestContainer = new EventRequestContainer<StepRequest>();
-	private EventRequestContainer<ThreadDeathRequest> threadDeathRequestContainer = new EventRequestContainer<ThreadDeathRequest>();
-	private EventRequestContainer<ThreadStartRequest> threadStartRequestContainer = new EventRequestContainer<ThreadStartRequest>();
-	private EventRequestContainer<VMDeathRequest> vmDeathRequestContainer = new EventRequestContainer<VMDeathRequest>();
-	private EventRequestContainer<MonitorContendedEnteredRequest> monitorContendedEnteredRequestContainer = new EventRequestContainer<MonitorContendedEnteredRequest>();
-	private EventRequestContainer<MonitorContendedEnterRequest> monitorContendedEnterRequestContainer = new EventRequestContainer<MonitorContendedEnterRequest>();
-	private EventRequestContainer<MonitorWaitedRequest> monitorWaitedRequestContainer = new EventRequestContainer<MonitorWaitedRequest>();
-	private EventRequestContainer<MonitorWaitRequest> monitorWaitRequestContainer = new EventRequestContainer<MonitorWaitRequest>();
-	
-	
-	public static final Logger log = org.apache.log4j.Logger.getLogger(EventRequestManagerImpl.class);
 	
 	VirtualMachineImpl vm;
 	
 	public EventRequestManagerImpl(VirtualMachineImpl vm) {
 		this.vm = vm;
+				
+		accessWatchpointRequestContainer = new EventRequestContainer<AccessWatchpointRequest>(vm);
+		breakpointRequestContainer = new EventRequestContainer<BreakpointRequest>(vm);
+		classPrepareRequestContainer = new EventRequestContainer<ClassPrepareRequest>(vm);
+		classUnloadRequestContainer = new EventRequestContainer<ClassUnloadRequest>(vm);
+		methodEntryRequestContainer = new EventRequestContainer<MethodEntryRequest>(vm);
+		methodExitRequestContainer = new EventRequestContainer<MethodExitRequest>(vm);
+		exceptionRequestContainer = new EventRequestContainer<ExceptionRequest>(vm);
+		modificationWatchpointRequestContainer = new EventRequestContainer<ModificationWatchpointRequest>(vm);
+		stepRequestContainer = new EventRequestContainer<StepRequest>(vm);
+		threadDeathRequestContainer = new EventRequestContainer<ThreadDeathRequest>(vm);
+		threadStartRequestContainer = new EventRequestContainer<ThreadStartRequest>(vm);
+		vmDeathRequestContainer = new EventRequestContainer<VMDeathRequest>(vm);
+		monitorContendedEnteredRequestContainer = new EventRequestContainer<MonitorContendedEnteredRequest>(vm);
+		monitorContendedEnterRequestContainer = new EventRequestContainer<MonitorContendedEnterRequest>(vm);
+		monitorWaitedRequestContainer = new EventRequestContainer<MonitorWaitedRequest>(vm);
+		monitorWaitRequestContainer = new EventRequestContainer<MonitorWaitRequest>(vm);
+	}
+	
+	private EventRequestContainer<AccessWatchpointRequest> accessWatchpointRequestContainer;
+	private EventRequestContainer<BreakpointRequest> breakpointRequestContainer;
+	private EventRequestContainer<ClassPrepareRequest> classPrepareRequestContainer;
+	private EventRequestContainer<ClassUnloadRequest> classUnloadRequestContainer;
+	private EventRequestContainer<MethodEntryRequest> methodEntryRequestContainer;
+	private EventRequestContainer<MethodExitRequest> methodExitRequestContainer;
+	private EventRequestContainer<ExceptionRequest> exceptionRequestContainer;
+	private EventRequestContainer<ModificationWatchpointRequest> modificationWatchpointRequestContainer;
+	private EventRequestContainer<StepRequest> stepRequestContainer;
+	private EventRequestContainer<ThreadDeathRequest> threadDeathRequestContainer;
+	private EventRequestContainer<ThreadStartRequest> threadStartRequestContainer;
+	private EventRequestContainer<VMDeathRequest> vmDeathRequestContainer;
+	private EventRequestContainer<MonitorContendedEnteredRequest> monitorContendedEnteredRequestContainer;
+	private EventRequestContainer<MonitorContendedEnterRequest> monitorContendedEnterRequestContainer;
+	private EventRequestContainer<MonitorWaitedRequest> monitorWaitedRequestContainer;
+	private EventRequestContainer<MonitorWaitRequest> monitorWaitRequestContainer;
+	
+	
+	public static final Logger log = org.apache.log4j.Logger.getLogger(EventRequestManagerImpl.class);
+	
+	
+	public EventRequestContainer<AccessWatchpointRequest> getAccessWatchpointRequestContainer() {
+		return accessWatchpointRequestContainer;
+	}
+	public EventRequestContainer<BreakpointRequest> getBreakpointRequestContainer() {
+		return breakpointRequestContainer;
+	}
+	public EventRequestContainer<ClassPrepareRequest> getClassPrepareRequestContainer() {
+		return classPrepareRequestContainer;
+	}
+	public EventRequestContainer<ClassUnloadRequest> getClassUnloadRequestContainer() {
+		return classUnloadRequestContainer;
+	}
+	public EventRequestContainer<MethodEntryRequest> getMethodEntryRequestContainer() {
+		return methodEntryRequestContainer;
+	}
+	public EventRequestContainer<MethodExitRequest> getMethodExitRequestContainer() {
+		return methodExitRequestContainer;
+	}
+	public EventRequestContainer<ExceptionRequest> getExceptionRequestContainer() {
+		return exceptionRequestContainer;
+	}
+	public EventRequestContainer<ModificationWatchpointRequest> getModificationWatchpointRequestContainer() {
+		return modificationWatchpointRequestContainer;
+	}
+	public EventRequestContainer<StepRequest> getStepRequestContainer() {
+		return stepRequestContainer;
+	}
+	public EventRequestContainer<ThreadDeathRequest> getThreadDeathRequestContainer() {
+		return threadDeathRequestContainer;
+	}
+	public EventRequestContainer<ThreadStartRequest> getThreadStartRequestContainer() {
+		return threadStartRequestContainer;
+	}
+	public EventRequestContainer<VMDeathRequest> getVmDeathRequestContainer() {
+		return vmDeathRequestContainer;
+	}
+	public EventRequestContainer<MonitorContendedEnteredRequest> getMonitorContendedEnteredRequestContainer() {
+		return monitorContendedEnteredRequestContainer;
+	}
+	public EventRequestContainer<MonitorContendedEnterRequest> getMonitorContendedEnterRequestContainer() {
+		return monitorContendedEnterRequestContainer;
+	}
+	public EventRequestContainer<MonitorWaitedRequest> getMonitorWaitedRequestContainer() {
+		return monitorWaitedRequestContainer;
+	}
+	public EventRequestContainer<MonitorWaitRequest> getMonitorWaitRequestContainer() {
+		return monitorWaitRequestContainer;
 	}
 	@Override
 	public VirtualMachine virtualMachine() {

@@ -156,14 +156,7 @@ public class VirtualMachineImpl extends VirtualMachineBaseImpl {
 	public void resume() {
 		log.debug("Entering method 'resume'");
 
-		synchronized (started) {
-			if (!started) {
-				suspendOnStart = false;
-			} else {
-				jpfManager.resumeAllThreads();
-			}
-		}
-
+		jpfManager.resumeAllThreads();
 	}
 
 	private EventQueueImpl eventQueue = new EventQueueImpl(this);

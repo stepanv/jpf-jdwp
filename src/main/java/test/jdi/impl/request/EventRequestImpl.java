@@ -1,11 +1,14 @@
 package test.jdi.impl.request;
 
+import gov.nasa.jpf.jvm.JVM;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.EventImpl;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.ClassUnloadRequest;
@@ -79,6 +82,48 @@ public abstract class EventRequestImpl implements EventRequest {
 
 	public void remove() {
 		requestContainer.safelyRemove(this);
+	}
+	
+	
+	/**
+	 * Generates an event if request decides so.
+	 * TODO should be abstract and implemented in all subtypes
+	 * 
+	 * @param vm
+	 * @param jvm
+	 * @return Event instance if request satisfied, otherwise null 
+	 */
+	protected EventImpl conditionallyGenerateEvent(VirtualMachineImpl vm, JVM jvm) {
+		return null;
+	}
+	
+	final public int dispatch() {
+		VirtualMachineImpl vm = (VirtualMachineImpl) virtualMachine();
+		JVM jvm = vm.getJvm();
+
+		EventImpl event = conditionallyGenerateEvent(vm, jvm);
+		if (event != null) {
+			vm.addEvent(event);
+			return policy;
+		}
+		return SUSPEND_NONE;
+	}
+	
+	boolean simpleMatch(String text, String pattern) {
+		String[] subPatterns = pattern.split("\\*");
+
+		// Iterate over the cards.
+		for (String subPattern : subPatterns) {
+			int index = text.indexOf(subPattern);
+
+			if (index == -1) {
+				return false;
+			}
+
+			text = text.substring(index + subPattern.length());
+		}
+
+		return true;
 	}
 
 }

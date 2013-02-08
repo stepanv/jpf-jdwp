@@ -20,7 +20,7 @@ public class MethodEntryEventImpl extends EventImpl implements MethodEntryEvent 
 	private ThreadInfo ti;
 
 	public MethodEntryEventImpl(VirtualMachineImpl vmJdi,
-			ThreadInfo lastThreadInfo, MethodEntryRequestImpl methodEntryRequest, Instruction instruction, ThreadInfo ti) {
+			MethodEntryRequestImpl methodEntryRequest, Instruction instruction, ThreadInfo ti) {
 		super(vmJdi, methodEntryRequest);
 		this.instruction = instruction;
 		this.ti = ti;

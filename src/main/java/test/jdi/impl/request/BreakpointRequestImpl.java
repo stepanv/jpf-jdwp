@@ -1,15 +1,20 @@
 package test.jdi.impl.request;
 
-import java.util.List;
+import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import org.apache.log4j.Logger;
 
 import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.LocationImpl;
 import test.jdi.impl.VirtualMachineImpl;
+import test.jdi.impl.event.BreakpointEventImpl;
+import test.jdi.impl.event.EventImpl;
 import test.jdi.impl.internal.Breakpoint;
 import test.jdi.impl.internal.BreakpointManager;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
@@ -27,6 +32,8 @@ public class BreakpointRequestImpl extends EventRequestImpl implements Breakpoin
 		this.location = location;
 		this.breakpointManager = breakpointManager;
 		this.breakpoint = new Breakpoint(this, vm, location.getInstruction());
+		
+		this.setSuspendPolicy(SUSPEND_ALL);
 		
 		breakpointManager.add(this.breakpoint);
 	}
@@ -61,6 +68,27 @@ public class BreakpointRequestImpl extends EventRequestImpl implements Breakpoin
 	}
 	public Breakpoint getBreakpoint() {
 		return breakpoint;
+	}
+
+
+	@Override
+	public EventImpl conditionallyGenerateEvent(VirtualMachineImpl vm, JVM jvm) {
+		ThreadInfo currentThread = jvm.getCurrentThread();
+		Instruction nextInstruction = jvm.getNextInstruction();
+		
+		if (nextInstruction.equals(this.breakpoint.getInstruction())) {
+			try {
+				log.debug("Breakpoint HIT for instruction " + nextInstruction + " at " + breakpoint.getRequest().location().sourceName() + ":" + breakpoint.getRequest().location().lineNumber());
+			} catch (AbsentInformationException e) {
+				log.debug("Breakpoint HIT for instruction " + nextInstruction);
+			}
+		
+			vm.getThreadManager().setIsAtBreakpoint(currentThread);
+			
+			return new BreakpointEventImpl(breakpoint.getRequest(), vm, currentThread);
+		}
+		
+		return null;
 	}
 
 }
