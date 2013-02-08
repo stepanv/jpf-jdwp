@@ -1,8 +1,8 @@
 package test.jdi.impl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -53,10 +53,10 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	public static class EventRequestContainer<R extends EventRequest> {
 
-		private ArrayList<R> requests;
+		private CopyOnWriteArrayList<R> requests;
 
 		private EventRequestContainer() {
-			requests= new ArrayList<R>();
+			requests= new CopyOnWriteArrayList<R>();
 		}
 		
 		public List<R> getUnmodifiableList() {

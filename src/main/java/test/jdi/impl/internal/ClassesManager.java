@@ -1,23 +1,21 @@
 package test.jdi.impl.internal;
 
+import gov.nasa.jpf.jvm.ClassInfo;
+
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import org.apache.log4j.Logger;
 
-import com.sun.jdi.event.ClassPrepareEvent;
-import com.sun.jdi.event.ThreadStartEvent;
-import com.sun.jdi.request.ClassPrepareRequest;
-
-import gov.nasa.jpf.jvm.ClassInfo;
 import test.jdi.impl.ClassTypeImpl;
-import test.jdi.impl.ReferenceTypeImpl;
 import test.jdi.impl.VirtualMachineImpl;
 import test.jdi.impl.event.ClassPrepareEventImpl;
-import test.jdi.impl.event.ThreadStartEventImpl;
 import test.jdi.impl.request.ClassPrepareRequestImpl;
+
+import com.sun.jdi.event.ClassPrepareEvent;
+import com.sun.jdi.request.ClassPrepareRequest;
 
 public class ClassesManager {
 
@@ -66,7 +64,9 @@ public class ClassesManager {
 		
 		if (classPrepareRequests.size() > 0) {
 			synchronized (classPrepareRequests) {
-				for (ClassPrepareRequest request : classPrepareRequests) {
+				
+				for (Iterator<ClassPrepareRequest> iterator = classPrepareRequests.iterator(); iterator.hasNext(); ) {
+					ClassPrepareRequest request = iterator.next();
 					ClassPrepareRequestImpl requestImpl = (ClassPrepareRequestImpl) request;
 					for (String classFilter : requestImpl
 							.getClassFilterString()) {
