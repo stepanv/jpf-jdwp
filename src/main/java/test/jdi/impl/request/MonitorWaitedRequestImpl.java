@@ -1,5 +1,6 @@
 package test.jdi.impl.request;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.ObjectReference;
@@ -9,9 +10,8 @@ import com.sun.jdi.request.MonitorWaitedRequest;
 
 public class MonitorWaitedRequestImpl extends EventRequestImpl implements MonitorWaitedRequest {
 
-	public MonitorWaitedRequestImpl(VirtualMachineImpl vm) {
-		super(vm);
-		// TODO Auto-generated constructor stub
+	public MonitorWaitedRequestImpl(VirtualMachineImpl vm, EventRequestContainer<MonitorWaitedRequest> monitorWaitedRequestContainer) {
+		super(vm, monitorWaitedRequestContainer);
 	}
 
 	@Override

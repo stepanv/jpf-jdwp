@@ -1,5 +1,6 @@
 package test.jdi.impl.request;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.ObjectReference;
@@ -10,8 +11,8 @@ import com.sun.jdi.request.MonitorContendedEnterRequest;
 public class MonitorContendedEnterRequestImpl extends EventRequestImpl implements
 		MonitorContendedEnterRequest {
 
-	public MonitorContendedEnterRequestImpl(VirtualMachineImpl vm) {
-		super(vm);
+	public MonitorContendedEnterRequestImpl(VirtualMachineImpl vm, EventRequestContainer<MonitorContendedEnterRequest> monitorContendedEnterRequestContainer) {
+		super(vm, monitorContendedEnterRequestContainer);
 	}
 
 	@Override

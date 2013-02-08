@@ -3,15 +3,19 @@ package test.jdi.impl.request;
 import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
+import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.request.MonitorWaitRequest;
+import com.sun.jdi.request.AccessWatchpointRequest;
+import com.sun.jdi.request.EventRequest;
 
-public class MonitorWaitRequestImpl extends EventRequestImpl implements MonitorWaitRequest {
+public class AccessWatchpointRequestImpl extends EventRequestImpl implements
+		AccessWatchpointRequest {
 
-	public MonitorWaitRequestImpl(VirtualMachineImpl vm, EventRequestContainer<MonitorWaitRequest> monitorWaitRequestContainer) {
-		super(vm, monitorWaitRequestContainer);
+	public AccessWatchpointRequestImpl(VirtualMachineImpl vm,
+			EventRequestContainer<? extends EventRequest> requestContainer) {
+		super(vm, requestContainer);
 	}
 
 	@Override
@@ -42,6 +46,12 @@ public class MonitorWaitRequestImpl extends EventRequestImpl implements MonitorW
 	public void addThreadFilter(ThreadReference thread) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public Field field() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

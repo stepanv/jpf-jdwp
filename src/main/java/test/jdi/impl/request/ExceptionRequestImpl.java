@@ -2,6 +2,7 @@ package test.jdi.impl.request;
 
 import org.apache.log4j.Logger;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.ObjectReference;
@@ -11,8 +12,8 @@ import com.sun.jdi.request.ExceptionRequest;
 
 public class ExceptionRequestImpl extends EventRequestImpl implements ExceptionRequest {
 
-	public ExceptionRequestImpl(VirtualMachineImpl vm) {
-		super(vm);
+	public ExceptionRequestImpl(VirtualMachineImpl vm, EventRequestContainer<ExceptionRequest> exceptionRequestContainer) {
+		super(vm, exceptionRequestContainer);
 	}
 
 	public static final Logger log = org.apache.log4j.Logger.getLogger(ExceptionRequestImpl.class);

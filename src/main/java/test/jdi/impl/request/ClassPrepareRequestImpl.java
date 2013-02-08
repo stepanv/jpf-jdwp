@@ -3,15 +3,17 @@ package test.jdi.impl.request;
 import java.util.HashSet;
 import java.util.Set;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.request.ClassPrepareRequest;
+import com.sun.jdi.request.EventRequest;
 
 public class ClassPrepareRequestImpl extends EventRequestImpl implements ClassPrepareRequest {
 
-	public ClassPrepareRequestImpl(VirtualMachineImpl vm) {
-		super(vm);
+	public ClassPrepareRequestImpl(VirtualMachineImpl vm, EventRequestContainer<? extends EventRequest> classPrepareRequestContainer) {
+		super(vm, classPrepareRequestContainer);
 	}
 
 	@Override

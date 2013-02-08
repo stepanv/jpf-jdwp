@@ -13,6 +13,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.request.BreakpointRequest;
 
 import test.jdi.impl.EventRequestManagerImpl;
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.LocationImpl;
 import test.jdi.impl.VirtualMachineImpl;
 import test.jdi.impl.request.BreakpointRequestImpl;
@@ -26,11 +27,6 @@ public class BreakpointManager {
 	public static final Logger log = org.apache.log4j.Logger.getLogger(BreakpointManager.class);
 	
 	private List<Breakpoint> breakpoints = new ArrayList<Breakpoint>();
-	private List<BreakpointRequestImpl> breakpointRequests = new ArrayList<BreakpointRequestImpl>();
-
-	public List<BreakpointRequestImpl> getBreakpointRequests() {
-		return breakpointRequests;
-	}
 
 	private EventRequestManagerImpl eventRequestManager;
 	private VirtualMachineImpl vm;
@@ -52,25 +48,25 @@ public class BreakpointManager {
 			if (instruction.equals(breakpoint.getInstruction())) {
 				try {
 					log.debug(("Breakpoint found for instruction " + instruction + " at " + breakpoint.getBr().location().sourceName() + ":" + breakpoint.getBr().location().lineNumber()));
+					
 				} catch (AbsentInformationException e) {
 				}
-				return breakpoint;
+				if (breakpoint.getBr().isEnabled()) {
+					return breakpoint;
+				} else {
+					log.debug("Breakpoint is disabled");
+					return null;
+				}
 			}
 		}
 		return null;
 	}
+	
+	public void remove(Breakpoint breakpoint) {
+		breakpoints.remove(breakpoint);
+	}
 
-	public BreakpointRequest createBreakpoint(Location location) {
-		
-		LocationImpl locationImpl = (LocationImpl)location;
-		
-		BreakpointRequestImpl br = new BreakpointRequestImpl(this.vm, locationImpl);
-		Breakpoint b = new Breakpoint(br, this.vm, locationImpl.getInstruction());
-		br.setBreakpoint(b);
-		
-		breakpoints.add(b);
-		breakpointRequests.add(br);
-		
-		return br;
+	public void add(Breakpoint breakpoint) {
+		breakpoints.add(breakpoint);
 	}
 }

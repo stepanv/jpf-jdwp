@@ -32,10 +32,12 @@ public class ClassesManager {
 
 	Set<ClassInfo> loadedClasses = new HashSet<ClassInfo>();
 
-	private void generateClassPrepareEvent(ClassPrepareRequestImpl request, ClassInfo classInfo) {
+	private void generateClassPrepareEvent(ClassPrepareRequestImpl request,
+			ClassInfo classInfo) {
 		log.debug("Generating class prepare event for :" + request);
 		ClassPrepareEvent te = new ClassPrepareEventImpl(virtualMachine,
-				virtualMachine.getJvm().getLastThreadInfo(), request, ClassTypeImpl.factory(classInfo, virtualMachine));
+				virtualMachine.getJvm().getLastThreadInfo(), request,
+				ClassTypeImpl.factory(classInfo, virtualMachine));
 		virtualMachine.addEvent(te);
 	}
 
@@ -58,17 +60,20 @@ public class ClassesManager {
 
 	void notifyClassLoadded(ClassInfo classInfo) {
 		loadedClasses.add(classInfo);
-
-		if (virtualMachine.getEventRequestManager().classPrepareRequests()
-				.size() > 0) {
-			synchronized (virtualMachine
-					.getEventRequestManager().classPrepareRequests()) {
-				for (ClassPrepareRequest request : virtualMachine
-						.getEventRequestManager().classPrepareRequests()) {
+		
+		List<ClassPrepareRequest> classPrepareRequests = virtualMachine
+				.getEventRequestManager().classPrepareRequests();
+		
+		if (classPrepareRequests.size() > 0) {
+			synchronized (classPrepareRequests) {
+				for (ClassPrepareRequest request : classPrepareRequests) {
 					ClassPrepareRequestImpl requestImpl = (ClassPrepareRequestImpl) request;
-					for (String classFilter : requestImpl.getClassFilterString()) {
+					for (String classFilter : requestImpl
+							.getClassFilterString()) {
 						if (simpleMatch(classInfo.getName(), classFilter)) {
-							generateClassPrepareEvent((ClassPrepareRequestImpl)request, classInfo);
+							generateClassPrepareEvent(
+									(ClassPrepareRequestImpl) request,
+									classInfo);
 						}
 					}
 				}

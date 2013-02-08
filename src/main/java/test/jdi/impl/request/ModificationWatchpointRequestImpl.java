@@ -1,5 +1,6 @@
 package test.jdi.impl.request;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.Field;
@@ -11,8 +12,8 @@ import com.sun.jdi.request.ModificationWatchpointRequest;
 public class ModificationWatchpointRequestImpl extends EventRequestImpl implements
 		ModificationWatchpointRequest {
 
-	public ModificationWatchpointRequestImpl(VirtualMachineImpl vm) {
-		super(vm);
+	public ModificationWatchpointRequestImpl(VirtualMachineImpl vm, EventRequestContainer<ModificationWatchpointRequest> modificationWatchpointRequestContainer) {
+		super(vm, modificationWatchpointRequestContainer);
 	}
 
 	@Override

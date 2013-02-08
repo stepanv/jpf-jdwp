@@ -1,9 +1,14 @@
 package test.jdi.impl.request;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
+import test.jdi.impl.LocationImpl;
 import test.jdi.impl.VirtualMachineImpl;
 import test.jdi.impl.internal.Breakpoint;
+import test.jdi.impl.internal.BreakpointManager;
 
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectReference;
@@ -15,10 +20,15 @@ public class BreakpointRequestImpl extends EventRequestImpl implements Breakpoin
 	public static final Logger log = org.apache.log4j.Logger.getLogger(BreakpointRequestImpl.class);
 	private Location location;
 	private Breakpoint breakpoint;
+	private BreakpointManager breakpointManager;
 	
-	public BreakpointRequestImpl(VirtualMachineImpl vm, Location location) {
-		super(vm);
+	public BreakpointRequestImpl(VirtualMachineImpl vm, LocationImpl location, EventRequestContainer<BreakpointRequest> breakpointRequestContainer, BreakpointManager breakpointManager) {
+		super(vm, breakpointRequestContainer);
 		this.location = location;
+		this.breakpointManager = breakpointManager;
+		this.breakpoint = new Breakpoint(this, vm, location.getInstruction());
+		
+		breakpointManager.add(this.breakpoint);
 	}
 	
 
@@ -37,6 +47,12 @@ public class BreakpointRequestImpl extends EventRequestImpl implements Breakpoin
 	@Override
 	public Location location() {
 		return location;
+	}
+	
+	@Override
+	public void remove() {
+		super.remove();
+		breakpointManager.remove(breakpoint);
 	}
 
 	

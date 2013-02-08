@@ -1,71 +1,18 @@
 package test.jdi.impl.request;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
+import test.jdi.impl.VirtualMachineImpl;
+
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.StepRequest;
 
-public class StepRequestImpl implements StepRequest {
+public class StepRequestImpl extends EventRequestImpl implements StepRequest {
 
-	@Override
-	public void addCountFilter(int count) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void disable() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void enable() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public Object getProperty(Object key) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isEnabled() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void putProperty(Object key, Object value) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setEnabled(boolean val) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setSuspendPolicy(int policy) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public int suspendPolicy() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		// TODO Auto-generated method stub
-		return null;
+	public StepRequestImpl(VirtualMachineImpl vm,
+			EventRequestContainer<StepRequest> stepRequestContainer) {
+		super(vm, stepRequestContainer);
 	}
 
 	@Override

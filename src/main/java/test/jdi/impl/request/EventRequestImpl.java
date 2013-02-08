@@ -1,11 +1,14 @@
 package test.jdi.impl.request;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import test.jdi.impl.EventRequestManagerImpl.EventRequestContainer;
 import test.jdi.impl.VirtualMachineImpl;
 
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.request.ClassUnloadRequest;
 import com.sun.jdi.request.EventRequest;
 
 public abstract class EventRequestImpl implements EventRequest {
@@ -14,9 +17,11 @@ public abstract class EventRequestImpl implements EventRequest {
 	private boolean enabled;
 	private int policy = 0;
 	private Map<Object, Object> properties =  new HashMap<Object, Object>();
+	private EventRequestContainer<? extends EventRequest> requestContainer;
 
-	public EventRequestImpl(VirtualMachineImpl vm) {
+	public EventRequestImpl(VirtualMachineImpl vm, EventRequestContainer<? extends EventRequest> requestContainer) {
 		this.vm = vm;
+		this.requestContainer = requestContainer;
 	}
 	
 	@Override
@@ -70,6 +75,10 @@ public abstract class EventRequestImpl implements EventRequest {
 	@Override
 	public int suspendPolicy() {
 		return policy;
+	}
+
+	public void remove() {
+		requestContainer.safelyRemove(this);
 	}
 
 }

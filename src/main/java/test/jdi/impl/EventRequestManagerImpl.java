@@ -7,8 +7,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import test.jdi.impl.internal.BreakpointManager;
+import test.jdi.impl.request.AccessWatchpointRequestImpl;
+import test.jdi.impl.request.BreakpointRequestImpl;
 import test.jdi.impl.request.ClassPrepareRequestImpl;
 import test.jdi.impl.request.ClassUnloadRequestImpl;
+import test.jdi.impl.request.EventRequestImpl;
 import test.jdi.impl.request.ExceptionRequestImpl;
 import test.jdi.impl.request.MethodEntryRequestImpl;
 import test.jdi.impl.request.MethodExitRequestImpl;
@@ -48,32 +51,57 @@ import com.sun.jdi.request.VMDeathRequest;
 
 public class EventRequestManagerImpl implements EventRequestManager {
 
-	private static class EventRequestType<RT extends EventRequest> {
+	public static class EventRequestContainer<R extends EventRequest> {
 
-		private ArrayList<RT> requests;
+		private ArrayList<R> requests;
 
-		private EventRequestType() {
-			requests= new ArrayList<RT>();
+		private EventRequestContainer() {
+			requests= new ArrayList<R>();
 		}
 		
-		public List<RT> getUnmodifiableList() {
-			return Collections.unmodifiableList(requests);
+		public List<R> getUnmodifiableList() {
+			synchronized (requests) {
+				return Collections.unmodifiableList(requests);
+			}
+		}
+		
+		public R safelyAdd(R request) {
+			synchronized (requests) {
+				requests.add(request);
+			}
+			return request;
 		}
 		
 		public void clear() {
-			requests.clear();
+			synchronized (requests) {
+				requests.clear();
+			}
+		}
+
+		public void safelyRemove(EventRequest request) {
+			synchronized (requests) {
+				requests.remove(request);
+			}
 		}
 	}
 	
-	private List<ThreadStartRequest> threadStartRequests = new ArrayList<ThreadStartRequest>();
-	private List<ThreadDeathRequest> threadDeathRequests = new ArrayList<ThreadDeathRequest>();
-	private List<MethodEntryRequest> methodEntryRequests = new ArrayList<MethodEntryRequest>();
-	private List<MethodExitRequest> methodExitRequests = new ArrayList<MethodExitRequest>();
-	private List<VMDeathRequest> vmDeathRequests = new ArrayList<VMDeathRequest>();
+	private EventRequestContainer<AccessWatchpointRequest> accessWatchpointRequestContainer = new EventRequestContainer<AccessWatchpointRequest>();
+	private EventRequestContainer<BreakpointRequest> breakpointRequestContainer = new EventRequestContainer<BreakpointRequest>();
+	private EventRequestContainer<ClassPrepareRequest> classPrepareRequestContainer = new EventRequestContainer<ClassPrepareRequest>();
+	private EventRequestContainer<ClassUnloadRequest> classUnloadRequestContainer = new EventRequestContainer<ClassUnloadRequest>();
+	private EventRequestContainer<MethodEntryRequest> methodEntryRequestContainer = new EventRequestContainer<MethodEntryRequest>();
+	private EventRequestContainer<MethodExitRequest> methodExitRequestContainer = new EventRequestContainer<MethodExitRequest>();
+	private EventRequestContainer<ExceptionRequest> exceptionRequestContainer = new EventRequestContainer<ExceptionRequest>();
+	private EventRequestContainer<ModificationWatchpointRequest> modificationWatchpointRequestContainer = new EventRequestContainer<ModificationWatchpointRequest>();
+	private EventRequestContainer<StepRequest> stepRequestContainer = new EventRequestContainer<StepRequest>();
+	private EventRequestContainer<ThreadDeathRequest> threadDeathRequestContainer = new EventRequestContainer<ThreadDeathRequest>();
+	private EventRequestContainer<ThreadStartRequest> threadStartRequestContainer = new EventRequestContainer<ThreadStartRequest>();
+	private EventRequestContainer<VMDeathRequest> vmDeathRequestContainer = new EventRequestContainer<VMDeathRequest>();
+	private EventRequestContainer<MonitorContendedEnteredRequest> monitorContendedEnteredRequestContainer = new EventRequestContainer<MonitorContendedEnteredRequest>();
+	private EventRequestContainer<MonitorContendedEnterRequest> monitorContendedEnterRequestContainer = new EventRequestContainer<MonitorContendedEnterRequest>();
+	private EventRequestContainer<MonitorWaitedRequest> monitorWaitedRequestContainer = new EventRequestContainer<MonitorWaitedRequest>();
+	private EventRequestContainer<MonitorWaitRequest> monitorWaitRequestContainer = new EventRequestContainer<MonitorWaitRequest>();
 	
-	
-	private List<ClassPrepareRequest> classPrepareRequests = new ArrayList<ClassPrepareRequest>();
-	private List<ClassUnloadRequest> classUnloadRequests = new ArrayList<ClassUnloadRequest>();
 	
 	public static final Logger log = org.apache.log4j.Logger.getLogger(EventRequestManagerImpl.class);
 	
@@ -96,27 +124,25 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	@Override
 	public List<BreakpointRequest> breakpointRequests() {
-		log.debug("method entering");
-		return null; //Collections.unmodifiableList(breakpointManager.getBreakpointRequests());
+		return breakpointRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<ClassPrepareRequest> classPrepareRequests() {
-		return classPrepareRequests;
+		return classPrepareRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<ClassUnloadRequest> classUnloadRequests() {
-		return classUnloadRequests;
-	}
-
-	@Override
-	public AccessWatchpointRequest createAccessWatchpointRequest(Field arg1) {
-		log.debug("method entering");
-		return null;
+		return classUnloadRequestContainer.getUnmodifiableList();
 	}
 	
-	BreakpointManager breakpointManager = new BreakpointManager(this, this.vm);
+	@Override
+	public AccessWatchpointRequest createAccessWatchpointRequest(Field arg1) {
+		return accessWatchpointRequestContainer.safelyAdd(new AccessWatchpointRequestImpl(vm, accessWatchpointRequestContainer));
+	}
+	
+	BreakpointManager breakpointManager = new BreakpointManager(this, vm);
 
 	public BreakpointManager getBreakpointManager() {
 		return breakpointManager;
@@ -124,110 +150,80 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	
 	@Override
 	public BreakpointRequest createBreakpointRequest(Location location) {
-		log.debug("method entering");
-		
-		return breakpointManager.createBreakpoint(location);
+		return breakpointRequestContainer.safelyAdd(new BreakpointRequestImpl(this.vm, (LocationImpl)location, breakpointRequestContainer, breakpointManager));
 	}
 
 	@Override
 	public ClassPrepareRequest createClassPrepareRequest() {
-		
-		ClassPrepareRequest classPrepareRequest = new ClassPrepareRequestImpl(vm);
-		synchronized (classPrepareRequests) {
-			// reqests list needs to be synchronized 
-			// sometimes we can iterate over requests and new request is added and then
-			// concurrent change of list exception is thrown by jre
-			// TODO synchronized should be all the lists
-			classPrepareRequests.add(classPrepareRequest);
-		}
-		return classPrepareRequest;
+		return classPrepareRequestContainer.safelyAdd(new ClassPrepareRequestImpl(vm, classPrepareRequestContainer));
 	}
 
 	@Override
 	public ClassUnloadRequest createClassUnloadRequest() {
-		ClassUnloadRequest classUnloadRequest = new ClassUnloadRequestImpl(vm);
-		classUnloadRequests.add(classUnloadRequest);
-		return classUnloadRequest;
+		return classUnloadRequestContainer.safelyAdd(new ClassUnloadRequestImpl(vm, classUnloadRequestContainer));
 	}
 
 	@Override
 	public ExceptionRequest createExceptionRequest(ReferenceType arg1,
 			boolean arg2, boolean arg3) {
-		ExceptionRequest exceptionRequest = new ExceptionRequestImpl(vm);
-		return exceptionRequest;
+		return exceptionRequestContainer.safelyAdd(new ExceptionRequestImpl(vm, exceptionRequestContainer));
 	}
 
 	@Override
 	public MethodEntryRequest createMethodEntryRequest() {
-		MethodEntryRequest methodEntryRequest = new MethodEntryRequestImpl(vm);
-		methodEntryRequests.add(methodEntryRequest);
-		return methodEntryRequest;
+		return methodEntryRequestContainer.safelyAdd(new MethodEntryRequestImpl(vm, methodEntryRequestContainer));
 	}
 
 	@Override
 	public MethodExitRequest createMethodExitRequest() {
-		MethodExitRequest methodExitRequest = new MethodExitRequestImpl(vm);
-		methodExitRequests.add(methodExitRequest);
-		return methodExitRequest;
+		return methodExitRequestContainer.safelyAdd(new MethodExitRequestImpl(vm, methodExitRequestContainer));
 	}
 
 	@Override
 	public MonitorContendedEnteredRequest createMonitorContendedEnteredRequest() {
-		MonitorContendedEnteredRequest monitorContendedEnteredRequest = new MonitorContendedEnteredRequestImpl();
-		return monitorContendedEnteredRequest;
+		return monitorContendedEnteredRequestContainer.safelyAdd(new MonitorContendedEnteredRequestImpl(vm, monitorContendedEnteredRequestContainer));
 	}
 
 	@Override
 	public MonitorContendedEnterRequest createMonitorContendedEnterRequest() {
-		MonitorContendedEnterRequest monitorContendedEnterRequest = new MonitorContendedEnterRequestImpl();
-		return monitorContendedEnterRequest;
+		return monitorContendedEnterRequestContainer.safelyAdd(new MonitorContendedEnterRequestImpl(vm, monitorContendedEnterRequestContainer));
 	}
 
 	@Override
 	public MonitorWaitedRequest createMonitorWaitedRequest() {
-		MonitorWaitedRequest monitorWaitedRequest = new MonitorWaitedRequestImpl();
-		return monitorWaitedRequest;
+		return monitorWaitedRequestContainer.safelyAdd(new MonitorWaitedRequestImpl(vm, monitorWaitedRequestContainer));
 	}
 
 	@Override
 	public MonitorWaitRequest createMonitorWaitRequest() {
-		MonitorWaitRequest monitorWaitRequest = new MonitorWaitRequestImpl();
-		return monitorWaitRequest;
+		return monitorWaitRequestContainer.safelyAdd(new MonitorWaitRequestImpl(vm, monitorWaitRequestContainer));
 	}
 
 	@Override
 	public ModificationWatchpointRequest createModificationWatchpointRequest(
 			Field arg1) {
-		ModificationWatchpointRequest modificationWatchpointRequest = new ModificationWatchpointRequestImpl(vm);
-		return modificationWatchpointRequest;
+		return modificationWatchpointRequestContainer.safelyAdd(new ModificationWatchpointRequestImpl(vm, modificationWatchpointRequestContainer));
 	}
 
 	@Override
 	public StepRequest createStepRequest(ThreadReference arg1, int arg2,
 			int arg3) {
-		StepRequest stepRequest = new StepRequestImpl();
-		return stepRequest;
+		return stepRequestContainer.safelyAdd(new StepRequestImpl(vm, stepRequestContainer));
 	}
 
 	@Override
 	public ThreadDeathRequest createThreadDeathRequest() {
-		ThreadDeathRequest threadDeathRequest = new ThreadDeathRequestImpl(vm);
-		threadDeathRequests.add(threadDeathRequest);
-		return threadDeathRequest;
+		return threadDeathRequestContainer.safelyAdd(new ThreadDeathRequestImpl(vm, threadDeathRequestContainer));
 	}
 
 	@Override
 	public ThreadStartRequest createThreadStartRequest() {
-		ThreadStartRequest threadStartRequest = new ThreadStartRequestImpl(vm);
-		threadStartRequests.add(threadStartRequest);
-		return threadStartRequest;
+		return threadStartRequestContainer.safelyAdd(new ThreadStartRequestImpl(vm, threadDeathRequestContainer));
 	}
 
 	@Override
 	public VMDeathRequest createVMDeathRequest() {
-		VMDeathRequest vmDeathRequest = new VMDeathRequestImpl(vm);
-		vmDeathRequests.add(vmDeathRequest);
-		return vmDeathRequest;
+		return vmDeathRequestContainer.safelyAdd(new VMDeathRequestImpl(vm, vmDeathRequestContainer));
 	}
 
 	@Override
@@ -240,12 +236,15 @@ public class EventRequestManagerImpl implements EventRequestManager {
 	public void deleteEventRequest(EventRequest arg1) {
 		log.debug("method entering");
 		
-
+		((EventRequestImpl)arg1).remove();
 	}
 
 	@Override
 	public void deleteEventRequests(List<? extends EventRequest> arg1) {
 		log.debug("method entering");
+		for (EventRequest request : arg1) {
+			this.deleteEventRequest(request);
+		}
 
 	}
 
@@ -257,68 +256,57 @@ public class EventRequestManagerImpl implements EventRequestManager {
 
 	@Override
 	public List<MethodEntryRequest> methodEntryRequests() {
-		log.debug("method entering");
-		return methodEntryRequests;
+		return methodEntryRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<MethodExitRequest> methodExitRequests() {
-		log.debug("method entering");
-		return methodExitRequests;
+		return methodExitRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<ModificationWatchpointRequest> modificationWatchpointRequests() {
-		log.debug("method entering");
-		return null;
+		return modificationWatchpointRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<StepRequest> stepRequests() {
-		log.debug("method entering");
-		return null;
+		return stepRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<ThreadDeathRequest> threadDeathRequests() {
-		log.debug("method entering");
-		return threadDeathRequests;
+		return threadDeathRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<ThreadStartRequest> threadStartRequests() {
-		log.debug("method entering");
-		return threadStartRequests;
+		return threadStartRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<VMDeathRequest> vmDeathRequests() {
-		log.debug("method entering");
-		return vmDeathRequests;
+		return vmDeathRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<MonitorContendedEnterRequest> monitorContendedEnterRequests() {
-		log.debug("method entering");
-		return null;
+		return monitorContendedEnterRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<MonitorContendedEnteredRequest> monitorContendedEnteredRequests() {
-		log.debug("method entering");
-		return null;
+		return monitorContendedEnteredRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<MonitorWaitRequest> monitorWaitRequests() {
-		log.debug("method entering");
-		return null;
+		return monitorWaitRequestContainer.getUnmodifiableList();
 	}
 
 	@Override
 	public List<MonitorWaitedRequest> monitorWaitedRequests() {
-		log.debug("method entering");
-		return null;
+		return monitorWaitedRequestContainer.getUnmodifiableList();
 	}
 	
 	
