@@ -1,13 +1,10 @@
 package test.jdi.impl;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -15,26 +12,23 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
 
-public class LocationImpl implements Location {
+public class LocationImpl extends MirrorImpl implements Location {
 
 	public static final Logger log = org.apache.log4j.Logger.getLogger(LocationImpl.class);
 	private Instruction instruction;
-	private VirtualMachine vm;
 	private ReferenceTypeImpl referenceType;
 	
 	
-	private LocationImpl(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
+	private LocationImpl(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachineImpl vm) {
+		super(vm);
 		this.instruction = instruction;
-		this.vm = vm;
 		this.referenceType = referenceTypeImpl;
 	}
 	
 	private static Map<Instruction,LocationImpl> allLocations = new ConcurrentHashMap<Instruction,LocationImpl>();
 
-	public static LocationImpl factory(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachine vm) {
+	public static LocationImpl factory(Instruction instruction, ReferenceTypeImpl referenceTypeImpl, VirtualMachineImpl vm) {
 		synchronized (allLocations) {
 			if (allLocations.containsKey(instruction)) {
 				return allLocations.get(instruction);
@@ -44,12 +38,6 @@ public class LocationImpl implements Location {
 				return locationImpl;
 			}
 		}
-	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		log.debug("method entering");
-		return vm;
 	}
 
 	@Override

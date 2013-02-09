@@ -1,10 +1,14 @@
 package test.jdi.impl;
 
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,12 +34,18 @@ public class StackFrameImpl implements StackFrame {
 	private gov.nasa.jpf.jvm.StackFrame stackFrame;
 
 	private ThreadReferenceImpl threadReference;
+	
+	private Map<LocalVarInfo, LocalVariableImpl> localVariables = new HashMap<LocalVarInfo, LocalVariableImpl>();
 
 	public StackFrameImpl(gov.nasa.jpf.jvm.StackFrame stackFrame,
 			ThreadReferenceImpl threadReferenceImpl, VirtualMachineImpl vm) {
 		this.vm = vm;
 		this.stackFrame = stackFrame;
 		this.threadReference = threadReferenceImpl;
+		
+		for (LocalVarInfo var : this.stackFrame.getLocalVars()) {
+			localVariables.put(var, new LocalVariableImpl(var, this, vm));
+		}
 	}
 
 	@Override
@@ -52,7 +62,9 @@ public class StackFrameImpl implements StackFrame {
 	@Override
 	public Value getValue(LocalVariable variable) {
 		log.debug("method entering");
-		return null;
+		LocalVarInfo var = ((LocalVariableImpl)variable).localVarInfo;
+		Object object = stackFrame.getLocalValueObject(var);
+		return ValueImpl.factory(object, vm);
 	}
 
 	@Override
@@ -108,7 +120,7 @@ public class StackFrameImpl implements StackFrame {
 	public List<LocalVariable> visibleVariables()
 			throws AbsentInformationException {
 		log.debug("method entering");
-		return null;
+		return new ArrayList<LocalVariable>(localVariables.values());
 	}
 
 }

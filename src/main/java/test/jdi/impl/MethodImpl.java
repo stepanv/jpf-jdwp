@@ -16,19 +16,18 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Type;
 import com.sun.jdi.VirtualMachine;
 
-public class MethodImpl implements Method {
+public class MethodImpl extends TypeComponentImpl implements Method {
 
 	private MethodInfo methodInfo;
-	private VirtualMachine vm;
 
-	private MethodImpl(MethodInfo methodInfo, VirtualMachine vm) {
+	private MethodImpl(MethodInfo methodInfo, VirtualMachineImpl vm) {
+		super(vm);
 		this.methodInfo = methodInfo;
-		this.vm = vm;
 	}
 
 	private static Map<MethodInfo,MethodImpl> allMethods = new ConcurrentHashMap<MethodInfo,MethodImpl>();
 
-	public static MethodImpl factory(MethodInfo methodInfo, VirtualMachine vm) {
+	public static MethodImpl factory(MethodInfo methodInfo, VirtualMachineImpl vm) {
 		synchronized (allMethods) {
 			if (allMethods.containsKey(methodInfo)) {
 				return allMethods.get(methodInfo);

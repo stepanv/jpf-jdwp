@@ -10,11 +10,8 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.util.LocationSpec;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,55 +26,46 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
-import com.sun.jdi.VirtualMachine;
 
-public class ReferenceTypeImpl implements ReferenceType {
+public class ReferenceTypeImpl extends TypeImpl implements ReferenceType {
 
-	public static final Logger log = org.apache.log4j.Logger.getLogger(ReferenceTypeImpl.class);
-	
+	public static final Logger log = org.apache.log4j.Logger
+			.getLogger(ReferenceTypeImpl.class);
+
 	private StaticElementInfo elInfo;
+	
+	private Map<FieldInfo, FieldImpl> fields = new HashMap<FieldInfo, FieldImpl>();
+
 	private ClassInfo classInfo;
-	private VirtualMachine vm;
 
-	/**
-	 * TODO remove this
-	 * 
-	 * @param elInfo
-	 * @param vm
-	 */
-	private ReferenceTypeImpl(StaticElementInfo elInfo, VirtualMachine vm) {
-		this.elInfo = elInfo;
-		this.vm = vm;
-	}
+	private static Map<ClassInfo, ReferenceTypeImpl> allReferenceTypes = new ConcurrentHashMap<ClassInfo, ReferenceTypeImpl>();
 
-	private static Map<ClassInfo,ReferenceTypeImpl> allReferenceTypes = new ConcurrentHashMap<ClassInfo,ReferenceTypeImpl>();
-
-	public static ReferenceTypeImpl factory(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+	public static ReferenceTypeImpl factory(ClassInfo resolvedClassInfo,
+			VirtualMachineImpl vm) {
 		synchronized (allReferenceTypes) {
 			if (allReferenceTypes.containsKey(resolvedClassInfo)) {
 				return allReferenceTypes.get(resolvedClassInfo);
 			} else {
-				ReferenceTypeImpl referenceTypeImpl = new ReferenceTypeImpl(resolvedClassInfo, vm);
+				ReferenceTypeImpl referenceTypeImpl = new ReferenceTypeImpl(
+						resolvedClassInfo, vm);
 				allReferenceTypes.put(resolvedClassInfo, referenceTypeImpl);
 				return referenceTypeImpl;
 			}
 		}
 	}
-	
-	protected ReferenceTypeImpl(ClassInfo resolvedClassInfo, VirtualMachine vm) {
+
+	protected ReferenceTypeImpl(ClassInfo resolvedClassInfo,
+			VirtualMachineImpl vm) {
+		super(vm, resolvedClassInfo.getName(), resolvedClassInfo.getSignature());
+		
 		this.classInfo = resolvedClassInfo;
-		this.vm = vm;
-	}
-
-	@Override
-	public String signature() {
-		log.debug("method entering");
-		return classInfo.getSignature();
-	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		return vm;
+		
+		for (FieldInfo fi : classInfo.getDeclaredStaticFields()) {
+			fields.put(fi, new FieldImpl(fi));
+		}
+		for (FieldInfo fi : classInfo.getDeclaredInstanceFields()) {
+			fields.put(fi, new FieldImpl(fi));
+		}
 	}
 
 	@Override
@@ -114,11 +102,6 @@ public class ReferenceTypeImpl implements ReferenceType {
 	public boolean isPublic() {
 		log.debug("method entering");
 		return false;
-	}
-
-	@Override
-	public String name() {
-		return classInfo.getName();
 	}
 
 	@Override
@@ -213,13 +196,14 @@ public class ReferenceTypeImpl implements ReferenceType {
 		return null;
 	}
 
+	
+	
 	@Override
 	public List<Field> allFields() {
 		log.debug("method entering");
-		return null;
+		return new ArrayList<Field>(fields.values());
 	}
 
-	private Map<FieldInfo, FieldImpl> fields = new HashMap<FieldInfo, FieldImpl>();
 	@Override
 	public Field fieldByName(String paramString) {
 		FieldInfo fi = classInfo.getDeclaredInstanceField(paramString);
@@ -277,15 +261,15 @@ public class ReferenceTypeImpl implements ReferenceType {
 
 	@Override
 	public Value getValue(Field paramField) {
-		 FieldImpl fi = (FieldImpl)paramField;
-		 FieldInfo ffi = fi.getFieldInfo();
-		
+		FieldImpl fi = (FieldImpl) paramField;
+		FieldInfo ffi = fi.getFieldInfo();
+
 		Heap heap = JVM.getVM().getHeap();
-	    ElementInfo ei = heap.get(elInfo.getIntField(ffi));
-		
-	    Value value = new ValueImpl(ei, ffi);
-	    //ei.getIntField(paramField.name())
-		return value;
+		ElementInfo ei = heap.get(elInfo.getIntField(ffi));
+
+//		Value value = new ValueImpl(vm);
+		// ei.getIntField(paramField.name())
+		throw new RuntimeException("not supported");
 	}
 
 	@Override
@@ -313,18 +297,29 @@ public class ReferenceTypeImpl implements ReferenceType {
 		return null;
 	}
 
-	
-	@Override
 	public List<Location> locationsOfLine(int paramInt)
 			throws AbsentInformationException {
 		List<Location> locations = new ArrayList<Location>();
-		// TODO [for PJA] what to do, if location contain more than 1 instruction?
-		// in such case, we would hit the breakpoint more times ... how to handle this?
-		for (Instruction instruction : classInfo.getMatchingInstructions(LocationSpec.createLocationSpec(classInfo.getSourceFileName() + ":" + paramInt))) {
-			log.debug("Requesting location at reference type: " + name() +" line: " + paramInt);
+		// TODO [for PJA] what to do, if location contain more than 1
+		// instruction?
+		// in such case, we would hit the breakpoint more times ... how to
+		// handle this?
+		Instruction[] instructions = classInfo
+				.getMatchingInstructions(LocationSpec
+						.createLocationSpec(classInfo.getSourceFileName() + ":"
+								+ paramInt));
+		if (instructions == null) {
+			log.debug("Location NOT FOUND at reference type: " + name()
+					+ " line: " + paramInt);
+			return null;
+		}
+		for (Instruction instruction : instructions) {
+			log.debug("Requesting location at reference type: " + name()
+					+ " line: " + paramInt);
 			locations.add(LocationImpl.factory(instruction, this, vm));
 			log.debug("Returning just one location in the list .. TODO");
-			return locations; // TODO we have to return all instructions and do smarter breakpoints in BreakpointManager
+			return locations; // TODO we have to return all instructions and do
+								// smarter breakpoints in BreakpointManager
 		}
 		return locations;
 	}
@@ -346,7 +341,9 @@ public class ReferenceTypeImpl implements ReferenceType {
 	@Override
 	public String defaultStratum() {
 		log.debug("method entering");
-		return null;
+		return "Java"; // TODO we should get this info dynamically (see 'strata'
+						// section for Location JavaDoc) ... JPF doesn't work
+						// with strata at all though.;
 	}
 
 	@Override
