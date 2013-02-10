@@ -100,7 +100,7 @@ public class StackFrameImpl implements StackFrame {
 	@Override
 	public ObjectReference thisObject() {
 		log.debug("method entering");
-		return null;
+		return ObjectReferenceImpl.factory(stackFrame.getClassInfo(), vm);
 	}
 
 	@Override

@@ -61,10 +61,10 @@ public class ReferenceTypeImpl extends TypeImpl implements ReferenceType {
 		this.classInfo = resolvedClassInfo;
 		
 		for (FieldInfo fi : classInfo.getDeclaredStaticFields()) {
-			fields.put(fi, new FieldImpl(fi));
+			fields.put(fi, new FieldImpl(fi, this, vm));
 		}
 		for (FieldInfo fi : classInfo.getDeclaredInstanceFields()) {
-			fields.put(fi, new FieldImpl(fi));
+			fields.put(fi, new FieldImpl(fi, this, vm));
 		}
 	}
 
@@ -218,7 +218,7 @@ public class ReferenceTypeImpl extends TypeImpl implements ReferenceType {
 		}
 		
 		if (!fields.containsKey(fi)) {
-			fields.put(fi, new FieldImpl(fi));
+			fields.put(fi, new FieldImpl(fi, this, vm));
 		}
 		return fields.get(fi);
 	}

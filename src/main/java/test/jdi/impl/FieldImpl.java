@@ -8,18 +8,21 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Type;
 import com.sun.jdi.VirtualMachine;
 
-public class FieldImpl implements Field {
+public class FieldImpl extends TypeComponentImpl implements Field {
 
 	private FieldInfo fieldInfo;
+	private ReferenceTypeImpl referenceType;
 
-	public FieldImpl(FieldInfo fieldInfo) {
+	public FieldImpl(FieldInfo fieldInfo, ReferenceTypeImpl referenceType, VirtualMachineImpl vm) {
+		super(vm);
 		this.fieldInfo = fieldInfo;
+		
+		this.referenceType = referenceType;
 	}
 
 	@Override
 	public String name() {
-		// TODO Auto-generated method stub
-		return null;
+		return fieldInfo.getName();
 	}
 
 	@Override
@@ -29,13 +32,12 @@ public class FieldImpl implements Field {
 
 	@Override
 	public String genericSignature() {
-		return fieldInfo.getSignature(); // TODO possible not ok
+		return null; // TODO possible not ok
 	}
 
 	@Override
 	public ReferenceType declaringType() {
-		// TODO Auto-generated method stub
-		return null;
+		return referenceType;
 	}
 
 	@Override
@@ -52,12 +54,6 @@ public class FieldImpl implements Field {
 	public boolean isSynthetic() {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	@Override
-	public VirtualMachine virtualMachine() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -96,8 +92,7 @@ public class FieldImpl implements Field {
 
 	@Override
 	public String typeName() {
-		// TODO Auto-generated method stub
-		return null;
+		return referenceType.name();
 	}
 
 	@Override
