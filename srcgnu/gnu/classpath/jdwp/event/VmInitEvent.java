@@ -42,6 +42,7 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -56,14 +57,14 @@ import java.io.IOException;
 public class VmInitEvent
   extends Event
 {
-  private Thread _initialThread;
+  private ThreadInfo _initialThread;
 
   /**
    * Constructs a <code>VmInitEvent</code> object
    *
    * @param thread  the initial thread
    */
-  public VmInitEvent (Thread thread)
+  public VmInitEvent (ThreadInfo thread)
   {
     super (JdwpConstants.EventKind.VM_INIT);
     _initialThread = thread;

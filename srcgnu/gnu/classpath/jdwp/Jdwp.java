@@ -229,6 +229,7 @@ public class Jdwp
                 /* Really not much we can do. For now, just print out
                    a warning to the user. */
                 System.out.println ("Jdwp.notify: caught exception: " + e);
+                e.printStackTrace();
               }
           }
       }
@@ -341,7 +342,9 @@ public class Jdwp
         break;
 
       case EventRequest.SUSPEND_THREAD:
-        VMVirtualMachine.suspendThread (Thread.currentThread ());
+    	  // TODO how to solve just one thread suspension?
+    	  VMVirtualMachine.suspendAllThreads ();
+        //VMVirtualMachine.suspendThread (Thread.currentThread ());
         break;
 
       case EventRequest.SUSPEND_ALL:

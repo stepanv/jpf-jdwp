@@ -13,4 +13,5 @@ Export-Package: gnu.classpath.jdwp,
  gnu.classpath.jdwp.processor,
  gnu.classpath.jdwp.id,
  gnu.classpath.jdwp.exception
+Require-Bundle: gov.nasa.jpf.core;bundle-version="1.0.0"
 

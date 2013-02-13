@@ -47,9 +47,17 @@ import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
 import gnu.classpath.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.VirtualMachine;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * A virtual machine according to JDWP.
@@ -58,6 +66,7 @@ import java.util.Collection;
  */
 public class VMVirtualMachine
 {
+	public  static VirtualMachine vm = null;
   // VM Capabilities
   public static final boolean canWatchFieldModification = false;
   public static final boolean canWatchFieldAccess = false;
@@ -80,8 +89,10 @@ public class VMVirtualMachine
    *
    * @param  thread  the thread to suspend
    */
-  public static native void suspendThread(Thread thread)
-    throws JdwpException;
+  public static void suspendThread(ThreadInfo thread)
+    throws JdwpException {
+	  vm.suspendAllThreads();
+  }
 
   /**
    * Suspend all threads
@@ -89,42 +100,7 @@ public class VMVirtualMachine
   public static void suspendAllThreads()
     throws JdwpException
   {
-    // Our JDWP thread group -- don't suspend any of those threads
-    Thread current = Thread.currentThread ();
-    ThreadGroup jdwpGroup = Jdwp.getDefault().getJdwpThreadGroup();
-
-    // Find the root ThreadGroup
-    ThreadGroup group = jdwpGroup;
-    ThreadGroup parent = group.getParent ();
-    while (parent != null)
-      {
-        group = parent;
-        parent = group.getParent ();
-      }
-
-    // Get all the threads in the system
-    int num = group.activeCount ();
-    Thread[] threads = new Thread[num];
-    group.enumerate (threads);
-
-    for (int i = 0; i < num; ++i)
-      {
-        Thread t = threads[i];
-        if (t != null)
-          {
-            if (t.getThreadGroup () == jdwpGroup || t == current)
-              {
-                // Don't suspend the current thread or any JDWP thread
-                continue;
-              }
-            else
-              suspendThread (t);
-          }
-      }
-
-    // Now suspend the current thread
-    if (current.getThreadGroup() != jdwpGroup)
-      suspendThread (current);
+	  vm.suspendAllThreads();
   }
 
   /**
@@ -133,8 +109,10 @@ public class VMVirtualMachine
    *
    * @param  thread  the thread to resume
    */
-  public static native void resumeThread(Thread thread)
-    throws JdwpException;
+  public static void resumeThread(ThreadInfo thread)
+    throws JdwpException {
+	vm.resumeAllThreads();  
+  }
 
   /**
    * Resume all threads. This simply decrements the thread's
@@ -144,38 +122,7 @@ public class VMVirtualMachine
   public static void resumeAllThreads()
     throws JdwpException
   {
-    // Our JDWP thread group -- don't resume
-    Thread current = Thread.currentThread ();
-    ThreadGroup jdwpGroup = current.getThreadGroup ();
-
-    // Find the root ThreadGroup
-    ThreadGroup group = jdwpGroup;
-    ThreadGroup parent = group.getParent ();
-    while (parent != null)
-      {
-        group = parent;
-        parent = group.getParent ();
-      }
-
-    // Get all the threads in the system
-    int num = group.activeCount ();
-    Thread[] threads = new Thread[num];
-    group.enumerate (threads);
-
-    for (int i = 0; i < num; ++i)
-      {
-        Thread t = threads[i];
-        if (t != null)
-          {
-            if (t.getThreadGroup () == jdwpGroup || t == current)
-              {
-                // Don't resume the current thread or any JDWP thread
-                continue;
-              }
-            else
-              resumeThread (t);
-          }
-      }
+	  vm.resumeAllThreads();
   }
 
   /**
@@ -184,14 +131,19 @@ public class VMVirtualMachine
    * @param  thread  the thread whose suspend count is desired
    * @return the number of times the thread has been suspended
    */
-  public static native int getSuspendCount(Thread thread)
-    throws JdwpException;
+  public static int getSuspendCount(ThreadInfo thread)
+    throws JdwpException {
+	  return thread.threadDataClone().getSuspendCount();
+  }
 
   /**
    * Returns a Collection of all classes loaded in the VM
    */
-  public static native Collection getAllLoadedClasses()
-    throws JdwpException;
+  public static Collection getAllLoadedClasses()
+    throws JdwpException {
+	  return vm.getAllLoadedClasses();
+	  
+  }
 
   /**
    * Returns the status of the given class
@@ -200,8 +152,11 @@ public class VMVirtualMachine
    * @return a flag containing the class's status
    * @see JdwpConstants.ClassStatus
    */
-  public static native int getClassStatus(Class clazz)
-    throws JdwpException;
+  public static int getClassStatus(ClassInfo clazz)
+    throws JdwpException {
+	  // TODO [for PJA] do we have class statuses in JPF?
+	  return JdwpConstants.ClassStatus.VERIFIED;
+  }
 
   /**
    * Returns all of the methods defined in the given class. This
@@ -217,15 +172,22 @@ public class VMVirtualMachine
    * A factory method for getting valid virtual machine methods
    * which may be passed to/from the debugger.
    *
-   * @param klass the class in which the method is defined
+   * @param clazz the class in which the method is defined
    * @param id    the ID of the desired method
    * @return the desired internal representation of the method
    * @throws InvalidMethodException if the method is not defined
    *           in the class
    * @throws JdwpException for any other error
    */
-  public static native VMMethod getClassMethod(Class klass, long id)
-    throws JdwpException;
+  public static MethodInfo getClassMethod(ClassInfo clazz, long id)
+    throws JdwpException {
+	  for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
+		  if (id == methodInfo.getGlobalId()) {
+			  return methodInfo;
+		  }
+	  }
+	  throw new InvalidMethodException(id);
+  }
 
   /**
    * Returns the thread's call stack
@@ -235,9 +197,19 @@ public class VMVirtualMachine
    * @param  length  number of frames to return (-1 for all frames)
    * @return a list of frames
    */
-  public static native ArrayList getFrames(Thread thread, int start,
+  public static ArrayList getFrames(ThreadInfo thread, int start,
                                             int length)
-    throws JdwpException;
+    throws JdwpException {
+	  
+	  List<gov.nasa.jpf.jvm.StackFrame> frames = new ArrayList<gov.nasa.jpf.jvm.StackFrame>();
+		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+			if (!stackFrame.isSynthetic()) {
+				frames.add(stackFrame);
+			}
+		}
+	  return (ArrayList) frames;
+  }
 
   /**
    * Returns the frame for a given thread with the frame ID in
@@ -249,7 +221,7 @@ public class VMVirtualMachine
    * @param  bb      buffer containing the frame's ID
    * @return the desired frame
    */
-  public static native VMFrame getFrame(Thread thread, long frameID)
+  public static native VMFrame getFrame(ThreadInfo thread, long frameID)
     throws JdwpException;
 
   /**
@@ -258,8 +230,17 @@ public class VMVirtualMachine
    * @param  thread  the thread for which to get a frame count
    * @return the number of frames in the thread's stack
    */
-  public static native int getFrameCount(Thread thread)
-    throws JdwpException;
+  public static int getFrameCount(ThreadInfo thread)
+    throws JdwpException {
+	  int frameCount = 0;
+		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+			if (!stackFrame.isSynthetic()) {
+				++frameCount;
+			}
+		}
+		return frameCount;
+  }
 
 
   /**
@@ -269,8 +250,20 @@ public class VMVirtualMachine
    * @return integer status of the thread
    * @see JdwpConstants.ThreadStatus
    */
-  public static native int getThreadStatus(Thread thread)
-    throws JdwpException;
+  public static int getThreadStatus(ThreadInfo thread)
+    throws JdwpException {
+	  // [TODO] not fully implemented yet
+	  switch (thread.getState()) {
+	  case BLOCKED:
+		  return JdwpConstants.ThreadStatus.WAIT;
+	  case RUNNING:
+		  return JdwpConstants.ThreadStatus.RUNNING;
+	  case SLEEPING:
+		  return JdwpConstants.ThreadStatus.SLEEPING;
+	  default:
+		  return JdwpConstants.ThreadStatus.RUNNING;
+	  }
+  }
 
   /**
    * Returns a list of all classes which this class loader has been
@@ -379,8 +372,16 @@ public class VMVirtualMachine
    * @param method the method for which to get bytecodes
    * @returns the bytecodes
    */
-  public static native byte[] getBytecodes(VMMethod method)
-    throws JdwpException;
+  public static byte[] getBytecodes(MethodInfo method)
+    throws JdwpException {
+	  Instruction[] instructions = method.getInstructions();
+	  
+	  byte[] bytecode = new byte[instructions.length];
+	  for (int i = 0; i < instructions.length; i++) {
+		  bytecode[i] = (byte) instructions[i].getByteCode();
+	  }
+	  return bytecode;
+  }
 
   /**
    * Returns monitor information about an object. VM must support
@@ -399,7 +400,7 @@ public class VMVirtualMachine
    * @param thread a thread
    * @returns the list of monitors owned by this thread
    */
-  public static native Object[] getOwnedMonitors(Thread thread)
+  public static native Object[] getOwnedMonitors(ThreadInfo thread)
     throws JdwpException;
 
   /**
@@ -409,7 +410,7 @@ public class VMVirtualMachine
    * @param thread the thread
    * @returns the contended monitor
    */
-  public static native Object getCurrentContendedMonitor(Thread thread)
+  public static native Object getCurrentContendedMonitor(ThreadInfo thread)
     throws JdwpException;
 
   /**
@@ -421,5 +422,9 @@ public class VMVirtualMachine
    * @param thread the thread
    * @param frame the frame ID
    */
-  public static native void popFrames(Thread thread, long frameId);
+  public static native void popFrames(ThreadInfo thread, long frameId);
+
+public static ThreadInfo[] allThreads() {
+	return vm.getJpf().getVM().getLiveThreads();
+}
 }

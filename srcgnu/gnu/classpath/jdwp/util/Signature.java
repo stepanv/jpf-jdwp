@@ -39,8 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 /**
  * A class to compute class and method signatures.
@@ -57,11 +58,9 @@ public class Signature
    * @param theClass  the class for which to compute the signature
    * @return          the class's type signature
    */
-  public static String computeClassSignature (Class theClass)
+  public static String computeClassSignature (ClassInfo classInfo)
   {
-    StringBuilder sb = new StringBuilder ();
-    _addToSignature (sb, theClass);
-    return sb.toString ();
+    return classInfo.getSignature();
   }
 
   /**
@@ -72,9 +71,9 @@ public class Signature
    * @param field  the field for which to compute the signature
    * @return       the field's type signature
    */
-  public static String computeFieldSignature (Field field)
+  public static String computeFieldSignature (FieldInfo field)
   {
-    return computeClassSignature (field.getType());
+    return computeClassSignature (field.getClassInfo());
   }
 
   /**
@@ -84,66 +83,9 @@ public class Signature
    * @param method  the method for which to compute the signature
    * @return        the method's type signature
    */
-  public static String computeMethodSignature (Method method)
+  public static String computeMethodSignature (MethodInfo method)
   {
-    return _computeSignature (method.getReturnType (),
-                              method.getParameterTypes ());
+	  return method.getSignature();
   }
 
-  private static String _computeSignature (Class returnType,
-                                           Class[] paramTypes)
-  {
-    StringBuilder sb = new StringBuilder ("(");
-    if (paramTypes != null)
-      {
-        for (int i = 0; i < paramTypes.length; ++i)
-          _addToSignature (sb, paramTypes[i]);
-      }
-    sb.append (")");
-    _addToSignature (sb, returnType);
-    return sb.toString();
-  }
-
-  private static void _addToSignature (StringBuilder sb, Class k)
-  {
-    // For some reason there's no easy way to get the signature of a
-    // class.
-    if (k.isPrimitive ())
-      {
-        if (k == void.class)
-          sb.append('V');
-        else if (k == boolean.class)
-          sb.append('Z');
-        else if (k == byte.class)
-          sb.append('B');
-        else if (k == char.class)
-          sb.append('C');
-        else if (k == short.class)
-          sb.append('S');
-        else if (k == int.class)
-          sb.append('I');
-        else if (k == float.class)
-          sb.append('F');
-        else if (k == double.class)
-          sb.append('D');
-        else if (k == long.class)
-          sb.append('J');
-        return;
-      }
-
-    String name = k.getName ();
-    int len = name.length ();
-    sb.ensureCapacity (len);
-    if (! k.isArray ())
-      sb.append('L');
-    for (int i = 0; i < len; ++i)
-      {
-        char c = name.charAt (i);
-        if (c == '.')
-          c = '/';
-        sb.append (c);
-      }
-    if (! k.isArray ())
-      sb.append(';');
-  }
 }

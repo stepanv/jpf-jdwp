@@ -49,6 +49,7 @@ import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -101,7 +102,7 @@ public class StackFrameCommandSet
       throws JdwpException, IOException
   {
     ThreadId tId = (ThreadId) idMan.readObjectId(bb);
-    Thread thread = tId.getThread();
+    ThreadInfo thread = tId.getThread();
 
     // Although Frames look like other ids they are not. First they are not
     // ObjectIds since they don't exist in the users code. Storing them as an
@@ -126,7 +127,7 @@ public class StackFrameCommandSet
       throws JdwpException, IOException
   {
     ThreadId tId = (ThreadId) idMan.readObjectId(bb);
-    Thread thread = tId.getThread();
+    ThreadInfo thread = tId.getThread();
 
     long frameID = bb.getLong();
     VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
@@ -144,7 +145,7 @@ public class StackFrameCommandSet
       throws JdwpException, IOException
   {
     ThreadId tId = (ThreadId) idMan.readObjectId(bb);
-    Thread thread = tId.getThread();
+    ThreadInfo thread = tId.getThread();
 
     long frameID = bb.getLong();
     VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
@@ -163,7 +164,7 @@ public class StackFrameCommandSet
       }
 
     ThreadId tid = (ThreadId) idMan.readObjectId(bb);
-    Thread thread = tid.getThread();
+    ThreadInfo thread = tid.getThread();
     long fid = bb.getLong();
     VMVirtualMachine.popFrames(thread, fid);
   }

@@ -53,6 +53,8 @@ import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -105,8 +107,8 @@ public class ClassTypeCommandSet
       throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-    Class superClazz = clazz.getSuperclass();
+    ClassInfo clazz = refId.getType();
+    ClassInfo superClazz = clazz.getSuperClass();
 
     if (superClazz == null) {
         os.writeLong(0L);
@@ -122,7 +124,7 @@ public class ClassTypeCommandSet
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
 
     // We don't actually seem to need this...
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
     int numValues = bb.getInt();
 
@@ -183,12 +185,12 @@ public class ClassTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
     ObjectId tId = idMan.readObjectId(bb);
     Thread thread = (Thread) tId.getObject();
 
-    VMMethod method = VMMethod.readId(clazz, bb);
+    MethodInfo method = VMMethod.readId(clazz, bb);
 
     int args = bb.getInt();
     Value[] values = new Value[args];
@@ -197,9 +199,10 @@ public class ClassTypeCommandSet
       values[i] = ValueFactory.createFromTagged(bb);
 
     int invokeOpts = bb.getInt();
-    MethodResult mr = VMVirtualMachine.executeMethod(null, thread,
-                                                     clazz, method,
-                                                     values, invokeOpts);
-    return mr;
+    throw new RuntimeException("not implemented");
+//    MethodResult mr = VMVirtualMachine.executeMethod(null, thread,
+//                                                     clazz, method,
+//                                                     values, invokeOpts);
+//    return mr;
   }
 }

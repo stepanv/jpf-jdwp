@@ -42,10 +42,15 @@ import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.id.ClassReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.StackFrame;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import javax.management.RuntimeErrorException;
 
 /**
  * A class to read/write JDWP locations.
@@ -54,7 +59,7 @@ import java.nio.ByteBuffer;
  */
 public class Location
 {
-  private VMMethod method;
+  private MethodInfo method;
   private long index;
 
   /**
@@ -63,7 +68,7 @@ public class Location
    * @param method the method
    * @param index location in the method
    */
-  public Location(VMMethod method, long index)
+  public Location(MethodInfo method, long index)
   {
     this.method = method;
     this.index = index;
@@ -83,7 +88,8 @@ public class Location
     byte tag = bb.get();
     ClassReferenceTypeId classId =
       (ClassReferenceTypeId) VMIdManager.getDefault().readReferenceTypeId(bb);
-    Class klass = classId.getType();
+    ClassInfo klass = classId.getType();
+    
     method = VMMethod.readId(klass, bb);
     index = bb.getLong();
   }
@@ -103,10 +109,10 @@ public class Location
         VMIdManager idm = VMIdManager.getDefault();
         ClassReferenceTypeId crti =
           (ClassReferenceTypeId)
-          idm.getReferenceTypeId(method.getDeclaringClass());
-
+          idm.getReferenceTypeId(method.getClassInfo());
+        
         crti.writeTagged(os);
-        method.writeId(os);
+        os.writeLong(method.getGlobalId());
         os.writeLong(index);
       }
     else
@@ -117,6 +123,31 @@ public class Location
         os.writeLong((long) 0);
       }
   }
+  
+  public static void write(DataOutputStream os, StackFrame stackFrame)
+		    throws IOException
+		  {
+		    // check if this is an empty location
+	  MethodInfo methodInfo = stackFrame.getMethodInfo();
+		    if (methodInfo != null)
+		      {
+		        VMIdManager idm = VMIdManager.getDefault();
+		        ClassReferenceTypeId crti =
+		          (ClassReferenceTypeId)
+		          idm.getReferenceTypeId(methodInfo.getClassInfo());
+		        
+		        crti.writeTagged(os);
+		        os.writeLong(methodInfo.getGlobalId());
+		        os.writeLong(0); // TODO here, we should write index (what is index for?)
+		      }
+		    else
+		      {
+		        os.writeByte(1);
+		        os.writeLong((long) 0);
+		        os.writeLong((long) 0);
+		        os.writeLong((long) 0);
+		      }
+		  }
 
   /**
    * Sets up an empty location
@@ -133,7 +164,7 @@ public class Location
    *
    * @return the method
    */
-  public VMMethod getMethod()
+  public MethodInfo getMethod()
   {
     return method;
   }

@@ -182,6 +182,7 @@ public class PacketProcessor
     if (pkt != null)
       {
         JdwpCommandPacket commandPkt = (JdwpCommandPacket) pkt;
+        System.out.println("Received: " + commandPkt.getCommand());
         JdwpReplyPacket reply = new JdwpReplyPacket(commandPkt);
 
         // Reset our output stream

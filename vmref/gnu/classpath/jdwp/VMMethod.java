@@ -46,6 +46,8 @@ import java.nio.ByteBuffer;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 /**
  * This class is really an amalgamation of two classes: one class
@@ -165,15 +167,15 @@ public class VMMethod
   /**
    * Returns a VMMethod from the ID in the byte buffer
    *
-   * @param klass the method's declaring class
+   * @param clazz the method's declaring class
    * @param bb    a ByteBuffer containing the method's ID
    * @throws JdwpException for any errors creating the method
    * @throws IOException for any errors reading from the buffer
    */
-  public static VMMethod readId(Class klass, ByteBuffer bb)
+  public static MethodInfo readId(ClassInfo clazz, ByteBuffer bb)
     throws JdwpException, IOException
   {
-    return VMVirtualMachine.getClassMethod(klass, bb.getLong());
+    return VMVirtualMachine.getClassMethod(clazz, bb.getLong());
   }
 
   public boolean equals(Object obj)

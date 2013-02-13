@@ -45,6 +45,7 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -87,7 +88,7 @@ public class ClassObjectReferenceCommandSet
     throws JdwpException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-    Class clazz = (Class) oid.getObject();
+    ClassInfo clazz = (ClassInfo) oid.getObject();
 
     // The difference between a ClassObjectId and a ReferenceTypeId is one is
     // stored as an ObjectId and the other as a ReferenceTypeId.

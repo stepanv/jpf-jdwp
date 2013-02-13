@@ -42,6 +42,7 @@ package gnu.classpath.jdwp.event.filters;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 /**
  * Restricts reported exceptions by their class and whether they are caught
@@ -103,8 +104,8 @@ public class ExceptionOnlyFilter
       {
         try
           {
-            Class klass
-              = (Class) event.getParameter(Event.EVENT_EXCEPTION_CLASS);
+        	ClassInfo klass
+              = (ClassInfo) event.getParameter(Event.EVENT_EXCEPTION_CLASS);
             classMatch = klass == _refId.getType();
           }
         catch (InvalidClassException ex)

@@ -47,6 +47,8 @@ import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -101,10 +103,11 @@ public class MethodCommandSet
       throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
-    VMMethod method = VMMethod.readId(clazz, bb);
-    LineTable lt = method.getLineTable();
+    MethodInfo method = VMMethod.readId(clazz, bb);
+   LineTable lt = LineTable.factory(method);
+//    LineTable lt = method.getLineTable();
     lt.write(os);
   }
 
@@ -112,11 +115,12 @@ public class MethodCommandSet
       throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
-    VMMethod method = VMMethod.readId(clazz, bb);
-    VariableTable vt = method.getVariableTable();
-    vt.write(os);
+    MethodInfo method = VMMethod.readId(clazz, bb);
+    throw new NotImplementedException("not yet");
+//    VariableTable vt = method.getVariableTable();
+//    vt.write(os);
   }
 
   private void executeByteCodes(ByteBuffer bb, DataOutputStream os)
@@ -129,8 +133,8 @@ public class MethodCommandSet
       }
 
     ReferenceTypeId id = idMan.readReferenceTypeId(bb);
-    Class klass = id.getType();
-    VMMethod method = VMMethod.readId(klass, bb);
+    ClassInfo klass = id.getType();
+    MethodInfo method = VMMethod.readId(klass, bb);
     byte[] bytecode = VMVirtualMachine.getBytecodes(method);
     os.writeInt(bytecode.length);
     os.write(bytecode);

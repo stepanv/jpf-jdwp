@@ -210,7 +210,7 @@ public class EventManager
       }
 
     // Register the event with the VM
-    VMVirtualMachine.registerEvent (request);
+    VMVirtualMachine.vm.registerEvent (request);
     requests.put (new Integer (request.getId ()), request);
   }
 

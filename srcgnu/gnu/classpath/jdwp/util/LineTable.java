@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -92,4 +95,23 @@ public class LineTable
         os.writeInt(lineNum[i]);
       }
   }
+
+public static LineTable factory(MethodInfo method) {
+	long[] lineCI = new long[method.getInstructions().length];
+	int[] lineNum = new int[method.getInstructions().length];
+	long start = Long.MAX_VALUE;
+	long end = -1;
+	int index = 0;
+	for (Instruction instruction : method.getInstructions()) {
+		lineCI[index] = instruction.getInstructionIndex();
+		lineNum[index] = instruction.getLineNumber();
+		
+		start = lineCI[index] < start ? lineCI[index] : start;
+		end = lineCI[index] > end ? lineCI[index] : end;
+		
+		index++;
+	}
+	
+	return new LineTable(start, end, lineNum, lineCI);
+}
 }

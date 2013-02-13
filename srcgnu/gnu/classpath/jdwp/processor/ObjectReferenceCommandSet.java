@@ -52,6 +52,8 @@ import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -117,7 +119,8 @@ public class ObjectReferenceCommandSet
   {
     ObjectId oid = idMan.readObjectId(bb);
     Object obj = oid.getObject();
-    Class clazz = obj.getClass();
+    ClassInfo clazz = ((ThreadInfo)obj).getClassInfo();
+    //throw new RuntimeException("not implemented");
     ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);
     refId.writeTagged(os);
   }
@@ -211,24 +214,25 @@ public class ObjectReferenceCommandSet
     Thread thread = (Thread) tid.getObject();
 
     ReferenceTypeId rid = idMan.readReferenceTypeId(bb);
-    Class clazz = rid.getType();
-
-    VMMethod method = VMMethod.readId(clazz, bb);
-
-    int args = bb.getInt();
-    Value[] values = new Value[args];
-
-    for (int i = 0; i < args; i++)
-      values[i] = ValueFactory.createFromTagged(bb);
-
-    int invokeOptions = bb.getInt();
-    MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
-                                                     clazz, method,
-                                                     values, invokeOptions);
-    Throwable exception = mr.getThrownException();
-    ObjectId eId = idMan.getObjectId(exception);
-    mr.getReturnedValue().writeTagged(os);
-    eId.writeTagged(os);
+    throw new RuntimeException("not implemented");
+//    Class clazz = rid.getType();
+//
+//    VMMethod method = VMMethod.readId(clazz, bb);
+//
+//    int args = bb.getInt();
+//    Value[] values = new Value[args];
+//
+//    for (int i = 0; i < args; i++)
+//      values[i] = ValueFactory.createFromTagged(bb);
+//
+//    int invokeOptions = bb.getInt();
+//    MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
+//                                                     clazz, method,
+//                                                     values, invokeOptions);
+//    Throwable exception = mr.getThrownException();
+//    ObjectId eId = idMan.getObjectId(exception);
+//    mr.getReturnedValue().writeTagged(os);
+//    eId.writeTagged(os);
   }
 
   private void executeDisableCollection(ByteBuffer bb, DataOutputStream os)

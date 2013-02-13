@@ -46,6 +46,7 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -64,11 +65,12 @@ public class ClassPrepareEvent
   // The thread in which this event occurred
   private Thread _thread;
 
-  // The class that was prepared
-  private Class _class;
-
+ 
   // Prepare flags
   private int _status;
+
+  // The class that was prepared
+private ClassInfo classInfo;
 
   /**
    * Class has been verified
@@ -101,11 +103,11 @@ public class ClassPrepareEvent
    * @param clazz   class which was prepared
    * @param flags   prepare status flags
    */
-  public ClassPrepareEvent (Thread thread, Class clazz, int flags)
+  public ClassPrepareEvent (Thread thread, ClassInfo classInfo, int flags)
   {
     super (JdwpConstants.EventKind.CLASS_PREPARE);
     _thread = thread;
-    _class = clazz;
+    this.classInfo = classInfo;
     _status = flags;
   }
 
@@ -121,7 +123,7 @@ public class ClassPrepareEvent
     if (type == EVENT_THREAD)
       return _thread;
     else if (type == EVENT_CLASS)
-      return _class;
+      return classInfo;
 
     return null;
   }
@@ -136,12 +138,12 @@ public class ClassPrepareEvent
   {
     VMIdManager idm = VMIdManager.getDefault();
     ThreadId tid = (ThreadId) idm.getObjectId (_thread);
-    ReferenceTypeId rid = idm.getReferenceTypeId (_class);
+    ReferenceTypeId rid = idm.getReferenceTypeId (classInfo);
 
     tid.write (outStream);
     rid.writeTagged (outStream);
     JdwpString.writeString (outStream,
-                            Signature.computeClassSignature (_class));
+                            Signature.computeClassSignature (classInfo));
     outStream.writeInt (_status);
   }
 }

@@ -44,6 +44,7 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -90,16 +91,17 @@ public class ArrayTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class arrayType = refId.getType();
-    Class componentType = arrayType.getComponentType();
+    ClassInfo arrayType = refId.getType();
+    ClassInfo componentType = arrayType.getComponentClassInfo();
 
     int length = bb.getInt();
-    Object newArray = Array.newInstance(componentType, length);
-    ObjectId oid = idMan.getObjectId(newArray);
+    throw new RuntimeException("not implemented");
+//    Object newArray = Array.newInstance(componentType, length);
+//    ObjectId oid = idMan.getObjectId(newArray);
 
     // Since this array isn't referenced anywhere we'll disable garbage
     // collection on it so it's still around when the debugger gets back to it.
-    oid.disableCollection();
-    oid.writeTagged(os);
+//    oid.disableCollection();
+//    oid.writeTagged(os);
   }
 }

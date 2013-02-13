@@ -41,6 +41,7 @@ package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 /**
  * A class which represents a JDWP thread id
@@ -69,10 +70,10 @@ public class ThreadId
    * @throws InvalidThreadException if thread is garbage collected,
    *           exited, or otherwise invalid
    */
-  public Thread getThread ()
+  public ThreadInfo getThread ()
     throws InvalidThreadException
   {
-    Thread thread = (Thread) _reference.get ();
+    ThreadInfo thread = (ThreadInfo) _reference.get ();
 
     /* Spec says if thread is null, not valid, or exited,
        throw invalid thread */

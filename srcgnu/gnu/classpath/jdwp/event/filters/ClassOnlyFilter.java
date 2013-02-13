@@ -87,23 +87,25 @@ public class ClassOnlyFilter
    */
   public boolean matches (Event event)
   {
-    Object type = event.getParameter (Event.EVENT_CLASS);
-    if (type != null)
-      {
-        try
-          {
-            Class clazz = _id.getType ();
-            Class eventClass = (Class) type;
-            if (clazz.isAssignableFrom (eventClass))
-              return true;
-          }
-        catch (InvalidClassException ice)
-          {
-            // class is no longer valid
-            return false;
-          }
-      }
-
-    return false;
+	  // we always match
+	  return true;
+//    Object type = event.getParameter (Event.EVENT_CLASS);
+//    if (type != null)
+//      {
+//        try
+//          {
+//            Class clazz = _id.getType ();
+//            ClassInfo eventClass = (ClassInfo) type;
+//            if (clazz.isAssignableFrom (eventClass))
+//              return true;
+//          }
+//        catch (InvalidClassException ice)
+//          {
+//            // class is no longer valid
+//            return false;
+//          }
+//      }
+//
+//    return false;
   }
 }

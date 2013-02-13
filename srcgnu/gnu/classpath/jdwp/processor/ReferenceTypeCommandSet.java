@@ -52,11 +52,16 @@ import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A class representing the ReferenceType Command Set.
@@ -146,32 +151,34 @@ public class ReferenceTypeCommandSet
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
 
-    Class clazz = refId.getType();
-    ClassLoader loader = clazz.getClassLoader();
-    ObjectId oid = idMan.getObjectId(loader);
-    oid.write(os);
+    ClassInfo clazz = refId.getType();
+    throw new RuntimeException("not implemented");
+//    ClassLoader loader = clazz.getcl getClassLoader();
+//    ObjectId oid = idMan.getObjectId(loader);
+//    oid.write(os);
   }
 
   private void executeModifiers(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-
-    Class clazz = refId.getType();
-    os.writeInt(clazz.getModifiers());
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//    os.writeInt(clazz.getModifiers());
   }
 
   private void executeFields(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
+	  System.out.println("execute fields");
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
-    Field[] fields = clazz.getFields();
+    FieldInfo[] fields = clazz.getInstanceFields();
     os.writeInt(fields.length);
     for (int i = 0; i < fields.length; i++)
       {
-        Field field = fields[i];
+        FieldInfo field = fields[i];
         idMan.getObjectId(field).write(os);
         JdwpString.writeString(os, field.getName());
         JdwpString.writeString(os, Signature.computeFieldSignature(field));
@@ -183,14 +190,15 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
+    ClassInfo clazz = refId.getType();
 
-    VMMethod[] methods = VMVirtualMachine.getAllClassMethods(clazz);
+    MethodInfo[] methods = clazz.getDeclaredMethodInfos();
     os.writeInt (methods.length);
     for (int i = 0; i < methods.length; i++)
       {
-        VMMethod method = methods[i];
-        method.writeId(os);
+        MethodInfo method = methods[i];
+        os.writeLong(method.getGlobalId());
+        //method.writeId(os);
         JdwpString.writeString(os, method.getName());
         JdwpString.writeString(os, method.getSignature());
         os.writeInt(method.getModifiers());
@@ -201,53 +209,55 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-
-    int numFields = bb.getInt();
-    os.writeInt(numFields); // Looks pointless but this is the protocol
-    for (int i = 0; i < numFields; i++)
-      {
-        ObjectId fieldId = idMan.readObjectId(bb);
-        Field field = (Field) (fieldId.getObject());
-        Class fieldClazz = field.getDeclaringClass();
-
-        // We don't actually need the clazz to get the field but we might as
-        // well check that the debugger got it right
-        if (fieldClazz.isAssignableFrom(clazz))
-          {
-            try
-              {
-                field.setAccessible(true); // Might be a private field
-                Object value = field.get(null);
-                Value val = ValueFactory.createFromObject(value,
-                                                          field.getType());
-                val.writeTagged(os);
-              }
-            catch (IllegalArgumentException ex)
-              {
-                // I suppose this would best qualify as an invalid field then
-                throw new InvalidFieldException(ex);
-              }
-            catch (IllegalAccessException ex)
-              {
-                // Since we set it as accessible this really shouldn't happen
-                throw new JdwpInternalErrorException(ex);
-              }
-          }
-        else
-          throw new InvalidFieldException(fieldId.getId());
-      }
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//
+//    int numFields = bb.getInt();
+//    os.writeInt(numFields); // Looks pointless but this is the protocol
+//    for (int i = 0; i < numFields; i++)
+//      {
+//        ObjectId fieldId = idMan.readObjectId(bb);
+//        Field field = (Field) (fieldId.getObject());
+//        Class fieldClazz = field.getDeclaringClass();
+//
+//        // We don't actually need the clazz to get the field but we might as
+//        // well check that the debugger got it right
+//        if (fieldClazz.isAssignableFrom(clazz))
+//          {
+//            try
+//              {
+//                field.setAccessible(true); // Might be a private field
+//                Object value = field.get(null);
+//                Value val = ValueFactory.createFromObject(value,
+//                                                          field.getType());
+//                val.writeTagged(os);
+//              }
+//            catch (IllegalArgumentException ex)
+//              {
+//                // I suppose this would best qualify as an invalid field then
+//                throw new InvalidFieldException(ex);
+//              }
+//            catch (IllegalAccessException ex)
+//              {
+//                // Since we set it as accessible this really shouldn't happen
+//                throw new JdwpInternalErrorException(ex);
+//              }
+//          }
+//        else
+//          throw new InvalidFieldException(fieldId.getId());
+//      }
   }
 
   private void executeSourceFile(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-
-    // We'll need to go into the jvm for this unless there's an easier way
-    String sourceFileName = VMVirtualMachine.getSourceFile(clazz);
-    JdwpString.writeString(os, sourceFileName);
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//
+//    // We'll need to go into the jvm for this unless there's an easier way
+//    String sourceFileName = VMVirtualMachine.getSourceFile(clazz);
+//    JdwpString.writeString(os, sourceFileName);
     // clazz.getProtectionDomain().getCodeSource().getLocation();
   }
 
@@ -255,38 +265,40 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-    Class[] declaredClazzes = clazz.getDeclaredClasses();
-    os.writeInt(declaredClazzes.length);
-    for (int i = 0; i < declaredClazzes.length; i++)
-      {
-        Class decClazz = declaredClazzes[i];
-        ReferenceTypeId clazzId = idMan.getReferenceTypeId(decClazz);
-        clazzId.writeTagged(os);
-      }
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//    Class[] declaredClazzes = clazz.getDeclaredClasses();
+//    os.writeInt(declaredClazzes.length);
+//    for (int i = 0; i < declaredClazzes.length; i++)
+//      {
+//        Class decClazz = declaredClazzes[i];
+//        ReferenceTypeId clazzId = idMan.getReferenceTypeId(decClazz);
+//        clazzId.writeTagged(os);
+//      }
   }
 
   private void executeStatus(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-
-    // I don't think there's any other way to get this
-    int status = VMVirtualMachine.getClassStatus(clazz);
-    os.writeInt(status);
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//
+//    // I don't think there's any other way to get this
+//    int status = VMVirtualMachine.getClassStatus(clazz);
+//    os.writeInt(status);
   }
 
   private void executeInterfaces(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-    Class[] interfaces = clazz.getInterfaces();
-    os.writeInt(interfaces.length);
-    for (int i = 0; i < interfaces.length; i++)
+    ClassInfo clazz = refId.getType();
+    Set<ClassInfo> interfaces = clazz.getAllInterfaceClassInfos();
+    os.writeInt(interfaces.size());
+    for (Iterator<ClassInfo> i = interfaces.iterator(); i.hasNext();)
       {
-        Class interfaceClass = interfaces[i];
+        ClassInfo interfaceClass = i.next();
         ReferenceTypeId intId = idMan.getReferenceTypeId(interfaceClass);
         intId.write(os);
       }
@@ -296,9 +308,10 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    Class clazz = refId.getType();
-    ObjectId clazzObjectId = idMan.getObjectId(clazz);
-    clazzObjectId.write(os);
+    throw new RuntimeException("not implemented");
+//    Class clazz = refId.getType();
+//    ObjectId clazzObjectId = idMan.getObjectId(clazz);
+//    clazzObjectId.write(os);
   }
 
   private void executeSourceDebugExtension(ByteBuffer bb, DataOutputStream os)
@@ -309,10 +322,11 @@ public class ReferenceTypeCommandSet
         String msg = "source debug extension is not supported";
         throw new NotImplementedException(msg);
       }
+    throw new RuntimeException("not implemented");
 
-    ReferenceTypeId id = idMan.readReferenceTypeId(bb);
-    String ext = VMVirtualMachine.getSourceDebugExtension (id.getType());
-    JdwpString.writeString(os, ext);
+//    ReferenceTypeId id = idMan.readReferenceTypeId(bb);
+//    String ext = VMVirtualMachine.getSourceDebugExtension (id.getType());
+//    JdwpString.writeString(os, ext);
   }
 
   private void executeSignatureWithGeneric(ByteBuffer bb, DataOutputStream os)

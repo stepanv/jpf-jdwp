@@ -40,11 +40,13 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.util.JdwpString;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -93,22 +95,33 @@ public class ThreadGroupReferenceCommandSet
     throws JdwpException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-    ThreadGroup group = (ThreadGroup) oid.getObject();
-    JdwpString.writeString(os, group.getName());
+    ElementInfo group = (ElementInfo) oid.getObject();
+    int nameref = group.getReferenceField("name");
+    ElementInfo name = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(nameref);
+    System.out.println("Thread group: " + name.asString());
+    JdwpString.writeString(os, name.asString());
   }
 
   private void executeParent(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ObjectId oid = idMan.readObjectId(bb);
-    ThreadGroup group = (ThreadGroup) oid.getObject();
-    ThreadGroup parent = group.getParent();
-    if (parent == null) {
-        os.writeLong(0L);
-    } else {
-        ObjectId parentId = idMan.getObjectId(parent);
-        parentId.write(os);
-    }
+	  ObjectId oid = idMan.readObjectId(bb);
+	    ElementInfo group = (ElementInfo) oid.getObject();
+	    int parentref = group.getReferenceField("parent");
+	    ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
+	    System.out.println("Thread group parent: " + parent);
+	    
+	    os.writeLong(0L);
+	    
+//    ObjectId oid = idMan.readObjectId(bb);
+//    ThreadGroup group = (ThreadGroup) oid.getObject();
+//    ThreadGroup parent = group.getParent();
+//    if (parent == null) {
+//        os.writeLong(0L);
+//    } else {
+//        ObjectId parentId = idMan.getObjectId(parent);
+//        parentId.write(os);
+//    }
   }
 
   private void executeChildren(ByteBuffer bb, DataOutputStream os)

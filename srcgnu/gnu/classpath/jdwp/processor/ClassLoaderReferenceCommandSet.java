@@ -47,6 +47,7 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -99,7 +100,7 @@ public class ClassLoaderReferenceCommandSet
     os.writeInt(loadRequests.size());
     for (Iterator iter = loadRequests.iterator(); iter.hasNext();)
       {
-        Class clazz = (Class)iter.next();
+    	ClassInfo clazz = (ClassInfo)iter.next();
         ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);
         refId.writeTagged(os);
       }

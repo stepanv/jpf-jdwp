@@ -49,6 +49,8 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -185,7 +187,7 @@ public class VirtualMachineCommandSet
 
     while (iter.hasNext())
       {
-        Class clazz = (Class) iter.next();
+    	ClassInfo clazz = (ClassInfo) iter.next();
         String clazzSig = Signature.computeClassSignature(clazz);
         if (clazzSig.equals(sig))
           allMatchingClasses.add(clazz);
@@ -194,7 +196,7 @@ public class VirtualMachineCommandSet
     os.writeInt(allMatchingClasses.size());
     for (int i = 0; i < allMatchingClasses.size(); i++)
       {
-        Class clazz = (Class) allMatchingClasses.get(i);
+    	ClassInfo clazz = (ClassInfo) allMatchingClasses.get(i);
         ReferenceTypeId id = idMan.getReferenceTypeId(clazz);
         id.writeTagged(os);
         int status = VMVirtualMachine.getClassStatus(clazz);
@@ -211,7 +213,7 @@ public class VirtualMachineCommandSet
     Iterator iter = classes.iterator ();
     while (iter.hasNext())
       {
-        Class clazz = (Class) iter.next();
+    	ClassInfo clazz = (ClassInfo) iter.next();
         ReferenceTypeId id = idMan.getReferenceTypeId(clazz);
         id.writeTagged(os);
         String sig = Signature.computeClassSignature(clazz);
@@ -224,37 +226,43 @@ public class VirtualMachineCommandSet
   private void executeAllThreads(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ThreadGroup jdwpGroup = Thread.currentThread().getThreadGroup();
-    ThreadGroup root = getRootThreadGroup(jdwpGroup);
-
-    int numThreads = root.activeCount();
-    Thread allThreads[] = new Thread[numThreads];
-    root.enumerate(allThreads);
-
-    // We need to loop through for the true count since some threads may have
-    // been destroyed since we got
-    // activeCount so those spots in the array will be null. As well we must
-    // ignore any threads that belong to jdwp
-    numThreads = 0;
-    for (int i = 0; i < allThreads.length; i++)
-      {
-        Thread thread = allThreads[i];
-        if (thread == null)
-          break; // No threads after this point
-        if (!thread.getThreadGroup().equals(jdwpGroup))
-          numThreads++;
-      }
-
-    os.writeInt(numThreads);
-
-    for (int i = 0; i < allThreads.length; i++)
-      {
-        Thread thread = allThreads[i];
-        if (thread == null)
-          break; // No threads after this point
-        if (!thread.getThreadGroup().equals(jdwpGroup))
-          idMan.getObjectId(thread).write(os);
-      }
+	  ThreadInfo[] threads = VMVirtualMachine.allThreads();
+	  os.writeInt(threads.length);
+	  for (ThreadInfo thread : threads) {
+		  
+		  idMan.getObjectId(thread).write(os);
+	  }
+//    ThreadGroup jdwpGroup = Thread.currentThread().getThreadGroup();
+//    ThreadGroup root = getRootThreadGroup(jdwpGroup);
+//
+//    int numThreads = root.activeCount();
+//    Thread allThreads[] = new Thread[numThreads];
+//    root.enumerate(allThreads);
+//
+//    // We need to loop through for the true count since some threads may have
+//    // been destroyed since we got
+//    // activeCount so those spots in the array will be null. As well we must
+//    // ignore any threads that belong to jdwp
+//    numThreads = 0;
+//    for (int i = 0; i < allThreads.length; i++)
+//      {
+//        Thread thread = allThreads[i];
+//        if (thread == null)
+//          break; // No threads after this point
+//        if (!thread.getThreadGroup().equals(jdwpGroup))
+//          numThreads++;
+//      }
+//
+//    os.writeInt(numThreads);
+//
+//    for (int i = 0; i < allThreads.length; i++)
+//      {
+//        Thread thread = allThreads[i];
+//        if (thread == null)
+//          break; // No threads after this point
+//        if (!thread.getThreadGroup().equals(jdwpGroup))
+//          idMan.getObjectId(thread).write(os);
+//      }
   }
 
   private void executeTopLevelThreadGroups(ByteBuffer bb, DataOutputStream os)
@@ -417,21 +425,21 @@ public class VirtualMachineCommandSet
         String msg = "redefinition of classes is not supported";
         throw new NotImplementedException(msg);
       }
-
-    int classes = bb.getInt();
-    Class[] types = new Class[classes];
-    byte[][] bytecodes = new byte[classes][];
-    for (int i = 0; i < classes; ++i)
-      {
-        ReferenceTypeId id = idMan.readReferenceTypeId(bb);
-        int classfile = bb.getInt();
-        byte[] bytecode = new byte[classfile];
-        bb.get(bytecode);
-        types[i] = id.getType();
-        bytecodes[i] = bytecode;
-      }
-
-    VMVirtualMachine.redefineClasses (types, bytecodes);
+throw new RuntimeException("not implemented");
+//    int classes = bb.getInt();
+//    Class[] types = new Class[classes];
+//    byte[][] bytecodes = new byte[classes][];
+//    for (int i = 0; i < classes; ++i)
+//      {
+//        ReferenceTypeId id = idMan.readReferenceTypeId(bb);
+//        int classfile = bb.getInt();
+//        byte[] bytecode = new byte[classfile];
+//        bb.get(bytecode);
+//        types[i] = id.getType();
+//        bytecodes[i] = bytecode;
+//      }
+//
+//    VMVirtualMachine.redefineClasses (types, bytecodes);
   }
 
   private void executeSetDefaultStratum(ByteBuffer bb, DataOutputStream os)

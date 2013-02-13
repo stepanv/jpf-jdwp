@@ -44,6 +44,8 @@ package gnu.classpath.jdwp;
 import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.id.*;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -118,9 +120,12 @@ public class VMIdManager
       Object object = obj.get ();
 
       // Special case: arrays
-      if (object.getClass ().isArray ())
+      if (object.getClass ().isArray ()) {
         id = new ArrayId ();
-      else
+    } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) {
+    		id = new ThreadId();
+    	
+    } else
         {
           // Loop through all classes until we hit baseclass
           Class myClass;
@@ -176,7 +181,7 @@ public class VMIdManager
     public static ReferenceTypeId newReferenceTypeId (SoftReference ref)
     {
       ReferenceTypeId id;
-      Class clazz = (Class) ref.get ();
+      ClassInfo clazz = (ClassInfo) ref.get ();
       if (clazz == null)
         return null;
 
@@ -393,9 +398,9 @@ public class VMIdManager
    * @param clazz  the class for which to get an ID
    * @returns  the ID of the class
    */
-  public ReferenceTypeId getReferenceTypeId (Class clazz)
+  public ReferenceTypeId getReferenceTypeId (ClassInfo classInfo)
   {
-    ReferenceKey ref = new ReferenceKey (clazz);
+    ReferenceKey ref = new ReferenceKey (classInfo);
     ReferenceTypeId id = (ReferenceTypeId)_classTable.get (ref);
     if (id == null)
       {

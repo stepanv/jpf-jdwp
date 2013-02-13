@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.exception.InvalidClassException;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -67,10 +68,10 @@ public class ReferenceTypeId
    * @returns the class
    * @throws InvalidClassException if the class is not valid
    */
-  public Class getType ()
+  public ClassInfo getType ()
     throws InvalidClassException
   {
-    Class clazz = (Class) _reference.get ();
+	  ClassInfo clazz = (ClassInfo) _reference.get ();
     if (clazz == null)
       throw new InvalidClassException (_id);
 
