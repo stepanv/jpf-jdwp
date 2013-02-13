@@ -42,6 +42,7 @@ import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.Location;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class MethodEntryEvent
     extends Event
 {
   // The thread where the event occurred
-  private Thread _thread;
+  private ThreadInfo _thread;
 
   // the location where the event occurred
   private Location _location;
@@ -66,14 +67,14 @@ public class MethodEntryEvent
   /**
    * Constructs a new <code>MethodEntryEvent</code>
    *
-   * @param thread the thread where the exception occurred
+   * @param threadInfo the thread where the exception occurred
    * @param location the location single stepped to
    * @param instance instance from which the method was called
    */
-  public MethodEntryEvent(Thread thread, Location location, Object instance)
+  public MethodEntryEvent(ThreadInfo threadInfo, Location location, Object instance)
   {
     super(JdwpConstants.EventKind.METHOD_ENTRY);
-    _thread = thread;
+    _thread = threadInfo;
     _location = location;
     _instance = instance;
   }

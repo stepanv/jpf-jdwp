@@ -50,6 +50,7 @@ import gnu.classpath.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
@@ -100,6 +101,7 @@ public class VMVirtualMachine
   public static void suspendAllThreads()
     throws JdwpException
   {
+	 
 	  vm.suspendAllThreads();
   }
 
@@ -221,8 +223,20 @@ public class VMVirtualMachine
    * @param  bb      buffer containing the frame's ID
    * @return the desired frame
    */
-  public static native VMFrame getFrame(ThreadInfo thread, long frameID)
-    throws JdwpException;
+  public static StackFrame getFrame(ThreadInfo thread, long frameID)
+    throws JdwpException {
+	  
+	  for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+			if (!stackFrame.isSynthetic()) {
+				if (stackFrame.getThis() == frameID) {
+					return stackFrame;
+				}
+			}
+		}
+	  return null;
+	  
+  }
 
   /**
    * Returns the number of frames in the thread's stack
@@ -322,8 +336,10 @@ public class VMVirtualMachine
    *
    * @param  request  the request to unregister
    */
-  public static native void unregisterEvent(EventRequest request)
-    throws JdwpException;
+  public static void unregisterEvent(EventRequest request)
+    throws JdwpException {
+	  vm.getRequests().remove(request);
+  }
 
 
   /**

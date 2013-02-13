@@ -47,6 +47,7 @@ import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class ClassPrepareEvent
   extends Event
 {
   // The thread in which this event occurred
-  private Thread _thread;
+  private ThreadInfo _thread;
 
  
   // Prepare flags
@@ -99,14 +100,14 @@ private ClassInfo classInfo;
   /**
    * Constructs a new <code>ClassPrepareEvent</code>
    *
-   * @param thread  thread in which event occurred
+   * @param threadInfo  thread in which event occurred
    * @param clazz   class which was prepared
    * @param flags   prepare status flags
    */
-  public ClassPrepareEvent (Thread thread, ClassInfo classInfo, int flags)
+  public ClassPrepareEvent (ThreadInfo threadInfo, ClassInfo classInfo, int flags)
   {
     super (JdwpConstants.EventKind.CLASS_PREPARE);
-    _thread = thread;
+    _thread = threadInfo;
     this.classInfo = classInfo;
     _status = flags;
   }

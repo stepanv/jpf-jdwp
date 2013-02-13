@@ -43,6 +43,7 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -67,16 +68,16 @@ import java.io.IOException;
 public class ThreadStartEvent
   extends Event
 {
-  private Thread _thread;
+  private ThreadInfo _thread;
 
   /**
    * Constructs a new ThreadStartEvent object
    *
-   * @param thread  the thread ID in which event occurred
+   * @param threadInfo  the thread ID in which event occurred
    */
-  public ThreadStartEvent (Thread thread) {
+  public ThreadStartEvent (ThreadInfo threadInfo) {
     super (JdwpConstants.EventKind.THREAD_START);
-    _thread = thread;
+    _thread = threadInfo;
   }
 
   /**

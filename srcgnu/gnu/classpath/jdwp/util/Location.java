@@ -45,6 +45,7 @@ import gnu.classpath.jdwp.id.ClassReferenceTypeId;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -72,6 +73,10 @@ public class Location
   {
     this.method = method;
     this.index = index;
+  }
+  
+  public static Location factory(Instruction instruction) {
+	  return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex());
   }
 
   /**
@@ -124,31 +129,6 @@ public class Location
       }
   }
   
-  public static void write(DataOutputStream os, StackFrame stackFrame)
-		    throws IOException
-		  {
-		    // check if this is an empty location
-	  MethodInfo methodInfo = stackFrame.getMethodInfo();
-		    if (methodInfo != null)
-		      {
-		        VMIdManager idm = VMIdManager.getDefault();
-		        ClassReferenceTypeId crti =
-		          (ClassReferenceTypeId)
-		          idm.getReferenceTypeId(methodInfo.getClassInfo());
-		        
-		        crti.writeTagged(os);
-		        os.writeLong(methodInfo.getGlobalId());
-		        os.writeLong(0); // TODO here, we should write index (what is index for?)
-		      }
-		    else
-		      {
-		        os.writeByte(1);
-		        os.writeLong((long) 0);
-		        os.writeLong((long) 0);
-		        os.writeLong((long) 0);
-		      }
-		  }
-
   /**
    * Sets up an empty location
    *

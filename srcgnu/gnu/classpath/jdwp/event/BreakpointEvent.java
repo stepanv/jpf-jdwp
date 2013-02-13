@@ -44,6 +44,8 @@ import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.Location;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -58,7 +60,7 @@ public class BreakpointEvent
   extends Event
 {
   // The thread in which this event occurred
-  private Thread _thread;
+  private ThreadInfo _thread;
 
   // Location where breakpoint occurred
   private Location _location;
@@ -73,7 +75,7 @@ public class BreakpointEvent
    * @param loc     location where breakpoint occurred
    * @param instance object instance
    */
-  public BreakpointEvent(Thread thread, Location loc, Object instance)
+  public BreakpointEvent(ThreadInfo thread, Location loc, ClassInfo instance)
   {
     super(JdwpConstants.EventKind.BREAKPOINT);
     _thread = thread;

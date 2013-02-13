@@ -49,6 +49,7 @@ import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -111,16 +112,18 @@ public class StackFrameCommandSet
     // these are held permanently and we want these to be held only as long as
     // the Thread is suspended.
     long frameID = bb.getLong();
-    VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
-    int slots = bb.getInt();
-    os.writeInt(slots); // Looks pointless but this is the protocol
-    for (int i = 0; i < slots; i++)
-      {
-        int slot = bb.getInt();
-        byte sig = bb.get();
-        Value val = frame.getValue(slot, sig);
-        val.writeTagged(os);
-      }
+    
+    StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
+    throw new NotImplementedException("not yet");
+//    int slots = bb.getInt();
+//    os.writeInt(slots); // Looks pointless but this is the protocol
+//    for (int i = 0; i < slots; i++)
+//      {
+//        int slot = bb.getInt();
+//        byte sig = bb.get();
+//        Value val = frame.getValue(slot, sig);
+//        val.writeTagged(os);
+//      }
   }
 
   private void executeSetValues(ByteBuffer bb, DataOutputStream os)
@@ -130,15 +133,15 @@ public class StackFrameCommandSet
     ThreadInfo thread = tId.getThread();
 
     long frameID = bb.getLong();
-    VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
-
-    int slots = bb.getInt();
-    for (int i = 0; i < slots; i++)
-      {
-        int slot = bb.getInt();
-        Value value = ValueFactory.createFromTagged(bb);
-        frame.setValue(slot, value);
-      }
+    StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
+    throw new NotImplementedException("not yet");
+//    int slots = bb.getInt();
+//    for (int i = 0; i < slots; i++)
+//      {
+//        int slot = bb.getInt();
+//        Value value = ValueFactory.createFromTagged(bb);
+//        frame.setValue(slot, value);
+//      }
   }
 
   private void executeThisObject(ByteBuffer bb, DataOutputStream os)
@@ -148,9 +151,9 @@ public class StackFrameCommandSet
     ThreadInfo thread = tId.getThread();
 
     long frameID = bb.getLong();
-    VMFrame frame = VMVirtualMachine.getFrame(thread, frameID);
+    StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
 
-    ObjectValue objVal = new ObjectValue(frame.getObject());
+    ObjectValue objVal = new ObjectValue(frame); // TODO this is possibly completely wrong
     objVal.writeTagged(os);
   }
 

@@ -31,7 +31,7 @@ public class JDWPRunner {
 	      JPF jpf = new JPF(conf);
 
 	      Jdwp jdwp = new Jdwp();
-	      jdwp.configure("transport=dt_socket,server=y,suspend=y,address=8000");
+	      jdwp.configure("transport=dt_socket,server=n,suspend=y,address=51251");
 	      
 	      
 	      VirtualMachine vm = new VirtualMachine(jpf);
@@ -42,6 +42,8 @@ public class JDWPRunner {
 	      jpf.run();
 	      
 	      Jdwp.notify(new VmDeathEvent());
+	      
+	      jdwp.shutdown();
 		
 	}
 

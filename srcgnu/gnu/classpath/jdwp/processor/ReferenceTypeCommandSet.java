@@ -252,13 +252,12 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    throw new RuntimeException("not implemented");
-//    Class clazz = refId.getType();
-//
-//    // We'll need to go into the jvm for this unless there's an easier way
-//    String sourceFileName = VMVirtualMachine.getSourceFile(clazz);
-//    JdwpString.writeString(os, sourceFileName);
-    // clazz.getProtectionDomain().getCodeSource().getLocation();
+    ClassInfo clazz = refId.getType();
+
+    // We'll need to go into the jvm for this unless there's an easier way
+    String sourceFileName = clazz.getSourceFileName();
+    JdwpString.writeString(os, sourceFileName);
+    // clazz2.getProtectionDomain().getCodeSource().getLocation();
   }
 
   private void executeNestedTypes(ByteBuffer bb, DataOutputStream os)

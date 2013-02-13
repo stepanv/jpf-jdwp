@@ -41,6 +41,7 @@ package gnu.classpath.jdwp.event.filters;
 
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 /**
  * An event filter which includes events matching a
@@ -93,7 +94,7 @@ public class ClassMatchFilter
     Object type = event.getParameter (Event.EVENT_CLASS);
     if (type != null)
       {
-        Class eventClass = (Class) type;
+    	ClassInfo eventClass = (ClassInfo) type;
         String name = eventClass.getName ();
 
         if (_pattern.startsWith ("*"))

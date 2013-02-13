@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
+import gnu.classpath.jdwp.event.BreakpointEvent;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventManager;
@@ -8,12 +9,15 @@ import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.event.MethodEntryEvent;
 import gnu.classpath.jdwp.event.ThreadStartEvent;
 import gnu.classpath.jdwp.event.VmInitEvent;
+import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jdwp.proxy.LocationProxy;
 import gov.nasa.jpf.jdwp.proxy.ThreadProxy;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.VMListener;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,7 +25,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JDWPListener extends ListenerAdapter implements VMListener {
 
-	private boolean started;
 	private VirtualMachine virtualMachine;
 	
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
@@ -31,15 +34,19 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void methodEntered (JVM vm) {
 		virtualMachine.started(vm);
-		MethodEntryEvent methodEntryEvent = new MethodEntryEvent(new ThreadProxy(vm.getLastThreadInfo()), new LocationProxy(vm.getLastMethodInfo(), 0 ), vm.getLastMethodInfo().getClassInfo());
-		dispatchEvent(methodEntryEvent);
+		
+		MethodInfo methodInfo = vm.getLastMethodInfo();
+		if (methodInfo.getClassInfo() != null) {
+			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(vm.getLastThreadInfo(), new Location(methodInfo, 0 ), vm.getLastMethodInfo().getClassInfo());
+			dispatchEvent(methodEntryEvent);
+		}
 	}
 	
 	
 
 	@Override
 	public void threadStarted(JVM vm) {
-		ThreadStartEvent threadStartEvent = new ThreadStartEvent(new ThreadProxy(vm.getLastThreadInfo()));
+		ThreadStartEvent threadStartEvent = new ThreadStartEvent(vm.getLastThreadInfo());
 		
 		dispatchEvent(threadStartEvent);
 	}
@@ -56,33 +63,35 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void classLoaded(JVM vm) {
 		virtualMachine.notifyClassLoaded(vm.getLastClassInfo());
-		ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(new ThreadProxy(vm.getCurrentThread()), vm.getLastClassInfo(), 0);
-		dispatchEvent(classPrepareEvent);
+		if (vm.getCurrentThread() != null) {
+			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), vm.getLastClassInfo(), 0);
+			dispatchEvent(classPrepareEvent);
+		}
 	}
 	
 	@Override
 	public void executeInstruction(JVM vm) {
 		virtualMachine.started(vm);
+		Instruction nextInstruction = vm.getNextInstruction();
+		if (nextInstruction.getMethodInfo() != null && nextInstruction.getMethodInfo().getClassInfo() != null) {
+			BreakpointEvent breakpointEvent = new BreakpointEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo());
+			dispatchEvent(breakpointEvent);
+		}
 	}
 	
 	private void dispatchEvent(Event event) {
 		System.out.println("Dispatching event: " + event);
-		for (EventRequest request : requests) {
-			if (request.matches(event)) {
-				try {
-					Jdwp.sendEvent(request, event);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+//		for (EventRequest request : requests) {
+//			if (request.matches(event)) {
+//				try {
+//					
+//					Jdwp.sendEvent(request, event);
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+		Jdwp.notify(event);
 	}
-
-	private static List<EventRequest> requests = new CopyOnWriteArrayList<EventRequest>();
 	
-	public static void registerEvent(EventRequest request) {
-		System.out.println("Request received: " + request);
-		requests.add(request);
-		
-	}
 }

@@ -221,6 +221,7 @@ public class Jdwp
           {
             try
               {
+            	Thread.sleep(500); // TODO remove this once socket closed exceptions are solved
                 sendEvent(requests[i], event);
                 jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
               }

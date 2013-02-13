@@ -200,6 +200,7 @@ public class PacketProcessor
             if (commandSet > 0 && commandSet < _sets.length)
               {
                 set = _sets[commandPkt.getCommandSet()];
+                System.out.println("Command set: " + set);
               }
             if (set != null)
               {

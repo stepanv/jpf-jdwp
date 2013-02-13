@@ -52,6 +52,7 @@ import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -186,7 +187,14 @@ public class ThreadReferenceCommandSet
       {
     	StackFrame frame = (StackFrame) frames.get(i);
         os.writeLong(frame.getThis());
-        Location.write(os, frame);
+        
+        Instruction instruction = frame.getPC();
+		
+		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+			instruction = instruction.getNext(thread);
+		}
+        Location location = new Location(instruction.getMethodInfo(), instruction.getInstructionIndex());
+        location.write(os);
       }
   }
 
