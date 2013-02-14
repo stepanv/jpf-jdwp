@@ -62,6 +62,7 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * A class representing the ReferenceType Command Set.
@@ -248,6 +249,8 @@ public class ReferenceTypeCommandSet
 //      }
   }
 
+  private static final Pattern SOURCEFILENAME_FIX_PATTERN = Pattern.compile("^.*[/\\\\]");
+  
   private void executeSourceFile(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
@@ -256,7 +259,8 @@ public class ReferenceTypeCommandSet
 
     // We'll need to go into the jvm for this unless there's an easier way
     String sourceFileName = clazz.getSourceFileName();
-    JdwpString.writeString(os, sourceFileName);
+    
+    JdwpString.writeString(os, SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst(""));
     // clazz2.getProtectionDomain().getCodeSource().getLocation();
   }
 
