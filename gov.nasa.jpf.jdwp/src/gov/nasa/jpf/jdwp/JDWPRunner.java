@@ -17,8 +17,19 @@ public class JDWPRunner {
 	public static void main(String[] args2) {
 		List<String> args = new ArrayList<String>();
 
-		args.add("+target=oldclassic");
-		args.add("+classpath=+,C:/Users/stepan/Data/workspaces/runtime-EclipseApplication/debug-test/bin;" + System.getProperty("java.class.path"));
+		if (args2.length != 2) {
+			System.err.println("Illegal number of arguments.. Allowed only two:");
+			System.err.println("  [1] main class to run");
+			System.err.println("  [2] port for debugging to attach to");
+			return;
+		}
+		
+		String classToRun = args2[0];
+		int port = Integer.parseInt(args2[1]);
+		
+		// TODO [for PJA] How do we want to start JPF (with JDWP enabled)?
+		args.add("+target=" + classToRun);
+		args.add("+classpath=+," + System.getProperty("java.class.path"));
 		
 	      // this initializes the JPF configuration from default.properties, site.properties
 	      // configured extensions (jpf.properties), current directory (jpf.properies) and
@@ -31,7 +42,7 @@ public class JDWPRunner {
 	      JPF jpf = new JPF(conf);
 
 	      Jdwp jdwp = new Jdwp();
-	      jdwp.configure("transport=dt_socket,server=n,suspend=y,address=51251");
+	      jdwp.configure("transport=dt_socket,server=n,suspend=y,address=" + port);
 	      
 	      
 	      VirtualMachine vm = new VirtualMachine(jpf);
