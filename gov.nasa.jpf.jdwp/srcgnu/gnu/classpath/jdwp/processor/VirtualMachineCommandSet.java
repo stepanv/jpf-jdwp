@@ -185,18 +185,21 @@ public class VirtualMachineCommandSet
     Collection classes = VMVirtualMachine.getAllLoadedClasses();
     Iterator iter = classes.iterator ();
 
+    System.out.println("LOOKING FOR CLASS: " + sig);
     while (iter.hasNext())
       {
     	ClassInfo clazz = (ClassInfo) iter.next();
         String clazzSig = Signature.computeClassSignature(clazz);
-        if (clazzSig.equals(sig))
+        if (clazzSig.equals(sig)) {
           allMatchingClasses.add(clazz);
+        }
       }
 
     os.writeInt(allMatchingClasses.size());
     for (int i = 0; i < allMatchingClasses.size(); i++)
       {
     	ClassInfo clazz = (ClassInfo) allMatchingClasses.get(i);
+    	System.out.println("Sending classes by signature: " + clazz + "");
         ReferenceTypeId id = idMan.getReferenceTypeId(clazz);
         id.writeTagged(os);
         int status = VMVirtualMachine.getClassStatus(clazz);
