@@ -42,6 +42,8 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.event.filters.*;
 import gnu.classpath.jdwp.exception.JdwpIllegalArgumentException;
+
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -380,4 +382,28 @@ public class EventRequest
 
     return matches;
   }
+
+	public void printDebugInfo() throws ClassNotFoundException {
+		  // let's use a bit of reflection to get right debug info
+		  Class eventRequestKind = Class.forName("gnu.classpath.jdwp.JdwpConstants$EventKind");
+		  String eventRequestName = "#" + _kind;
+		  for (Field field : eventRequestKind.getFields()) {
+			  try {
+				Byte value = (Byte)field.get(null);
+				if (value.equals(_kind)) {
+					eventRequestName = field.getName() + " #" + _kind;
+					break;
+				}
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			  
+		  }
+		  
+		  System.out.println("Registered request: " + eventRequestName);
+	  }
+	
+	
 }

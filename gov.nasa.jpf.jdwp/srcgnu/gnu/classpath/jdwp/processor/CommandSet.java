@@ -43,6 +43,7 @@ import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.VMIdManager;
 
 import java.io.DataOutputStream;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 
 /**
@@ -71,4 +72,44 @@ public abstract class CommandSet
   public abstract boolean runCommand(ByteBuffer bb, DataOutputStream os,
                                      byte command)
     throws JdwpException;
+  
+  public boolean runCommandWithInfo(ByteBuffer bb, DataOutputStream os,
+          byte command)
+throws JdwpException {
+	  try {
+		printDebugInfo(command);
+	} catch (ClassNotFoundException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	return runCommand(bb, os, command);
+	  
+  }
+  
+  public void printDebugInfo(byte command) throws ClassNotFoundException {
+	  // let's use a bit of reflection to get right debug info
+	  String commandSetName = this.toString().replaceAll("CommandSet@.*", "").replaceAll(".*\\.", "");
+	  Class commands = Class.forName("gnu.classpath.jdwp.JdwpConstants$CommandSet$" + commandSetName);
+	  String commandName = "#" + command;
+	  for (Field field : commands.getFields()) {
+		  //assuming field is static
+		  if ("CS_VALUE".equals(field.getName())) {
+			  continue;
+		  }
+		  try {
+			Byte value = (Byte)field.get(null);
+			if (value.equals(command)) {
+				commandName = field.getName() + " #" + command;
+				break;
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		  
+	  }
+	  
+	  System.out.println("Command: " + commandSetName + ", Command: " + commandName);
+  }
 }

@@ -182,7 +182,6 @@ public class PacketProcessor
     if (pkt != null)
       {
         JdwpCommandPacket commandPkt = (JdwpCommandPacket) pkt;
-        System.out.println("Received: " + commandPkt.getCommand());
         JdwpReplyPacket reply = new JdwpReplyPacket(commandPkt);
 
         // Reset our output stream
@@ -200,11 +199,10 @@ public class PacketProcessor
             if (commandSet > 0 && commandSet < _sets.length)
               {
                 set = _sets[commandPkt.getCommandSet()];
-                System.out.println("Command set: " + set);
               }
             if (set != null)
               {
-                _shutdown = set.runCommand(bb, _os, command);
+                _shutdown = set.runCommandWithInfo(bb, _os, command);
                 reply.setData(_outputBytes.toByteArray());
               }
             else

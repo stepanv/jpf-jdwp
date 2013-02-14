@@ -82,7 +82,12 @@ public class VirtualMachine {
 	}
 
 	public void registerEventRequest(EventRequest request) {
-		System.out.println("Registered request: " + request);
+		try {
+			request.printDebugInfo();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		requests.add(request);
 		
 	}

@@ -147,4 +147,9 @@ private ClassInfo classInfo;
                             Signature.computeClassSignature (classInfo));
     outStream.writeInt (_status);
   }
+  
+  @Override
+  public void printDebugInfo() {
+	  System.out.println("Event: " + this + ", Class: " + classInfo + ", Thread: " + _thread);
+  }
 }

@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp;
 
+import gnu.classpath.jdwp.event.BreakpointEvent;
+import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventManager;
 import gnu.classpath.jdwp.event.EventRequest;
@@ -222,6 +224,8 @@ public class Jdwp
             try
               {
             	Thread.sleep(500); // TODO remove this once socket closed exceptions are solved
+            	
+            	event.printDebugInfo();
                 sendEvent(requests[i], event);
                 jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
               }
@@ -235,8 +239,10 @@ public class Jdwp
           }
       }
   }
+  
+  
 
-  /**
+/**
    * Notify the debugger of "co-located" events. This method should
    * not be called if debugging is not active (but it would not
    * cause any harm). Places where event notifications occur

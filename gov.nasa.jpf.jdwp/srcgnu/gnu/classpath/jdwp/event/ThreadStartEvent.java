@@ -107,4 +107,9 @@ public class ThreadStartEvent
     ThreadId tid = (ThreadId) idm.getObjectId (_thread);
     tid.write (outStream);
   }
+  
+  @Override
+  public void printDebugInfo() {
+	  System.out.println("Event: " + this + ", Thread: " + _thread);
+  }
 }

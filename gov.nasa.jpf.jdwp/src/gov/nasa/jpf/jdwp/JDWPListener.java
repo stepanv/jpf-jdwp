@@ -4,24 +4,14 @@ import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.event.BreakpointEvent;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.Event;
-import gnu.classpath.jdwp.event.EventManager;
-import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.event.MethodEntryEvent;
 import gnu.classpath.jdwp.event.ThreadStartEvent;
-import gnu.classpath.jdwp.event.VmInitEvent;
 import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
-import gov.nasa.jpf.jdwp.proxy.LocationProxy;
-import gov.nasa.jpf.jdwp.proxy.ThreadProxy;
 import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.VMListener;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class JDWPListener extends ListenerAdapter implements VMListener {
 
@@ -35,9 +25,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	public void methodEntered (JVM vm) {
 		virtualMachine.started(vm);
 		
-		MethodInfo methodInfo = vm.getLastMethodInfo();
-		if (methodInfo.getClassInfo() != null) {
-			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(vm.getLastThreadInfo(), new Location(methodInfo, 0 ), vm.getLastMethodInfo().getClassInfo());
+		Instruction instruction = vm.getLastMethodInfo().getInstruction(0);
+		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
+			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(vm.getLastThreadInfo(), Location.factory(instruction), vm.getLastMethodInfo().getClassInfo());
 			dispatchEvent(methodEntryEvent);
 		}
 	}
@@ -80,7 +70,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 	
 	private void dispatchEvent(Event event) {
-		System.out.println("Dispatching event: " + event);
 //		for (EventRequest request : requests) {
 //			if (request.matches(event)) {
 //				try {

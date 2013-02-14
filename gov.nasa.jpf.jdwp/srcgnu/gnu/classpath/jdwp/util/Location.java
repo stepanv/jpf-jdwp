@@ -62,6 +62,7 @@ public class Location
 {
   private MethodInfo method;
   private long index;
+private Instruction instruction;
 
   /**
    * Create a location with the given parameters.
@@ -69,14 +70,17 @@ public class Location
    * @param method the method
    * @param index location in the method
    */
-  public Location(MethodInfo method, long index)
+  private Location(MethodInfo method, long index, Instruction instruction)
   {
     this.method = method;
     this.index = index;
+    
+    // just for debug info
+    this.instruction = instruction;
   }
   
   public static Location factory(Instruction instruction) {
-	  return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex());
+	  return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
   }
 
   /**
@@ -136,7 +140,7 @@ public class Location
    */
   public static Location getEmptyLocation()
   {
-       return new Location(null, 0);
+       return new Location(null, 0, null);
   }
 
   /**
@@ -162,7 +166,7 @@ public class Location
   // convenient for debugging
   public String toString ()
   {
-    return method.toString () + "." + index;
+    return method.toString () + "." + index + instruction != null ? ", Line: " + instruction.getLineNumber() : "";
   }
 
   public boolean equals(Object obj)

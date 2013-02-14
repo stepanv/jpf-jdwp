@@ -193,7 +193,7 @@ public class ThreadReferenceCommandSet
 		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
 			instruction = instruction.getNext(thread);
 		}
-        Location location = new Location(instruction.getMethodInfo(), instruction.getInstructionIndex());
+        Location location = Location.factory(instruction);
         location.write(os);
       }
   }

@@ -116,4 +116,9 @@ public class BreakpointEvent
     tid.write(outStream);
     _location.write(outStream);
   }
+  
+  @Override
+  public void printDebugInfo() {
+	  System.out.println("Event: " + this + ", Location: " + _location + ", Thread: " + _thread);
+  }
 }

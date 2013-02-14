@@ -178,4 +178,8 @@ public abstract class Event
     dos.writeInt (request.getId ());
     event._writeData (dos);
   }
+  
+  public void printDebugInfo() {
+	  System.out.println("Event: " + this);
+  }
 }
