@@ -106,7 +106,8 @@ public class MethodCommandSet
     ClassInfo clazz = refId.getType();
 
     MethodInfo method = VMMethod.readId(clazz, bb);
-   LineTable lt = LineTable.factory(method);
+   LineTable lt = LineTable.factory(method); // TODO do this in a uniform way (see method bellow)
+   
 //    LineTable lt = method.getLineTable();
     lt.write(os);
   }
@@ -117,10 +118,10 @@ public class MethodCommandSet
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
     ClassInfo clazz = refId.getType();
 
-    MethodInfo method = VMMethod.readId(clazz, bb);
-    throw new NotImplementedException("not yet");
+    MethodInfo methodInfo = VMMethod.readId(clazz, bb);
+    VariableTable variableTable = VMMethod.variableTable(methodInfo);
 //    VariableTable vt = method.getVariableTable();
-//    vt.write(os);
+    variableTable.write(os);
   }
 
   private void executeByteCodes(ByteBuffer bb, DataOutputStream os)

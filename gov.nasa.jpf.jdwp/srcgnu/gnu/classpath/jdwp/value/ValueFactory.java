@@ -103,6 +103,59 @@ public class ValueFactory
         throw new InvalidClassException(ite);
       }
   }
+  
+  public static Value createFromObjectTagged(Object value, byte tag) throws InvalidObjectException {
+	  Value val = null;
+	    switch(tag)
+	    {
+	      case JdwpConstants.Tag.BYTE:
+	    	  val = new ByteValue(((Byte) value).byteValue());
+	        break;
+	      case JdwpConstants.Tag.BOOLEAN:
+	    	  val = new BooleanValue(((Boolean) value).booleanValue());
+	        break;
+	      case JdwpConstants.Tag.CHAR:
+	    	  val = new CharValue(((Character) value).charValue());
+	        break;
+	      case JdwpConstants.Tag.SHORT:
+	    	  val = new ShortValue(((Short) value).shortValue());
+	        break;
+	      case JdwpConstants.Tag.INT:
+	    	  val = new IntValue(((Integer) value).intValue());
+	        break;
+	      case JdwpConstants.Tag.FLOAT:
+	    	  val = new FloatValue(((Float) value).floatValue());
+	        break;
+	      case JdwpConstants.Tag.LONG:
+	    	  val = new LongValue(((Long) value).longValue());
+	        break;
+	      case JdwpConstants.Tag.DOUBLE:
+	    	  val = new DoubleValue(((Double) value).doubleValue());
+	        break;
+	      case JdwpConstants.Tag.VOID:
+	        val = new VoidValue();
+	        break;
+	      case JdwpConstants.Tag.ARRAY:
+	      case JdwpConstants.Tag.THREAD:
+	      case JdwpConstants.Tag.OBJECT:
+	      case JdwpConstants.Tag.THREAD_GROUP:
+	      case JdwpConstants.Tag.CLASS_LOADER:
+	      case JdwpConstants.Tag.CLASS_OBJECT:
+	        throw new RuntimeException("not implemented"); // TODO implement also objects
+	    	  //ObjectId oid = VMIdManager.getDefault().readObjectId(bb);
+	        
+	        //val = new ObjectValue(oid.getObject());
+	        //break;
+	      case JdwpConstants.Tag.STRING:
+	        val = new StringValue((String) value);
+	        break;
+	      default:
+	        //throw new InvalidTagException(tag);
+	    	  throw new InvalidObjectException(new InvalidTagException(tag));
+	    }
+
+	    return val;
+  }
 
   /**
    * Creates a new Value of appropriate type for the value in the ByteBuffer.

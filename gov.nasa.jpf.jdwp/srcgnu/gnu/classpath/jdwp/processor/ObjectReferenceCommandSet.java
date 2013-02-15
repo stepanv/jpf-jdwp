@@ -132,7 +132,7 @@ public class ObjectReferenceCommandSet
     } else if (obj instanceof DynamicElementInfo) {
     	clazz = ((DynamicElementInfo)obj).getClassInfo();
     } else {
-    	throw new NotImplementedException("object needs an reference type implementation"); //TODO complete the implementation
+    	throw new RuntimeException("object needs an reference type implementation"); //TODO complete the implementation
     }
     //throw new RuntimeException("not implemented");
     ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);

@@ -47,6 +47,7 @@ import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 
 /**
@@ -176,6 +177,10 @@ public class VMMethod
     throws JdwpException, IOException
   {
     return VMVirtualMachine.getClassMethod(clazz, bb.getLong());
+  }
+  
+  public static VariableTable variableTable(MethodInfo methodInfo) {
+	  return new VariableTable(methodInfo);
   }
 
   public boolean equals(Object obj)

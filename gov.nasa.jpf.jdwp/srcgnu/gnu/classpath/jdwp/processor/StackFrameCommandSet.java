@@ -52,6 +52,7 @@ import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.StaticElementInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -59,6 +60,8 @@ import gov.nasa.jpf.jvm.ThreadInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import javax.management.RuntimeErrorException;
 
 /**
  * A class representing the StackFrame Command Set.
@@ -118,16 +121,29 @@ public class StackFrameCommandSet
     long frameID = bb.getLong();
     
     StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
-    throw new NotImplementedException("not yet");
-//    int slots = bb.getInt();
-//    os.writeInt(slots); // Looks pointless but this is the protocol
-//    for (int i = 0; i < slots; i++)
-//      {
-//        int slot = bb.getInt();
-//        byte sig = bb.get();
-//        Value val = frame.getValue(slot, sig);
-//        val.writeTagged(os);
-//      }
+    
+    
+    //throw new RuntimeException("not yet");
+    int slots = bb.getInt();
+    os.writeInt(slots); // Looks pointless but this is the protocol
+   
+    for (int i = 0; i < slots; i++)
+      {
+        int slot = bb.getInt();
+        byte sig = bb.get();
+        
+        Object object = null;
+        for (LocalVarInfo localVarInfo : frame.getMethodInfo().getLocalVars()) {
+        	if (localVarInfo.getSlotIndex() == slot) {
+        		object = frame.getLocalValueObject(localVarInfo);
+        		break;
+        	}
+        	
+        }
+        
+        Value val = ValueFactory.createFromObjectTagged(object, sig);
+        val.writeTagged(os);
+      }
   }
 
   private void executeSetValues(ByteBuffer bb, DataOutputStream os)
@@ -138,7 +154,7 @@ public class StackFrameCommandSet
 
     long frameID = bb.getLong();
     StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
-    throw new NotImplementedException("not yet");
+    throw new RuntimeException("not yet");
 //    int slots = bb.getInt();
 //    for (int i = 0; i < slots; i++)
 //      {

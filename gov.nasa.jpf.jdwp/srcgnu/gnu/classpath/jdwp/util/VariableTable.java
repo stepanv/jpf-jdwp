@@ -36,75 +36,101 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.util;
+
+import gov.nasa.jpf.jvm.LocalVarInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.plaf.SliderUI;
 
 /**
  * A class representing a Variable Table for a method.
- *
+ * 
  * @author Aaron Luchko <aluchko@redhat.com>
  */
-public class VariableTable
-{
+public class VariableTable {
 
-  private final int argCnt;
+	public VariableTable(MethodInfo methodInfo) {
+		for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
+			  this.new Slot(localVarInfo);
+		  }
+		argCount = methodInfo.getArgumentsSize(); //TODO this might be wrong .. see a comment bellow
+		// according to JDWP argCount is:
+		// The number of words in the frame used by arguments. Eight-byte arguments use two words; all others use one.   
+		// I'm so unsure what exactly this means ... just TODO - has to be tested
+	}
 
-  private final int slots;
+	private List<Slot> slots = new ArrayList<VariableTable.Slot>();
+	private int argCount;
+	
+	public class Slot {
+		
+		/**
+		 * First code index at which the variable is visible, The variable can
+		 * be get or set only when the current <code>codeIndex <= </code>
+		 * current frame code index <code> < codeIndex + lenth</code>
+		 */
+		private long codeIndex;
+		
+		/**
+		 * The variable's name.
+		 */
+		private String name;
+		
+		/**
+		 * The variable type's JNI signature.
+		 */
+		private String signature;
+		
+		/**
+		 * Unsigned value used in conjunction with <code>codeIndex</code>.
+		 */
+		private int length;
+		
+		/**
+		 * The local variable's index in its frame
+		 */
+		private int slot;
 
-  private final long[] lineCI;
+		/**
+		 * Creates and registers a slot in a {@link VariableTable} instance.
+		 * 
+		 * @param localVarInfo
+		 *            An instance of {@link LocalVarInfo} from JPF.
+		 */
+		public Slot(LocalVarInfo localVarInfo) {
+			codeIndex = localVarInfo.getStartPC();
+			name = localVarInfo.getName();
+			signature = localVarInfo.getSignature();
+			length = localVarInfo.getLength();
+			slot = localVarInfo.getSlotIndex();
 
-  private int[] slot;
+			VariableTable.this.slots.add(this);
+		}
+	}
 
-  private int[] lengths;
-
-  private String[] sigs;
-
-  private String[] names;
-
-  /**
-   * Make a new variable table with the given values.
-   *
-   * @param argCnt number of words used by arguments in this frame
-   * @param slots number of variables
-   * @param lineCI first code index of given variable (size slots)
-   * @param names name of given variable (size slots)
-   * @param sigs signature of given variable (size slots)
-   * @param lengths size of region where variable is active (size slots)
-   * @param slot index of variable in this frame (size slots)
-   */
-  public VariableTable(int argCnt, int slots, long lineCI[], String names[],
-                       String sigs[], int lengths[], int slot[])
-  {
-    this.argCnt = argCnt;
-    this.slots = slots;
-    this.lineCI = lineCI;
-    this.names = names;
-    this.sigs = sigs;
-    this.lengths = lengths;
-    this.slot = slot;
-  }
-
-  /**
-   * Writes this line table to the given DataOutputStream.
-   *
-   * @param os the stream to write it to
-   * @throws IOException
-   */
-  public void write(DataOutputStream os) throws IOException
-  {
-    os.writeInt(argCnt);
-    os.writeInt(slots);
-    for (int i = 0; i < slots; i++)
-      {
-        os.writeLong(lineCI[i]);
-        JdwpString.writeString(os, names[i]);
-        JdwpString.writeString(os, sigs[i]);
-        os.writeInt(lengths[i]);
-        os.writeInt(slot[i]);
-      }
-  }
+	/**
+	 * Writes this line table to the given DataOutputStream.
+	 * 
+	 * @param os
+	 *            the stream to write it to
+	 * @throws IOException
+	 */
+	public void write(DataOutputStream os) throws IOException {
+		os.writeInt(argCount);
+		os.writeInt(slots.size());
+		for (Slot slot : slots) {
+			os.writeLong(slot.codeIndex); // 2 words
+			JdwpString.writeString(os, slot.name);
+			JdwpString.writeString(os, slot.signature);
+			os.writeInt(slot.length); // 1 word
+			os.writeInt(slot.slot); // 1 word
+		}
+	}
 
 }

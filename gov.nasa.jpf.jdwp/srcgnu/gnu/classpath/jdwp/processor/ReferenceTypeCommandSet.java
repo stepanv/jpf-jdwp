@@ -46,6 +46,7 @@ import gnu.classpath.jdwp.exception.InvalidFieldException;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
+import gnu.classpath.jdwp.id.NullObjectId;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
@@ -152,11 +153,14 @@ public class ReferenceTypeCommandSet
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
 
-    ClassInfo clazz = refId.getType();
-    throw new RuntimeException("not implemented");
+//    ClassInfo clazz = refId.getType();
+    // TODO [for PJA] How does JPF work with classloaders? Seems that java.lang.Class#getClassLoader() returns the classloader of underlying VM
+    // JPF doesn't care about classloaders?
+    ObjectId oid = new NullObjectId(); // returning null which stands for system classloader
+//    throw new RuntimeException("not implemented");
 //    ClassLoader loader = clazz.getcl getClassLoader();
 //    ObjectId oid = idMan.getObjectId(loader);
-//    oid.write(os);
+    oid.write(os);
   }
 
   private void executeModifiers(ByteBuffer bb, DataOutputStream os)
