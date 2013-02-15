@@ -49,7 +49,11 @@ import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.jvm.StaticElementInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -152,8 +156,13 @@ public class StackFrameCommandSet
 
     long frameID = bb.getLong();
     StackFrame frame = VMVirtualMachine.getFrame(thread, frameID);
+    
+    ElementInfo thisObject = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(frame.getThis());
 
-    ObjectValue objVal = new ObjectValue(frame); // TODO this is possibly completely wrong
+    if (thisObject instanceof StaticElementInfo) {
+    	throw new IllegalArgumentException("Not sure whether we're allowed to return static elements"); // TODO this is possibly completely wrong
+    }
+    ObjectValue objVal = new ObjectValue(thisObject); 
     objVal.writeTagged(os);
   }
 

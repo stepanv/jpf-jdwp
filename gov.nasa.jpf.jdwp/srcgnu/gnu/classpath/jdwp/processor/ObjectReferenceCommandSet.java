@@ -53,6 +53,9 @@ import gnu.classpath.jdwp.util.MonitorInfo;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
@@ -126,8 +129,10 @@ public class ObjectReferenceCommandSet
     	clazz = ((ThreadInfo)obj).getClassInfo();
     } else if (obj instanceof StackFrame) {
     	clazz = ((StackFrame)obj).getClassInfo();
+    } else if (obj instanceof DynamicElementInfo) {
+    	clazz = ((DynamicElementInfo)obj).getClassInfo();
     } else {
-    	throw new NotImplementedException("object needs an reference type implementation");
+    	throw new NotImplementedException("object needs an reference type implementation"); //TODO complete the implementation
     }
     //throw new RuntimeException("not implemented");
     ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);
@@ -138,7 +143,8 @@ public class ObjectReferenceCommandSet
     throws JdwpException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-    Object obj = oid.getObject();
+    DynamicElementInfo obj = (DynamicElementInfo)oid.getObject();
+    //JVM.getVM().getHeap().get(360)
 
     int numFields = bb.getInt();
 
@@ -146,13 +152,14 @@ public class ObjectReferenceCommandSet
 
     for (int i = 0; i < numFields; i++)
       {
-        Field field = (Field) idMan.readObjectId(bb).getObject();
+    	FieldInfo field = (FieldInfo) idMan.readObjectId(bb).getObject();
         try
           {
-            field.setAccessible(true); // Might be a private field
-            Object value = field.get(obj);
-            Value val = ValueFactory.createFromObject(value,
-                                                      field.getType());
+        	
+        	System.out.println(field);
+            //field.setAccessible(true); // Might be a private field
+            Object value = field.getValueObject(obj.getFields());
+            Value val = ValueFactory.createFromObject(value, field);
             val.writeTagged(os);
           }
         catch (IllegalArgumentException ex)
@@ -160,11 +167,11 @@ public class ObjectReferenceCommandSet
             // I suppose this would best qualify as an invalid field then
             throw new InvalidFieldException(ex);
           }
-        catch (IllegalAccessException ex)
-          {
-            // Since we set it as accessible this really shouldn't happen
-            throw new JdwpInternalErrorException(ex);
-          }
+//        catch (IllegalAccessException ex)
+//          {
+//            // Since we set it as accessible this really shouldn't happen
+//            throw new JdwpInternalErrorException(ex);
+//          }
       }
   }
 

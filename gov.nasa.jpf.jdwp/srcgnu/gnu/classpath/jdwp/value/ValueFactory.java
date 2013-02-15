@@ -45,6 +45,15 @@ import gnu.classpath.jdwp.exception.InvalidTagException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.util.JdwpString;
+import gov.nasa.jpf.jvm.BooleanFieldInfo;
+import gov.nasa.jpf.jvm.ByteFieldInfo;
+import gov.nasa.jpf.jvm.CharFieldInfo;
+import gov.nasa.jpf.jvm.DoubleFieldInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.FloatFieldInfo;
+import gov.nasa.jpf.jvm.IntegerFieldInfo;
+import gov.nasa.jpf.jvm.LongFieldInfo;
+import gov.nasa.jpf.jvm.ShortFieldInfo;
 
 import java.nio.ByteBuffer;
 
@@ -244,4 +253,41 @@ public class ValueFactory
 
     return val;
   }
+
+public static Value createFromObject(Object value, FieldInfo field) {
+	Value val = null;
+
+    if (!field.isReference())
+      {
+        if (field instanceof ByteFieldInfo)
+          val = new ByteValue(((Byte) value).byteValue());
+        else if (field instanceof BooleanFieldInfo)
+          val = new BooleanValue(((Boolean) value).booleanValue());
+        else if (field instanceof CharFieldInfo)
+          val = new CharValue(((Character) value).charValue());
+        else if (field instanceof ShortFieldInfo)
+          val = new ShortValue(((Short) value).shortValue());
+        else if (field instanceof IntegerFieldInfo)
+          val = new IntValue(((Integer) value).intValue());
+        else if (field instanceof FloatFieldInfo)
+          val = new FloatValue(((Float) value).floatValue());
+        else if (field instanceof LongFieldInfo)
+          val = new LongValue(((Long) value).longValue());
+        else if (field instanceof DoubleFieldInfo)
+          val = new DoubleValue(((Double) value).doubleValue());
+        // TODO originally there was also void type ... we don't have void fields .. do we?
+//        else if (type == void.class) 
+//          val = new VoidValue();
+      }
+    else
+      {
+    	// TODO what to do with Strings?
+//        if (type.isAssignableFrom(String.class))
+//          val = new StringValue ((String) value);
+//        else
+          val = new ObjectValue(value);
+      }
+
+    return val;
+}
 }
