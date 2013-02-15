@@ -53,6 +53,7 @@ import gnu.classpath.jdwp.util.MonitorInfo;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -119,7 +120,15 @@ public class ObjectReferenceCommandSet
   {
     ObjectId oid = idMan.readObjectId(bb);
     Object obj = oid.getObject();
-    ClassInfo clazz = ((ThreadInfo)obj).getClassInfo();
+    
+    ClassInfo clazz = null;
+    if (obj instanceof ThreadInfo) {
+    	clazz = ((ThreadInfo)obj).getClassInfo();
+    } else if (obj instanceof StackFrame) {
+    	clazz = ((StackFrame)obj).getClassInfo();
+    } else {
+    	throw new NotImplementedException("object needs an reference type implementation");
+    }
     //throw new RuntimeException("not implemented");
     ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);
     refId.writeTagged(os);
