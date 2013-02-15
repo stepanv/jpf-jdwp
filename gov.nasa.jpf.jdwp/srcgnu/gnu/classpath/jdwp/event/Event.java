@@ -173,13 +173,13 @@ public abstract class Event
                                EventRequest request)
     throws IOException
   {
-	  System.out.println("Sending event: " + event._eventKind);
+	  System.out.println(" >>>>>>>>> Sending event: " + event._eventKind);
     dos.writeByte (event._eventKind);
     dos.writeInt (request.getId ());
     event._writeData (dos);
   }
   
   public void printDebugInfo() {
-	  System.out.println("Event: " + this);
+	  System.out.println(" >>>>>>>>> Event: " + this);
   }
 }

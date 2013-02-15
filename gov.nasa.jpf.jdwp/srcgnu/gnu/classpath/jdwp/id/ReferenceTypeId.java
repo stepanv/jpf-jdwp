@@ -89,4 +89,8 @@ public class ReferenceTypeId
   {
     outStream.writeLong (_id);
   }
+  
+  public String toString() {
+	  return "ReferenceType" + super.toString();
+  }
 }

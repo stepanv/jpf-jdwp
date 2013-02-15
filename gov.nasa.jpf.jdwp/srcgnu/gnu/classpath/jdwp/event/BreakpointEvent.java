@@ -119,6 +119,6 @@ public class BreakpointEvent
   
   @Override
   public void printDebugInfo() {
-	  System.out.println("Event: " + this + ", Location: " + _location + ", Thread: " + _thread);
+	  System.out.println(" >>>>>>>>> Event: " + this + ", Location: " + _location + ", Thread: " + _thread);
   }
 }

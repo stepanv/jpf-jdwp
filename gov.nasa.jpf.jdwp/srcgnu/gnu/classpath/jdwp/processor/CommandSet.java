@@ -109,7 +109,7 @@ throws JdwpException {
 		}
 		  
 	  }
-	  
+	  System.out.println("================================================================");
 	  System.out.println("Command: " + commandSetName + ", Command: " + commandName);
   }
 }

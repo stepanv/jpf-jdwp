@@ -128,4 +128,8 @@ public class ObjectId
   {
     _handle = null;
   }
+  
+  public String toString() {
+	  return "Object" + super.toString();
+  }
 }

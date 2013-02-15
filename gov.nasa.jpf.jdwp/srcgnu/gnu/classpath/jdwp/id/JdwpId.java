@@ -148,4 +148,8 @@ public abstract class JdwpId
     outStream.writeByte (_tag);
     write (outStream);
   }
+  
+  public String toString() {
+	  return "ID: " + _id + " (tag: " + _tag + ")";
+  }
 }
