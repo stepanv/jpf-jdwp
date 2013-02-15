@@ -355,10 +355,12 @@ public class VMIdManager
 
         // Object not found. Make new id for it
         id = IdFactory.newObjectId (ref);
+        
+        System.out.println("TABLE CREATE Object: " + theObject + " ObjectID: " + id);
         _oidTable.put (ref, id);
         _idTable.put (new Long (id.getId ()), id);
       }
-
+    System.out.println("TABLE RETURN Object: " + theObject + " ObjectID: " + id);
     return id;
   }
 
@@ -380,7 +382,7 @@ public class VMIdManager
     ObjectId oid = (ObjectId) _idTable.get (new Long (id));
     if (oid == null)
       throw new InvalidObjectException (id);
-
+    System.out.println("TABLE RETURN ObjectID: " + oid);
     return oid;
   }
 
@@ -406,10 +408,11 @@ public class VMIdManager
       {
         // Object not found. Make new id for it
         id = IdFactory.newReferenceTypeId (ref);
+        System.out.println("TABLE CREATE ReferenceType: " + classInfo + " ReferenceTypeID: " + id);
         _classTable.put (ref, id);
         _ridTable.put (new Long (id.getId ()), id);
       }
-
+    System.out.println("TABLE RETURN ReferenceType: " + classInfo + " ReferenceTypeID: " + id);
     return id;
   }
 
@@ -427,7 +430,7 @@ public class VMIdManager
     ReferenceTypeId rid = (ReferenceTypeId) _ridTable.get (new Long (id));
     if (rid == null)
       throw new InvalidClassException (id);
-
+    System.out.println("TABLE RETURN ReferenceTypeID: " + rid);
     return rid;
   }
 
