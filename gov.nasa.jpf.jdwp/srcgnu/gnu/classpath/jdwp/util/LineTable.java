@@ -103,8 +103,11 @@ public static LineTable factory(MethodInfo method) {
 	long end = -1;
 	int index = 0;
 	for (Instruction instruction : method.getInstructions()) {
+		
 		lineCI[index] = instruction.getInstructionIndex();
 		lineNum[index] = instruction.getLineNumber();
+		
+		System.out.println("LINE TABLE: index: " + lineCI[index] + " line: " + lineNum[index] + " ... instruction: " + instruction);
 		
 		start = lineCI[index] < start ? lineCI[index] : start;
 		end = lineCI[index] > end ? lineCI[index] : end;

@@ -40,6 +40,7 @@ package gnu.classpath.jdwp.util;
 
 import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -56,42 +57,46 @@ import javax.swing.plaf.SliderUI;
 public class VariableTable {
 
 	public VariableTable(MethodInfo methodInfo) {
+		System.out.println("VARIABLE TABLE CREATION: method: " + methodInfo);
 		for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
-			  this.new Slot(localVarInfo);
-		  }
-		argCount = methodInfo.getArgumentsSize(); //TODO this might be wrong .. see a comment bellow
+			this.new Slot(localVarInfo, methodInfo);
+		}
+		argCount = methodInfo.getArgumentsSize(); // TODO this might be wrong ..
+													// see a comment bellow
 		// according to JDWP argCount is:
-		// The number of words in the frame used by arguments. Eight-byte arguments use two words; all others use one.   
-		// I'm so unsure what exactly this means ... just TODO - has to be tested
+		// The number of words in the frame used by arguments. Eight-byte
+		// arguments use two words; all others use one.
+		// I'm so unsure what exactly this means ... just TODO - has to be
+		// tested
 	}
 
 	private List<Slot> slots = new ArrayList<VariableTable.Slot>();
 	private int argCount;
-	
+
 	public class Slot {
-		
+
 		/**
 		 * First code index at which the variable is visible, The variable can
 		 * be get or set only when the current <code>codeIndex <= </code>
 		 * current frame code index <code> < codeIndex + lenth</code>
 		 */
 		private long codeIndex;
-		
+
 		/**
 		 * The variable's name.
 		 */
 		private String name;
-		
+
 		/**
 		 * The variable type's JNI signature.
 		 */
 		private String signature;
-		
+
 		/**
 		 * Unsigned value used in conjunction with <code>codeIndex</code>.
 		 */
 		private int length;
-		
+
 		/**
 		 * The local variable's index in its frame
 		 */
@@ -102,15 +107,26 @@ public class VariableTable {
 		 * 
 		 * @param localVarInfo
 		 *            An instance of {@link LocalVarInfo} from JPF.
+		 * @param methodInfo
+		 *            An instance of {@link MethodInfo} which this local
+		 *            variable belongs to
 		 */
-		public Slot(LocalVarInfo localVarInfo) {
-			codeIndex = localVarInfo.getStartPC();
+		public Slot(LocalVarInfo localVarInfo, MethodInfo methodInfo) {
+
+			// we need to calculate instruction index from accumulated bytecode position
+			Instruction startInstruction = methodInfo.getInstructionAt(localVarInfo.getStartPC());
+			Instruction endInstruction = methodInfo.getInstructionAt(localVarInfo.getStartPC() + localVarInfo.getLength() - 1);
+			
+			codeIndex = startInstruction.getInstructionIndex();
 			name = localVarInfo.getName();
 			signature = localVarInfo.getSignature();
-			length = localVarInfo.getLength();
+			length = (int) (endInstruction.getInstructionIndex() - codeIndex) + 1;
 			slot = localVarInfo.getSlotIndex();
 
 			VariableTable.this.slots.add(this);
+
+			System.out.println("VARIABLE TABLE: index: " + codeIndex + " slot: " + slot + " length: " + length + " name: " + name + " ... localVarInfo: "
+					+ localVarInfo);
 		}
 	}
 
