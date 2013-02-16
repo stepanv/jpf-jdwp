@@ -43,7 +43,11 @@ import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.exception.InvalidTagException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
+import gnu.classpath.jdwp.id.ArrayId;
+import gnu.classpath.jdwp.id.ClassLoaderId;
 import gnu.classpath.jdwp.id.ObjectId;
+import gnu.classpath.jdwp.id.StringId;
+import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gov.nasa.jpf.jvm.BooleanFieldInfo;
 import gov.nasa.jpf.jvm.ByteFieldInfo;
@@ -144,13 +148,31 @@ public class ValueFactory
 	      case JdwpConstants.Tag.THREAD_GROUP:
 	      case JdwpConstants.Tag.CLASS_LOADER:
 	      case JdwpConstants.Tag.CLASS_OBJECT:
-	        throw new RuntimeException("not implemented"); // TODO implement also objects
+	      case JdwpConstants.Tag.STRING:
+	    	  
+	    	  ObjectId oid = VMIdManager.getDefault().getObjectId(value);
+	    	  
+	    	  // JDI has just types: ReferenceType and PrimitiveType (and theirs implementators)
+	    	  // Thus we get only Object tag for the corresponding ReferenceType
+	    	  // On the other hand we must return the right tag so that JDI's Value can be correctly instatiated
+	    	  
+	    	  if (oid instanceof StringId) {
+	    		  val = new StringValue((DynamicElementInfo)oid.getObject());
+	    	  } else {
+	    		  val = new ObjectValue(oid.getObject());
+
+	    	  }
+	        //throw new RuntimeException("not implemented"); // TODO implement also objects
+	        
+//ObjectId oid = VMIdManager.getDefault().getObjectId(value); // TODO what if a String appears here? it's so weird
+//val = 
+//break;
 	    	  //ObjectId oid = VMIdManager.getDefault().readObjectId(bb);
 	        
 	        //val = new ObjectValue(oid.getObject());
 	        //break;
-	      case JdwpConstants.Tag.STRING:
-	        val = new StringValue((String) value);
+	      
+//	        val = new StringValue((String) value);
 	        break;
 	      default:
 	        //throw new InvalidTagException(tag);
@@ -310,7 +332,7 @@ public class ValueFactory
     return val;
   }
 
-public static Value createFromObject(Object value, FieldInfo field) {
+public static Value createFromObject(Object value, FieldInfo field) throws InvalidObjectException {
 	Value val = null;
 
     if (!field.isReference())
@@ -340,11 +362,13 @@ public static Value createFromObject(Object value, FieldInfo field) {
     	// TODO maybe forward decision about Strings to the end
     	// because do we really need to keep track of Strings as different objects?
     	// it could be just fine to treat them as ObjectValues (except for sending them through JDWP)
-    	if (value instanceof ElementInfo && ((ElementInfo)value).getClassInfo().isStringClassInfo()) {
-    		val = new StringValue (((ElementInfo)value));
-    	} else {
-          val = new ObjectValue(value);
-    	}
+    	 ObjectId oid = VMIdManager.getDefault().getObjectId(value);
+    	 if (oid instanceof StringId) {
+   		  val = new StringValue((ElementInfo)oid.getObject());
+   	  } else {
+   		  val = new ObjectValue(oid.getObject());
+
+   	  }
       }
 
     return val;

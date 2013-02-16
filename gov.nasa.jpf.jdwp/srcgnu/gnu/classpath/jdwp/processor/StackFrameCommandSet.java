@@ -130,7 +130,7 @@ public class StackFrameCommandSet
     for (int i = 0; i < slots; i++)
       {
         int slot = bb.getInt();
-        byte sig = bb.get();
+        byte tag = bb.get();
         
         Object object = null;
         for (LocalVarInfo localVarInfo : frame.getMethodInfo().getLocalVars()) {
@@ -141,7 +141,7 @@ public class StackFrameCommandSet
         	
         }
         
-        Value val = ValueFactory.createFromObjectTagged(object, sig);
+        Value val = ValueFactory.createFromObjectTagged(object, tag);
         val.writeTagged(os);
       }
   }
