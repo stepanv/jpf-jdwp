@@ -44,14 +44,22 @@ package gnu.classpath.jdwp;
 import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.exception.InvalidMethodException;
 import gnu.classpath.jdwp.exception.JdwpException;
+import gnu.classpath.jdwp.id.ObjectId;
+import gnu.classpath.jdwp.id.StringId;
 import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
+import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
+import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.DirectCallStackFrame;
+import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.ExceptionInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.UncaughtException;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 import java.util.ArrayList;
@@ -303,11 +311,60 @@ public class VMVirtualMachine
    * @param  options     invocation options
    * @return a result object containing the results of the invocation
    */
-  public static native MethodResult executeMethod (Object obj, Thread thread,
-                                            Class clazz, VMMethod method,
+  public static MethodResult executeMethod (Object obj, ThreadInfo thread,
+                                            ClassInfo clazz, MethodInfo method,
                                             Value[] values,
                                             int options)
-    throws JdwpException;
+    throws JdwpException {
+	  
+	  // TODO [for PJA] What is the best way to execute a method
+	  // it's typical, we want to execute obj.toString() when generating a popup of a hover info when inspecting an object
+	  System.out.println("Executing method: " + method + " of object instance: " + obj);
+	  
+	  MethodInfo stub = method.createDirectCallStub("[jdwp-method-invocation]" + clazz + "." + method.getName());
+	    stub.setFirewall(true); // we don't want to let exceptions pass through this
+	    
+	    DirectCallStackFrame frame = new DirectCallStackFrame(stub);
+	    
+	    // push this on a stack
+	    frame.push(((ElementInfo)obj).getObjectRef());
+	    
+	    for (Value value : values) {
+	    	System.out.println(value);
+	    	throw new RuntimeException("not impelemented");
+	    	// TODO should put arguments to a stack
+	    	//frame.push
+	    }
+	    
+//	    frame.push(robj); // push 'this'
+//	    frame.push(a);    // push 'a'
+	    MethodResult methodResult = null;
+	    try {
+	    	thread.executeMethodHidden(frame);
+	      //ti.advancePC();
+
+	    } catch (UncaughtException ux) {  // frame's method is firewalled
+	      System.out.println("# hidden method execution failed, leaving nativeHiddenRoundtrip: " + ux);
+	      thread.clearPendingException();
+	      ExceptionInfo exceptionInfo = thread.getPendingException();
+	      throw new RuntimeException("exceptions not yet implemented");
+//	      methodResult = new MethodResult(null, exceptionInfo);
+//	      thread.popFrame(); // this is still the DirectCallStackFrame, and we want to continue execution
+//	      return -1;
+	    }
+
+	    // get the return value from the (already popped) frame
+	    int res = frame.peek();
+	    ElementInfo result = vm.getJpf().getVM().getHeap().get(res); // TODO implicitly assuming returned value is a reference 
+	    if (result == null) {
+	    	// TODO is probably primitive
+	    	throw new RuntimeException("Not implemented");
+	    }
+	    System.out.println("# exit nativeHiddenRoundtrip: " + res);
+	       
+	    ObjectId objectId = VMIdManager.getDefault().getObjectId(result);
+	    return new MethodResult(objectId.factory(), null);
+  }
 
   /**
    * "Returns the name of source file in which a reference type was declared"

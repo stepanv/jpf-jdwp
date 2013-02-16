@@ -57,6 +57,7 @@ import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
@@ -228,28 +229,30 @@ public class ObjectReferenceCommandSet
     Object obj = oid.getObject();
 
     ObjectId tid = idMan.readObjectId(bb);
-    Thread thread = (Thread) tid.getObject();
+    ThreadInfo thread = (ThreadInfo) tid.getObject();
 
     ReferenceTypeId rid = idMan.readReferenceTypeId(bb);
-    throw new RuntimeException("not implemented");
-//    Class clazz = rid.getType();
-//
-//    VMMethod method = VMMethod.readId(clazz, bb);
-//
-//    int args = bb.getInt();
-//    Value[] values = new Value[args];
-//
-//    for (int i = 0; i < args; i++)
-//      values[i] = ValueFactory.createFromTagged(bb);
-//
-//    int invokeOptions = bb.getInt();
-//    MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
-//                                                     clazz, method,
-//                                                     values, invokeOptions);
-//    Throwable exception = mr.getThrownException();
-//    ObjectId eId = idMan.getObjectId(exception);
-//    mr.getReturnedValue().writeTagged(os);
-//    eId.writeTagged(os);
+ //   throw new RuntimeException("not implemented");
+    ClassInfo clazz = rid.getType();
+
+    MethodInfo method = VMMethod.readId(clazz, bb);
+
+    int args = bb.getInt();
+    Value[] values = new Value[args];
+
+    for (int i = 0; i < args; i++) {
+      values[i] = ValueFactory.createFromTagged(bb);
+    }
+
+    
+    int invokeOptions = bb.getInt();
+    MethodResult mr = VMVirtualMachine.executeMethod(obj, thread,
+                                                     clazz, method,
+                                                     values, invokeOptions);
+    Throwable exception = mr.getThrownException();
+    ObjectId eId = idMan.getObjectId(exception);
+    mr.getReturnedValue().writeTagged(os);
+    eId.writeTagged(os);
   }
 
   private void executeDisableCollection(ByteBuffer bb, DataOutputStream os)

@@ -40,6 +40,11 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidObjectException;
+import gnu.classpath.jdwp.value.ArrayValue;
+import gnu.classpath.jdwp.value.StringValue;
+import gnu.classpath.jdwp.value.Value;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 /**
  * A class which represents a JDWP array id
@@ -58,5 +63,10 @@ public class ArrayId
   public ArrayId ()
   {
     super (JdwpConstants.Tag.ARRAY);
+  }
+  
+  @Override
+  public Value factory() throws InvalidObjectException {
+	  return new ArrayValue((ElementInfo)getObject());
   }
 }

@@ -40,7 +40,12 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.exception.InvalidStringException;
+import gnu.classpath.jdwp.value.ObjectValue;
+import gnu.classpath.jdwp.value.StringValue;
+import gnu.classpath.jdwp.value.Value;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 /**
  * A class which represents a JDWP string id
@@ -72,16 +77,22 @@ public class StringId
   public String getString ()
     throws InvalidStringException
   {
-    String string = (String) _reference.get ();
-
-    if (string == null)
-      throw new InvalidStringException (getId ());
-
-    return string;
+	  throw new RuntimeException("not implemented");
+//    String string = (String) _reference.get ();
+//
+//    if (string == null)
+//      throw new InvalidStringException (getId ());
+//
+//    return string;
   }
   
   @Override
   public String toString() {
 	  return "String" + super.toString();
+  }
+  
+  @Override
+  public Value factory() throws InvalidObjectException {
+	  return new StringValue((ElementInfo)getObject());
   }
 }

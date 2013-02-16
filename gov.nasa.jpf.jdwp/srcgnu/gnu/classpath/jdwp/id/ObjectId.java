@@ -41,6 +41,8 @@ package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
+import gnu.classpath.jdwp.value.ObjectValue;
+import gnu.classpath.jdwp.value.Value;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -131,5 +133,9 @@ public class ObjectId
   
   public String toString() {
 	  return "Object" + super.toString();
+  }
+  
+  public Value factory() throws InvalidObjectException {
+	  return new ObjectValue(getObject());
   }
 }
