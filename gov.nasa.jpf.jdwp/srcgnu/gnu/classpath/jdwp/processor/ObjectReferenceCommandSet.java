@@ -54,6 +54,7 @@ import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.StackFrame;
@@ -129,8 +130,8 @@ public class ObjectReferenceCommandSet
     	clazz = ((ThreadInfo)obj).getClassInfo();
     } else if (obj instanceof StackFrame) {
     	clazz = ((StackFrame)obj).getClassInfo();
-    } else if (obj instanceof DynamicElementInfo) {
-    	clazz = ((DynamicElementInfo)obj).getClassInfo();
+    } else if (obj instanceof ElementInfo) {
+    	clazz = ((ElementInfo)obj).getClassInfo();
     } else {
     	throw new RuntimeException("object needs an reference type implementation"); //TODO complete the implementation
     }
@@ -156,7 +157,7 @@ public class ObjectReferenceCommandSet
         try
           {
         	
-        	System.out.println(field);
+        	System.out.println(field );
             //field.setAccessible(true); // Might be a private field
             Object value = field.getValueObject(obj.getFields());
             Value val = ValueFactory.createFromObject(value, field);

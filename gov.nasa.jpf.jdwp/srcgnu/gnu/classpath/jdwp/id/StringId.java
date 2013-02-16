@@ -79,4 +79,9 @@ public class StringId
 
     return string;
   }
+  
+  @Override
+  public String toString() {
+	  return "String" + super.toString();
+  }
 }

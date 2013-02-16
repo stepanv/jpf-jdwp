@@ -40,6 +40,7 @@ package gnu.classpath.jdwp.value;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ObjectId;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public final class StringValue
     extends Value
 {
   // The String wrapped by this class
-  String _value;
+  ElementInfo _value;
 
   /**
    * Create a new StringValue from an String
@@ -63,7 +64,19 @@ public final class StringValue
   public StringValue(String value)
   {
     super(JdwpConstants.Tag.STRING);
-    _value = value;
+    throw new RuntimeException("not supported"); // TODO completely remove this when String handling problem is solved
+    //_value = value;
+  }
+  
+  /**
+   * Create a new StringValue from a {@link ElementInfo}
+   *
+   * @param value the String to wrap
+   */
+  public StringValue(ElementInfo elementInfo)
+  {
+    super(JdwpConstants.Tag.STRING);
+    _value = elementInfo;
   }
 
   /**
@@ -73,7 +86,8 @@ public final class StringValue
    */
   public String getValue()
   {
-    return _value;
+	  throw new RuntimeException("not implemented"); // TODO solve this StringValue problem
+    //return _value;
   }
 
   /**

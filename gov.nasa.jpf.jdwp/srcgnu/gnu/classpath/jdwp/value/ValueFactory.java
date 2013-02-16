@@ -48,7 +48,10 @@ import gnu.classpath.jdwp.util.JdwpString;
 import gov.nasa.jpf.jvm.BooleanFieldInfo;
 import gov.nasa.jpf.jvm.ByteFieldInfo;
 import gov.nasa.jpf.jvm.CharFieldInfo;
+import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DoubleFieldInfo;
+import gov.nasa.jpf.jvm.DynamicElementInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
 import gov.nasa.jpf.jvm.FloatFieldInfo;
 import gov.nasa.jpf.jvm.IntegerFieldInfo;
@@ -333,12 +336,15 @@ public static Value createFromObject(Object value, FieldInfo field) {
 //          val = new VoidValue();
       }
     else
-      {
-    	// TODO what to do with Strings?
-//        if (type.isAssignableFrom(String.class))
-//          val = new StringValue ((String) value);
-//        else
+      { 
+    	// TODO maybe forward decision about Strings to the end
+    	// because do we really need to keep track of Strings as different objects?
+    	// it could be just fine to treat them as ObjectValues (except for sending them through JDWP)
+    	if (value instanceof ElementInfo && ((ElementInfo)value).getClassInfo().isStringClassInfo()) {
+    		val = new StringValue (((ElementInfo)value));
+    	} else {
           val = new ObjectValue(value);
+    	}
       }
 
     return val;

@@ -46,6 +46,7 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.util.JdwpString;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -93,7 +94,7 @@ public class StringReferenceCommandSet
   {
     ObjectId oid = idMan.readObjectId(bb);
 
-    String str = (String) oid.getObject();
-    JdwpString.writeString(os, str);
+    ElementInfo elementInfo = (ElementInfo) oid.getObject();
+    JdwpString.writeString(os, elementInfo.asString());
   }
 }

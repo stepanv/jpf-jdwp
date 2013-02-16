@@ -45,6 +45,7 @@ import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.id.*;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.lang.ref.Reference;
@@ -106,6 +107,7 @@ public class VMIdManager
       _idList.put (StringId.typeClass, StringId.class);
       _idList.put (ThreadId.typeClass, ThreadId.class);
       _idList.put (ThreadGroupId.typeClass, ThreadGroupId.class);
+      // TODO clean this map because some of them aren't used
     }
 
     /**
@@ -122,9 +124,10 @@ public class VMIdManager
       // Special case: arrays
       if (object.getClass ().isArray ()) {
         id = new ArrayId ();
-    } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) {
+    } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) { // TODO don't use string comparison - it's slow
     		id = new ThreadId();
-    	
+    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isStringClassInfo()) {
+    	id = new StringId();
     } else
         {
           // Loop through all classes until we hit baseclass
