@@ -156,12 +156,13 @@ public class ValueFactory
 	    	  // Thus we get only Object tag for the corresponding ReferenceType
 	    	  // On the other hand we must return the right tag so that JDI's Value can be correctly instatiated
 	    	  
-	    	  if (oid instanceof StringId) {
-	    		  val = new StringValue((DynamicElementInfo)oid.getObject());
-	    	  } else {
-	    		  val = new ObjectValue(oid.getObject());
-
-	    	  }
+	    	  val = oid.factory();
+//	    	  if (oid instanceof StringId) {
+//	    		  val = new StringValue((DynamicElementInfo)oid.getObject());
+//	    	  } else {
+//	    		  val = new ObjectValue(oid.getObject());
+//
+//	    	  }
 	        //throw new RuntimeException("not implemented"); // TODO implement also objects
 	        
 //ObjectId oid = VMIdManager.getDefault().getObjectId(value); // TODO what if a String appears here? it's so weird
@@ -230,12 +231,11 @@ public class ValueFactory
       case JdwpConstants.Tag.THREAD_GROUP:
       case JdwpConstants.Tag.CLASS_LOADER:
       case JdwpConstants.Tag.CLASS_OBJECT:
-        ObjectId oid = VMIdManager.getDefault().readObjectId(bb);
-        val = new ObjectValue(oid.getObject());
-        break;
       case JdwpConstants.Tag.STRING:
-        val = new StringValue(JdwpString.readString(bb));
+        ObjectId oid = VMIdManager.getDefault().readObjectId(bb);
+        val = oid.factory();
         break;
+      
       default:
         throw new InvalidTagException(tag);
     }
@@ -363,12 +363,7 @@ public static Value createFromObject(Object value, FieldInfo field) throws Inval
     	// because do we really need to keep track of Strings as different objects?
     	// it could be just fine to treat them as ObjectValues (except for sending them through JDWP)
     	 ObjectId oid = VMIdManager.getDefault().getObjectId(value);
-    	 if (oid instanceof StringId) {
-   		  val = new StringValue((ElementInfo)oid.getObject());
-   	  } else {
-   		  val = new ObjectValue(oid.getObject());
-
-   	  }
+    	 val = oid.factory();
       }
 
     return val;

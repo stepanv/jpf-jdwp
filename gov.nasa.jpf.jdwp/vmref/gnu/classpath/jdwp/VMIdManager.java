@@ -121,13 +121,18 @@ public class VMIdManager
       ObjectId id = null;
       Object object = obj.get ();
 
+      if (object instanceof JdwpObjectContainer<?, ?>) {
+    	  id = ((JdwpObjectContainer<?, ?>)object).createId();
+      }
       // Special case: arrays
-      if (object.getClass ().isArray ()) {
+      else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isArray()) {
         id = new ArrayId ();
     } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) { // TODO don't use string comparison - it's slow
     		id = new ThreadId();
     } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isStringClassInfo()) {
     	id = new StringId();
+    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.Class")) {
+    	id = new ClassObjectId();
     } else
         {
           // Loop through all classes until we hit baseclass
@@ -359,11 +364,11 @@ public class VMIdManager
         // Object not found. Make new id for it
         id = IdFactory.newObjectId (ref);
         
-        System.out.println("TABLE CREATE Object: " + theObject + " ObjectID: " + id);
+        System.out.println("TABLE CREATE Object: " + theObject.getClass() + " (as string: " + theObject + ") ObjectID: " + id);
         _oidTable.put (ref, id);
         _idTable.put (new Long (id.getId ()), id);
       }
-    System.out.println("TABLE RETURN Object: " + theObject + " ObjectID: " + id);
+    System.out.println("TABLE RETURN Object: " + theObject.getClass() + " (as string: " + theObject + ") ObjectID: " + id);
     return id;
   }
 

@@ -315,10 +315,10 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    throw new RuntimeException("not implemented");
-//    Class clazz = refId.getType();
-//    ObjectId clazzObjectId = idMan.getObjectId(clazz);
-//    clazzObjectId.write(os);
+   // throw new RuntimeException("not implemented");
+    ClassInfo clazz = refId.getType();
+    ObjectId clazzObjectId = idMan.getObjectId(clazz);
+    clazzObjectId.write(os);
   }
 
   private void executeSourceDebugExtension(ByteBuffer bb, DataOutputStream os)

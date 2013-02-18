@@ -48,12 +48,18 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.StringId;
 import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.util.MonitorInfo;
+import gnu.classpath.jdwp.util.NullObject;
+import gnu.classpath.jdwp.value.ArrayValue;
+import gnu.classpath.jdwp.value.BooleanValue;
+import gnu.classpath.jdwp.value.ObjectValue;
+import gnu.classpath.jdwp.value.StringInternalValue;
 import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.DirectCallStackFrame;
+import gov.nasa.jpf.jvm.DynamicElementInfo;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.ExceptionInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
@@ -313,7 +319,7 @@ public class VMVirtualMachine
    */
   public static MethodResult executeMethod (Object obj, ThreadInfo thread,
                                             ClassInfo clazz, MethodInfo method,
-                                            Value[] values,
+                                            Value[] values, // TODO use generics here (and polymorphism)
                                             int options)
     throws JdwpException {
 	  
@@ -327,11 +333,33 @@ public class VMVirtualMachine
 	    DirectCallStackFrame frame = new DirectCallStackFrame(stub);
 	    
 	    // push this on a stack
-	    frame.push(((ElementInfo)obj).getObjectRef());
+	    if (obj != null) { // when obj == null then method is static (and we don't need to push this on stack)
+	    	frame.pushRef(((ElementInfo)obj).getObjectRef());
+	    }
 	    
 	    for (Value value : values) {
 	    	System.out.println(value);
-	    	throw new RuntimeException("not impelemented");
+	    	if (value instanceof ObjectValue) {
+	    		Object object = ((ObjectValue)value).getValue();
+	    		if (object instanceof ElementInfo) {
+	    			int ref = ((ElementInfo)object).getObjectRef();
+	    			frame.pushRef(ref);
+	    		} else if (object instanceof NullObject) {
+	    			frame.pushRef(-1);
+	    		}
+	    	} else if (value instanceof StringValue) {
+	    		int ref = ((ElementInfo)((StringValue)value).getValue()).getObjectRef();
+	    		frame.pushRef(ref);
+	    	} else if (value instanceof BooleanValue) {
+	    		int ref = ((BooleanValue)value).getValue() ? 1 : 0;
+	    		frame.push(ref);
+	    		
+	    	} else if (value instanceof ArrayValue){
+	    		int ref = ((ElementInfo)((ArrayValue)value).getArray()).getObjectRef();
+	    		frame.pushRef(ref);
+	    	} else {
+	    		throw new RuntimeException("not impelemented");
+	    	}
 	    	// TODO should put arguments to a stack
 	    	//frame.push
 	    }
@@ -360,7 +388,7 @@ public class VMVirtualMachine
 	    	// TODO is probably primitive
 	    	throw new RuntimeException("Not implemented");
 	    }
-	    System.out.println("# exit nativeHiddenRoundtrip: " + res);
+	    System.out.println("# exit nativeHiddenRoundtrip: " + result);
 	       
 	    ObjectId objectId = VMIdManager.getDefault().getObjectId(result);
 	    return new MethodResult(objectId.factory(), null);

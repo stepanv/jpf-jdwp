@@ -65,6 +65,12 @@ public final class ObjectValue
     super(JdwpConstants.Tag.OBJECT);
     _value = value;
   }
+  
+  public ObjectValue(Object value, byte tag)
+  {
+    super(tag);
+    _value = value;
+  }
 
   /**
    * Get the value held in this Value

@@ -97,7 +97,8 @@ public class ObjectId
     Object obj = _reference.get ();
     if (obj == null)
       throw new InvalidObjectException (_id);
-
+    
+    System.out.println("TABLEOBJECT GET: " + obj.getClass() + ", as string: " + obj + " (ID: " + this + ")");
     return obj;
   }
 
@@ -136,6 +137,6 @@ public class ObjectId
   }
   
   public Value factory() throws InvalidObjectException {
-	  return new ObjectValue(getObject());
+	  return new ObjectValue(getObject(), getTag());
   }
 }

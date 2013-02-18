@@ -149,6 +149,10 @@ public abstract class JdwpId
     write (outStream);
   }
   
+  protected byte getTag() {
+	  return _tag;
+  }
+  
   public String toString() {
 	  return "ID: " + _id + " (tag: " + _tag + ")";
   }

@@ -84,10 +84,9 @@ public final class StringValue
    *
    * @return the value represented by this Value object
    */
-  public String getValue()
+  public ElementInfo getValue()
   {
-	  throw new RuntimeException("not implemented"); // TODO solve this StringValue problem
-    //return _value;
+	  return _value;
   }
 
   /**

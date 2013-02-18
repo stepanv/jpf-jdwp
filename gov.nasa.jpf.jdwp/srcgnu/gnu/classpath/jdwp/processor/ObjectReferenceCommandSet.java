@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.JdwpObjectContainer;
 import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidFieldException;
@@ -133,6 +134,8 @@ public class ObjectReferenceCommandSet
     	clazz = ((StackFrame)obj).getClassInfo();
     } else if (obj instanceof ElementInfo) {
     	clazz = ((ElementInfo)obj).getClassInfo();
+    } else if (obj instanceof JdwpObjectContainer<?, ?>) {
+    	clazz = ((JdwpObjectContainer<?, ?>)obj).getClassInfo();
     } else {
     	throw new RuntimeException("object needs an reference type implementation"); //TODO complete the implementation
     }
@@ -161,6 +164,7 @@ public class ObjectReferenceCommandSet
         	System.out.println(field );
             //field.setAccessible(true); // Might be a private field
             Object value = field.getValueObject(obj.getFields());
+            
             Value val = ValueFactory.createFromObject(value, field);
             val.writeTagged(os);
           }

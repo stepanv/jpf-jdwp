@@ -41,6 +41,10 @@ package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.InvalidClassException;
+import gnu.classpath.jdwp.exception.InvalidObjectException;
+import gnu.classpath.jdwp.value.ObjectValue;
+import gnu.classpath.jdwp.value.Value;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 /**
  * A class which represents a JDWP class object id
@@ -69,14 +73,19 @@ public class ClassObjectId
    * @throws InvalidClassException if Class is garbage collected,
    *           or otherwise invalid
    */
-  public Class getClassObject ()
+  public ElementInfo getClassObject ()
     throws InvalidClassException
   {
-    Class cl = (Class) _reference.get ();
+	  ElementInfo cl = (ElementInfo) _reference.get ();
 
     if (cl == null)
       throw new InvalidClassException (getId ());
 
     return cl;
+  }
+  
+  @Override
+  public String toString() {
+	  return "Class" + super.toString();
   }
 }

@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.JdwpStringContainer;
 import gnu.classpath.jdwp.VMFrame;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.JdwpException;
@@ -50,6 +51,7 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -330,8 +332,12 @@ public class VirtualMachineCommandSet
   private void executeCreateString(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    String string = JdwpString.readString(bb);
-    ObjectId stringId = idMan.getObjectId(string);
+	  // is invoked when inspecting an array field for instance (TODO rewrite this method)
+    String string = JdwpString.readString(bb); 
+    JVM jvm = VMVirtualMachine.vm.getJpf().getVM();
+    int ref = jvm.getHeap().newString(string, jvm.getCurrentThread()); // TODO [for PJA] which thread we should use?
+    
+    ObjectId stringId = idMan.getObjectId(jvm.getHeap().get(ref));
 
     // Since this string isn't referenced anywhere we'll disable garbage
     // collection on it so it's still around when the debugger gets back to it.

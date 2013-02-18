@@ -41,13 +41,18 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMMethod;
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
+import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -97,62 +102,78 @@ public class ArrayReferenceCommandSet
     throws InvalidObjectException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-    Object array = oid.getObject();
-    os.writeInt(Array.getLength(array));
+    ElementInfo array = (ElementInfo) oid.getObject();
+    os.writeInt(array.arrayLength());
   }
 
   private void executeGetValues(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-    Object array = oid.getObject();
+    ElementInfo array = (ElementInfo) oid.getObject();
     int first = bb.getInt();
     int length = bb.getInt();
 
     // We need to write out the byte signifying the type of array first
-    Class clazz = array.getClass().getComponentType();
+    ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
+    
+    if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
+    	os.writeByte(JdwpConstants.Tag.STRING);
+    } else {
+    	throw new RuntimeException("not implemented");
+    }
 
+    // write the number of values we send back
+    os.writeInt(length);
+    
     // Uugh, this is a little ugly but it's the only time we deal with
     // arrayregions
-    if (clazz == byte.class)
-      os.writeByte(JdwpConstants.Tag.BYTE);
-    else if (clazz == char.class)
-      os.writeByte(JdwpConstants.Tag.CHAR);
-    else if (clazz == float.class)
-      os.writeByte(JdwpConstants.Tag.FLOAT);
-    else if (clazz == double.class)
-      os.writeByte(JdwpConstants.Tag.DOUBLE);
-    else if (clazz == int.class)
-      os.writeByte(JdwpConstants.Tag.BYTE);
-    else if (clazz == long.class)
-      os.writeByte(JdwpConstants.Tag.LONG);
-    else if (clazz == short.class)
-      os.writeByte(JdwpConstants.Tag.SHORT);
-    else if (clazz == void.class)
-      os.writeByte(JdwpConstants.Tag.VOID);
-    else if (clazz == boolean.class)
-      os.writeByte(JdwpConstants.Tag.BOOLEAN);
-    else if (clazz.isArray())
-      os.writeByte(JdwpConstants.Tag.ARRAY);
-    else if (String.class.isAssignableFrom(clazz))
-      os.writeByte(JdwpConstants.Tag.STRING);
-    else if (Thread.class.isAssignableFrom(clazz))
-      os.writeByte(JdwpConstants.Tag.THREAD);
-    else if (ThreadGroup.class.isAssignableFrom(clazz))
-      os.writeByte(JdwpConstants.Tag.THREAD_GROUP);
-    else if (ClassLoader.class.isAssignableFrom(clazz))
-      os.writeByte(JdwpConstants.Tag.CLASS_LOADER);
-    else if (Class.class.isAssignableFrom(clazz))
-      os.writeByte(JdwpConstants.Tag.CLASS_OBJECT);
-    else
-      os.writeByte(JdwpConstants.Tag.OBJECT);
+//    if (componentClassInfo == byte.class)
+//      os.writeByte(JdwpConstants.Tag.BYTE);
+//    else if (componentClassInfo == char.class)
+//      os.writeByte(JdwpConstants.Tag.CHAR);
+//    else if (componentClassInfo == float.class)
+//      os.writeByte(JdwpConstants.Tag.FLOAT);
+//    else if (componentClassInfo == double.class)
+//      os.writeByte(JdwpConstants.Tag.DOUBLE);
+//    else if (componentClassInfo == int.class)
+//      os.writeByte(JdwpConstants.Tag.BYTE);
+//    else if (componentClassInfo == long.class)
+//      os.writeByte(JdwpConstants.Tag.LONG);
+//    else if (componentClassInfo == short.class)
+//      os.writeByte(JdwpConstants.Tag.SHORT);
+//    else if (componentClassInfo == void.class)
+//      os.writeByte(JdwpConstants.Tag.VOID);
+//    else if (componentClassInfo == boolean.class)
+//      os.writeByte(JdwpConstants.Tag.BOOLEAN);
+//    else if (componentClassInfo.isArray())
+//      os.writeByte(JdwpConstants.Tag.ARRAY);
+//    else if (String.class.isAssignableFrom(componentClassInfo))
+//      os.writeByte(JdwpConstants.Tag.STRING);
+//    else if (Thread.class.isAssignableFrom(componentClassInfo))
+//      os.writeByte(JdwpConstants.Tag.THREAD);
+//    else if (ThreadGroup.class.isAssignableFrom(componentClassInfo))
+//      os.writeByte(JdwpConstants.Tag.THREAD_GROUP);
+//    else if (ClassLoader.class.isAssignableFrom(componentClassInfo))
+//      os.writeByte(JdwpConstants.Tag.CLASS_LOADER);
+//    else if (Class.class.isAssignableFrom(componentClassInfo))
+//      os.writeByte(JdwpConstants.Tag.CLASS_OBJECT);
+//    else
+//      os.writeByte(JdwpConstants.Tag.OBJECT);
 
     // Write all the values, primitives should be untagged and Objects must be
     // tagged
+    
     for (int i = first; i < first + length; i++)
       {
-        Value val = ValueFactory.createFromObject(Array.get(array, i), clazz);
-        if (clazz.isPrimitive())
+    	Value val = null;
+    	if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
+    		val = new StringValue(VMVirtualMachine.vm.getJpf().getVM().getHeap().get(array.getReferenceElement(i)));
+    	} else {
+        	throw new RuntimeException("not implemented");
+        }
+        //Value val = ValueFactory.createFromObject(Array.get(array, i), componentClassInfo.getClass());
+        if (componentClassInfo.isPrimitive())
           val.writeUntagged(os);
         else
           val.writeTagged(os);

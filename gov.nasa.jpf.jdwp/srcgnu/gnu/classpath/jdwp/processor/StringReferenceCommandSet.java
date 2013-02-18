@@ -41,6 +41,8 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.JdwpObjectContainer;
+import gnu.classpath.jdwp.JdwpStringContainer;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
@@ -93,8 +95,11 @@ public class StringReferenceCommandSet
       throws JdwpException, IOException
   {
     ObjectId oid = idMan.readObjectId(bb);
-
+    if (oid.getObject() instanceof JdwpStringContainer) { // TODO MUST be redesigned - use an uniform way to handle string objects!
+    	JdwpString.writeString(os, ((JdwpStringContainer)oid.getObject()).getData());
+    } else {
     ElementInfo elementInfo = (ElementInfo) oid.getObject();
     JdwpString.writeString(os, elementInfo.asString());
+    }
   }
 }

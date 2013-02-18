@@ -66,6 +66,11 @@ public class ArrayId
   }
   
   @Override
+  public String toString() {
+	  return "Array" + super.toString();
+  }
+  
+  @Override
   public Value factory() throws InvalidObjectException {
 	  return new ArrayValue((ElementInfo)getObject());
   }

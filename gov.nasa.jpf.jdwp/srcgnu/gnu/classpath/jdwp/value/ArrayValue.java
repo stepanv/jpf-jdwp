@@ -76,6 +76,11 @@ public class ArrayValue
   {
     return _value;
   }
+  
+  
+  public Object getArray() { // TODO return a proper type
+	  return _value;
+  }
 
   /**
    * Write the wrapped object to the given DataOutputStream.

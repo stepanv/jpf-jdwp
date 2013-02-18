@@ -46,6 +46,7 @@ import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -87,12 +88,21 @@ public class ClassObjectReferenceCommandSet
   public void executeReflectedType(ByteBuffer bb, DataOutputStream os)
     throws JdwpException, IOException
   {
-    ObjectId oid = idMan.readObjectId(bb);
-    ClassInfo clazz = (ClassInfo) oid.getObject();
-
+    ObjectId oid = idMan.readObjectId(bb); // TODO a problem is I don't really understand what is this method for 
+    Object object = oid.getObject();
+    
+    ClassInfo ci = null;
+    if (object instanceof ClassInfo) {
+    	ci = (ClassInfo) object;
+    } else if (object instanceof ElementInfo) {
+    	ci = ((ElementInfo) oid.getObject()).getClassInfo();
+    } else {
+    	throw new RuntimeException("not implemented for object: " + object);
+    }
+    
     // The difference between a ClassObjectId and a ReferenceTypeId is one is
     // stored as an ObjectId and the other as a ReferenceTypeId.
-    ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);
+    ReferenceTypeId refId = idMan.getReferenceTypeId(ci);
     refId.writeTagged(os);
   }
 }

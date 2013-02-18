@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.JdwpObjectContainer;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.exception.InvalidStringException;
 import gnu.classpath.jdwp.value.ObjectValue;
