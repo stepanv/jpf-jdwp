@@ -205,7 +205,7 @@ public class ReferenceTypeCommandSet
       {
         MethodInfo method = methods[i];
         os.writeLong(method.getGlobalId());
-        System.out.println("METHOD: " + method.getName() + " signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
+        System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
         //method.writeId(os);
         JdwpString.writeString(os, method.getName());
         JdwpString.writeString(os, method.getSignature());

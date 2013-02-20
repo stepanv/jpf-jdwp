@@ -107,7 +107,7 @@ public static LineTable factory(MethodInfo method) {
 		lineCI[index] = instruction.getInstructionIndex();
 		lineNum[index] = instruction.getLineNumber();
 		
-		System.out.println("LINE TABLE: index: " + lineCI[index] + " line: " + lineNum[index] + " ... instruction: " + instruction);
+		System.out.println("LINE TABLE: index: " + lineCI[index] + " line: " + lineNum[index] + " position: " + instruction.getPosition() + " ... instruction: " + instruction);
 		
 		start = lineCI[index] < start ? lineCI[index] : start;
 		end = lineCI[index] > end ? lineCI[index] : end;

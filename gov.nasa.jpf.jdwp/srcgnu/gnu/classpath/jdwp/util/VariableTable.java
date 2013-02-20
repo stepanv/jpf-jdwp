@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import gov.nasa.jpf.JPFException;
+import gov.nasa.jpf.classfile.ClassFile;
 import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -113,10 +115,11 @@ public class VariableTable {
 		 */
 		public Slot(LocalVarInfo localVarInfo, MethodInfo methodInfo) {
 
-			// we need to calculate instruction index from accumulated bytecode position
-			Instruction startInstruction = methodInfo.getInstructionAt(localVarInfo.getStartPC());
-			Instruction endInstruction = methodInfo.getInstructionAt(localVarInfo.getStartPC() + localVarInfo.getLength() - 1);
-			
+			// we need to calculate instruction index from accumulated bytecode
+			// position
+			Instruction startInstruction = methodInstructionDownToPosition(methodInfo, localVarInfo.getStartPC());
+			Instruction endInstruction = methodInstructionUpToPosition(methodInfo, localVarInfo.getStartPC() + localVarInfo.getLength() - 1);
+
 			codeIndex = startInstruction.getInstructionIndex();
 			name = localVarInfo.getName();
 			signature = localVarInfo.getSignature();
@@ -127,6 +130,60 @@ public class VariableTable {
 
 			System.out.println("VARIABLE TABLE: index: " + codeIndex + " slot: " + slot + " length: " + length + " name: " + name + " ... localVarInfo: "
 					+ localVarInfo);
+		}
+
+		/**
+		 * Finds an instruction at position which closest from the bottom to the position given as a parameter.
+		 * 
+		 * TODO [for PJA] For some reason debug table might return endPC or startPC that doesn't contain an instruction
+		 * @see MethodInfo#getInstructionAt(int)
+		 * @see ClassFile#parseLocalVarTableAttr(gov.nasa.jpf.classfile.ClassFileReader, Object)
+		 * 
+		 * TODO handle errors properly
+		 * 
+		 * @param methodInfo
+		 * @param position
+		 * @return
+		 */
+		private Instruction methodInstructionUpToPosition(MethodInfo methodInfo, int position) {
+			Instruction[] code = methodInfo.getInstructions();
+
+			Instruction instruction = code[0];
+
+			for (int i = 0; i < code.length; i++) {
+				if ((code[i] != null) && (code[i].getPosition() <= position)) {
+					instruction = code[i];
+				}
+			}
+
+			return instruction;
+		}
+		
+		/**
+		 * Finds an instruction at position which closest from the top to the position given as a parameter.
+		 * 
+		 * TODO [for PJA] For some reason debug table might return endPC or startPC that doesn't contain an instruction
+		 * @see MethodInfo#getInstructionAt(int)
+		 * @see ClassFile#parseLocalVarTableAttr(gov.nasa.jpf.classfile.ClassFileReader, Object)
+		 * 
+		 *  TODO handle errors properly
+		 * 
+		 * @param methodInfo
+		 * @param position
+		 * @return
+		 */
+		private Instruction methodInstructionDownToPosition(MethodInfo methodInfo, int position) {
+			Instruction[] code = methodInfo.getInstructions();
+
+			Instruction instruction = code[code.length - 1];
+
+			for (int i = code.length - 1; i >= 0; --i) {
+				if ((code[i] != null) && (code[i].getPosition() >= position)) {
+					instruction = code[i];
+				}
+			}
+
+			return instruction;
 		}
 	}
 

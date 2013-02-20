@@ -200,6 +200,7 @@ public class VMVirtualMachine
 	  System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz + " JDWP ID: " + VMIdManager.getDefault().getObjectId(clazz));
 	  for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
 		  if (id == methodInfo.getGlobalId()) {
+			  System.out.println("METHOD found: " + methodInfo);
 			  return methodInfo;
 		  }
 	  }
