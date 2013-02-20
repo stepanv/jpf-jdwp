@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.exception.InvalidFieldException;
@@ -197,12 +198,14 @@ public class ReferenceTypeCommandSet
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
     ClassInfo clazz = refId.getType();
 
+    System.out.println("METHODS FOR CLASS: " + clazz + " JDWP ID: " + VMIdManager.getDefault().getObjectId(clazz));
     MethodInfo[] methods = clazz.getDeclaredMethodInfos();
     os.writeInt (methods.length);
     for (int i = 0; i < methods.length; i++)
       {
         MethodInfo method = methods[i];
         os.writeLong(method.getGlobalId());
+        System.out.println("METHOD: " + method.getName() + " signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
         //method.writeId(os);
         JdwpString.writeString(os, method.getName());
         JdwpString.writeString(os, method.getSignature());

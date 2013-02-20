@@ -214,6 +214,10 @@ public class PacketProcessor
           catch (JdwpException ex)
             {
             reply.setErrorCode(ex.getErrorCode ());
+            System.err.println(" ============================");
+            System.err.println(" !!!!!!!! EXCEPTION !!!!!!!!!"); // TODO remove this ... just for debuggin purposes only
+            ex.printStackTrace();
+            System.err.println(" ============================");
             }
           _connection.sendPacket (reply);
       }

@@ -197,10 +197,15 @@ public class VMVirtualMachine
    */
   public static MethodInfo getClassMethod(ClassInfo clazz, long id)
     throws JdwpException {
+	  System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz + " JDWP ID: " + VMIdManager.getDefault().getObjectId(clazz));
 	  for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
 		  if (id == methodInfo.getGlobalId()) {
 			  return methodInfo;
 		  }
+	  }
+	  // also try super types
+	  if (clazz.getSuperClass() != null) {
+		  return getClassMethod(clazz.getSuperClass(), id);
 	  }
 	  throw new InvalidMethodException(id);
   }
