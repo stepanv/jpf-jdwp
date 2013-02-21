@@ -95,28 +95,30 @@ public class StepFilter implements IEventFilter {
 		_size = size;
 		_depth = depth;
 
-		int stackDepth = 0;
 		while (stackFrameIterator.hasNext()) {
 			StackFrame frame = stackFrameIterator.next();
 			if (!frame.isSynthetic()) {
-				new StackFrameSnapshot(frame, stackDepth++);
+				new StackFrameSnapshot(frame);
 			}
 
 		}
 
 	}
 
+	/**
+	 * A stack frame snapshot to refer when detecting a current program state.
+	 * 
+	 * @author stepan
+	 *
+	 */
 	private class StackFrameSnapshot {
-		private MethodInfo method;
 		private Instruction pc;
-		private int depth;
 
-		private StackFrameSnapshot(StackFrame frame, int depth) {
-			method = frame.getMethodInfo();
+		private StackFrameSnapshot(StackFrame frame) {
 			pc = frame.getPC();
-			this.depth = depth;
-			
-			System.out.println("STEP FILTER: Adding frame snapshot of " + frame + ", instruction: " + pc + " (location: " + pc.getFileLocation() + ") at depth: " + depth);
+
+			System.out.println("STEP FILTER: Adding frame snapshot of " + frame + ", instruction: " + pc + " (location: " + pc.getFileLocation()
+					+ ")");
 
 			stackSnapshot.add(this);
 		}
@@ -151,8 +153,15 @@ public class StepFilter implements IEventFilter {
 		return _depth;
 	}
 
-	private int stackDepth(StackFrame stackFrame) {
-		int depth = 0;
+	/**
+	 * Calculates size of a stack from the given {@link StackFrame} instance.
+	 * 
+	 * @param stackFrame
+	 *            The stack frame from where to start the calculation.
+	 * @return the calculated size.
+	 */
+	private int stackSize(StackFrame stackFrame) {
+		int depth = 1;
 		while (previousNonSyntheticStackFrame(stackFrame) != null) {
 			stackFrame = previousNonSyntheticStackFrame(stackFrame);
 			++depth;
@@ -160,6 +169,14 @@ public class StepFilter implements IEventFilter {
 		return depth;
 	}
 
+	/**
+	 * Lookups previous non-synthetic frame for the given {@link StackFrame}
+	 * instance.
+	 * 
+	 * @param stackFrame
+	 *            The stack frame from where to start the calculation.
+	 * @return
+	 */
 	private StackFrame previousNonSyntheticStackFrame(StackFrame stackFrame) {
 		while (stackFrame.getPrevious() != null) {
 			stackFrame = stackFrame.getPrevious();
@@ -185,24 +202,25 @@ public class StepFilter implements IEventFilter {
 
 			Instruction currentInstruction = stepEvent.getLocation().getInstruction();
 
-			
-
 			ThreadInfo currentThread = ((SingleStepEvent) event).getThread();
-			
+
 			/* Are we in a right thread? */
 			if (VMIdManager.getDefault().getObjectId(currentThread) != _tid) {
 				return false;
 			}
-			
+
 			StackFrame currentStackFrame = currentThread.getLastNonSyntheticStackFrame();
-			int currentStackFrameDepth = stackDepth(currentStackFrame);
-			
+			int currentStackFrameSize = stackSize(currentStackFrame);
+
 			/* If we're in a synthetic method, return immediately */
 			if (currentInstruction != currentStackFrame.getPC()) {
+				System.out.println("STEP FILTER SKIP for a synthetic instruction (or instruction from a synthetic frame): " + currentInstruction
+						+ ", (fileresource: " + currentInstruction.getFileLocation() + ")");
 				return false;
 			}
-			
-			System.out.println("STEP FILTER: current instruction: " + currentInstruction + ", current frame: " + currentStackFrame + " (filesource: " + currentInstruction.getFileLocation() + "), depth: " + currentStackFrameDepth);
+
+			System.out.println("STEP FILTER: current instruction: " + currentInstruction + ", current frame: " + currentStackFrame + " (filesource: "
+					+ currentInstruction.getFileLocation() + "), stack size: " + currentStackFrameSize);
 
 			switch (_size) {
 			case JdwpConstants.StepSize.LINE:
@@ -210,34 +228,37 @@ public class StepFilter implements IEventFilter {
 				case JdwpConstants.StepDepth.INTO:
 
 					/* we just stepped in some method */
-					if (currentStackFrameDepth == stackSnapshot.size()) {
+					if (currentStackFrameSize == stackSnapshot.size() + 1) {
 						System.out.println("stepped in some method");
-						
-						/* we're accepting only method start and we don't step into native methods */ 
+
+						/*
+						 * we're accepting only method start and we don't step
+						 * into native methods
+						 */
 						if (currentInstruction.getInstructionIndex() == 0 && !(currentInstruction instanceof EXECUTENATIVE)) {
 							return true;
 						}
 
 					}
-					
+
 					/* we're in the same method */
-					if (currentStackFrameDepth == stackSnapshot.size() - 1) {
-						
+					if (currentStackFrameSize == stackSnapshot.size()) {
+
 						/* we're already on different line */
 						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
 							return true;
 						}
-						
+
 					}
-					
+
 					/* we're in the caller's method */
-					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
-						
-						/* we're already on different line */
+					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+
+						/* we're already on a different line */
 						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
 							return true;
 						}
-						
+
 						/* we're about to enter another method at the same line */
 						if (currentInstruction instanceof InvokeInstruction) {
 							return true;
@@ -247,48 +268,48 @@ public class StepFilter implements IEventFilter {
 
 					break;
 				case JdwpConstants.StepDepth.OUT:
-					
+
 					/* we just stepped out of some method */
-					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
-						
-						/* we're already on different line */
+					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+
+						/* we're already on a different line */
 						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
 							return true;
 						}
-						
+
 						/* we're about to enter another method at the same line */
 						if (currentInstruction instanceof InvokeInstruction) {
 							return true;
 						}
-						
+
 					}
 					break;
 
 				case JdwpConstants.StepDepth.OVER:
-					
+
 					/* we're at the same stack depth as when step was requested */
-					if (currentStackFrameDepth == stackSnapshot.size() - 1) {
-						
-						/* we're already on different line */
+					if (currentStackFrameSize == stackSnapshot.size()) {
+
+						/* we're already on a different line */
 						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
 							return true;
 						}
 					}
-					
+
 					/* we just stepped out of some method */
-					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
-						
-						/* we're already on different line */
+					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+
+						/* we're already on a different line */
 						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
 							return true;
 						}
-						
+
 						/* we're about to enter another method at the same line */
 						if (currentInstruction instanceof InvokeInstruction) {
 							return true;
 						}
 					}
-					
+
 					break;
 				default:
 					// TODO Error handling
