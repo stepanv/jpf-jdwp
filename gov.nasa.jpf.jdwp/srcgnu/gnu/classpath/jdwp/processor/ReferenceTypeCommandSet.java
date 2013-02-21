@@ -168,9 +168,8 @@ public class ReferenceTypeCommandSet
     throws JdwpException, IOException
   {
     ReferenceTypeId refId = idMan.readReferenceTypeId(bb);
-    throw new RuntimeException("not implemented");
-//    Class clazz = refId.getType();
-//    os.writeInt(clazz.getModifiers());
+    ClassInfo classInfo = refId.getType();
+    os.writeInt( classInfo.getModifiers());
   }
 
   private void executeFields(ByteBuffer bb, DataOutputStream os)
