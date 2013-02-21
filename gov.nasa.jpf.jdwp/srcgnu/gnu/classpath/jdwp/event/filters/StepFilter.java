@@ -109,7 +109,7 @@ public class StepFilter implements IEventFilter {
 	 * A stack frame snapshot to refer when detecting a current program state.
 	 * 
 	 * @author stepan
-	 *
+	 * 
 	 */
 	private class StackFrameSnapshot {
 		private Instruction pc;
@@ -117,8 +117,7 @@ public class StepFilter implements IEventFilter {
 		private StackFrameSnapshot(StackFrame frame) {
 			pc = frame.getPC();
 
-			System.out.println("STEP FILTER: Adding frame snapshot of " + frame + ", instruction: " + pc + " (location: " + pc.getFileLocation()
-					+ ")");
+			System.out.println("STEP FILTER: Adding frame snapshot of " + frame + ", instruction: " + pc + " (location: " + pc.getFileLocation() + ")");
 
 			stackSnapshot.add(this);
 		}
@@ -228,12 +227,11 @@ public class StepFilter implements IEventFilter {
 				case JdwpConstants.StepDepth.INTO:
 
 					/* we just stepped in some method */
-					if (currentStackFrameSize == stackSnapshot.size() + 1) {
-						System.out.println("stepped in some method");
+					if (currentStackFrameSize > stackSnapshot.size()) {
 
 						/*
-						 * we're accepting only method start and we don't step
-						 * into native methods
+						 * we're accepting only method very beginnings and we
+						 * don't step into native methods
 						 */
 						if (currentInstruction.getInstructionIndex() == 0 && !(currentInstruction instanceof EXECUTENATIVE)) {
 							return true;
@@ -245,22 +243,34 @@ public class StepFilter implements IEventFilter {
 					if (currentStackFrameSize == stackSnapshot.size()) {
 
 						/* we're already on different line */
-						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+						if (currentLineDiffers(currentInstruction)) {
 							return true;
 						}
 
 					}
 
 					/* we're in the caller's method */
-					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+					if (currentStackFrameSize < stackSnapshot.size()) {
 
 						/* we're already on a different line */
-						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+						if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
 							return true;
 						}
 
-						/* we're about to enter another method at the same line */
+						/*
+						 * we're about to enter another method at the same line
+						 * from where our method was invoked
+						 */
 						if (currentInstruction instanceof InvokeInstruction) {
+
+							/*
+							 * this might be tricky because instance of
+							 * InvokeInstruction could also invoke just a native
+							 * or synthetic method where we won't be able to
+							 * step in.
+							 * 
+							 * Let's do not care about this...
+							 */
 							return true;
 						}
 
@@ -270,10 +280,10 @@ public class StepFilter implements IEventFilter {
 				case JdwpConstants.StepDepth.OUT:
 
 					/* we just stepped out of some method */
-					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+					if (currentStackFrameSize < stackSnapshot.size()) {
 
 						/* we're already on a different line */
-						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+						if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
 							return true;
 						}
 
@@ -291,16 +301,16 @@ public class StepFilter implements IEventFilter {
 					if (currentStackFrameSize == stackSnapshot.size()) {
 
 						/* we're already on a different line */
-						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+						if (currentLineDiffers(currentInstruction)) {
 							return true;
 						}
 					}
 
 					/* we just stepped out of some method */
-					if (currentStackFrameSize == stackSnapshot.size() - 1) {
+					if (currentStackFrameSize < stackSnapshot.size()) {
 
 						/* we're already on a different line */
-						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+						if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
 							return true;
 						}
 
@@ -331,5 +341,31 @@ public class StepFilter implements IEventFilter {
 
 		}
 		return false;
+	}
+
+	/**
+	 * Compares line from the stack at the given depth to the line of the given
+	 * instruction.
+	 * 
+	 * @param snapshotStackDepth
+	 *            The stack depth where to look for a line number.
+	 * @param instruction
+	 *            Comparison reference instruction.
+	 * @return Whether given instruction when compared to the instruction at the
+	 *         given stack depth is located at a different line.
+	 */
+	private boolean lineDiffers(int snapshotStackDepth, Instruction instruction) {
+		return stackSnapshot.get(snapshotStackDepth).pc.getLineNumber() != instruction.getLineNumber();
+	}
+
+	/**
+	 * @see StepFilter#lineDiffers(int, Instruction)
+	 * 
+	 * @param instruction Comparison reference instruction.
+	 * @return Whether given instruction when compared to the instruction at the
+	 *         top of the stack is located at a different line.
+	 */
+	private boolean currentLineDiffers(Instruction instruction) {
+		return lineDiffers(0, instruction);
 	}
 }
