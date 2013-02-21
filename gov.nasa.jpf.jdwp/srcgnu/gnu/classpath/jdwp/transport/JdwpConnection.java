@@ -253,6 +253,8 @@ public class JdwpConnection
         return (JdwpPacket) _commandQueue.remove (0);
       }
   }
+  
+  private static final Object OUTSTREAMLOCK = new Object();
 
   /**
    * Send a packet to the debugger
@@ -263,7 +265,10 @@ public class JdwpConnection
   public void sendPacket (JdwpPacket pkt)
     throws IOException
   {
-    pkt.write (_outStream);
+	  synchronized (OUTSTREAMLOCK) {
+		  pkt.write (_outStream);
+	}
+    
   }
 
   /**

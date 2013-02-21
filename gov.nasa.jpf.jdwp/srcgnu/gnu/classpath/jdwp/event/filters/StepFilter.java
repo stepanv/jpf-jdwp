@@ -203,7 +203,7 @@ public class StepFilter implements IEventFilter {
 
 			ThreadInfo currentThread = ((SingleStepEvent) event).getThread();
 
-			/* Are we in a right thread? */
+			/* Are we in the right thread? */
 			if (VMIdManager.getDefault().getObjectId(currentThread) != _tid) {
 				return false;
 			}

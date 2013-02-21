@@ -253,7 +253,7 @@ public abstract class JdwpPacket
    *
    * @param dos  the output stream to which to write the packet
    */
-  public void write (DataOutputStream dos)
+  void write (DataOutputStream dos)
     throws IOException
   {
     // length
