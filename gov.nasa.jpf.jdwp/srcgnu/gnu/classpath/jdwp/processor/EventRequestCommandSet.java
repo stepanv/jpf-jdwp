@@ -63,6 +63,8 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Location;
+import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -184,7 +186,8 @@ public class EventRequestCommandSet
             ThreadId tid = (ThreadId) idMan.readObjectId(bb);
             int size = bb.getInt();
             int depth = bb.getInt();
-            filter = new StepFilter(tid, size, depth);
+            ThreadInfo threadInof = tid.getThread();
+            filter = new StepFilter(tid, size, depth, threadInof.iterator());
             break;
           case JdwpConstants.ModKind.INSTANCE_ONLY:
             ObjectId oid = idMan.readObjectId(bb);

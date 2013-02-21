@@ -9,6 +9,7 @@ import gnu.classpath.jdwp.event.BreakpointEvent;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.MethodEntryEvent;
+import gnu.classpath.jdwp.event.SingleStepEvent;
 import gnu.classpath.jdwp.event.ThreadStartEvent;
 import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.JPF;
@@ -56,6 +57,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 	
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
+	private Instruction lastInstruction;
 	@Override
 	public void classLoaded(JVM vm) {
 		virtualMachine.notifyClassLoaded(vm.getLastClassInfo());
@@ -78,7 +80,14 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		if (nextInstruction.getMethodInfo() != null && nextInstruction.getMethodInfo().getClassInfo() != null) {
 			BreakpointEvent breakpointEvent = new BreakpointEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo());
 			dispatchEvent(breakpointEvent);
+			
+			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
+			
+			virtualMachine.conditionallyTriggerStepEvent(vm);
+			SingleStepEvent singleStepEvent = new SingleStepEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo(), Location.factory(lastInstruction));
+			dispatchEvent(singleStepEvent);
 		}
+		lastInstruction = nextInstruction;
 	}
 	
 	private void dispatchEvent(Event event) {

@@ -162,6 +162,10 @@ private Instruction instruction;
   {
     return index;
   }
+  
+  public Instruction getInstruction() {
+	  return instruction;
+  }
 
   // convenient for debugging
   public String toString ()

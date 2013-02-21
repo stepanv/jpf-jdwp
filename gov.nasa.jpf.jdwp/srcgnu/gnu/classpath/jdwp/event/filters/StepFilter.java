@@ -36,91 +36,279 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.event.filters;
 
+import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.event.Event;
+import gnu.classpath.jdwp.event.SingleStepEvent;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
+import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
+import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
- * "An event filter which restricts reported step events to those which
- * satisfy depth and size constraints. This modifier can only be used with
- * step event kinds."
- *
+ * "An event filter which restricts reported step events to those which satisfy
+ * depth and size constraints. This modifier can only be used with step event
+ * kinds."
+ * 
  * This "filter" is not really a filter. It is simply a way to communicate
- * stepping information in a convenient way between the JDWP backend and
- * the virtual machine.
- *
+ * stepping information in a convenient way between the JDWP backend and the
+ * virtual machine.
+ * 
  * Consequently, this "filter" always matches.
- *
- * @author Keith Seitz  (keiths@redhat.com)
+ * 
+ * @author Keith Seitz (keiths@redhat.com)
  */
-public class StepFilter
-  implements IEventFilter
-{
-  private ThreadId _tid;
-  private int _size;
-  private int _depth;
+public class StepFilter implements IEventFilter {
+	private ThreadId _tid;
+	private int _size;
+	private int _depth;
+	private List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
 
-  /**
-   * Constructs a new StepFilter
-   *
-   * @param tid    ID of the thread in which to step
-   * @param size   size of each step
-   * @param depth  relative call stack limit
-   * @throws InvalidThreadException if thread is invalid
-   */
-  public StepFilter (ThreadId tid, int size, int depth)
-    throws InvalidThreadException
-  {
-    if (tid.getReference().get () == null)
-      throw new InvalidThreadException (tid.getId ());
+	/**
+	 * Constructs a new StepFilter
+	 * 
+	 * @param tid
+	 *            ID of the thread in which to step
+	 * @param size
+	 *            size of each step
+	 * @param depth
+	 *            relative call stack limit
+	 * @param instruction
+	 * @throws InvalidThreadException
+	 *             if thread is invalid
+	 */
+	public StepFilter(ThreadId tid, int size, int depth, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
+		if (tid.getReference().get() == null)
+			throw new InvalidThreadException(tid.getId());
 
-    _tid = tid;
-    _size = size;
-    _depth = depth;
-  }
+		_tid = tid;
+		_size = size;
+		_depth = depth;
 
-  /**
-   * Returns the thread in which to step
-   *
-   * @return the thread's ID
-   */
-  public ThreadId getThread ()
-  {
-    return _tid;
-  }
+		int stackDepth = 0;
+		while (stackFrameIterator.hasNext()) {
+			StackFrame frame = stackFrameIterator.next();
+			if (!frame.isSynthetic()) {
+				new StackFrameSnapshot(frame, stackDepth++);
+			}
 
-  /**
-   * Returns the size of each step (insn, line)
-   *
-   * @return the step size
-   * @see gnu.classpath.jdwp.JdwpConstants.StepSize
-   */
-  public int getSize ()
-  {
-    return _size;
-  }
+		}
 
-  /**
-   * Returns the relative call stack limit (into, over, out)
-   *
-   * @return how to step
-   * @see gnu.classpath.jdwp.JdwpConstants.StepDepth
-   */
-  public int getDepth ()
-  {
-    return _depth;
-  }
+	}
 
-  /**
-   * Does the given event match the filter?
-   *
-   * @param event  the <code>Event</code> to scrutinize
-   */
-  public boolean matches (Event event)
-  {
-    return true;
-  }
+	private class StackFrameSnapshot {
+		private MethodInfo method;
+		private Instruction pc;
+		private int depth;
+
+		private StackFrameSnapshot(StackFrame frame, int depth) {
+			method = frame.getMethodInfo();
+			pc = frame.getPC();
+			this.depth = depth;
+			
+			System.out.println("STEP FILTER: Adding frame snapshot of " + frame + ", instruction: " + pc + " (location: " + pc.getFileLocation() + ") at depth: " + depth);
+
+			stackSnapshot.add(this);
+		}
+	}
+
+	/**
+	 * Returns the thread in which to step
+	 * 
+	 * @return the thread's ID
+	 */
+	public ThreadId getThread() {
+		return _tid;
+	}
+
+	/**
+	 * Returns the size of each step (insn, line)
+	 * 
+	 * @return the step size
+	 * @see gnu.classpath.jdwp.JdwpConstants.StepSize
+	 */
+	public int getSize() {
+		return _size;
+	}
+
+	/**
+	 * Returns the relative call stack limit (into, over, out)
+	 * 
+	 * @return how to step
+	 * @see gnu.classpath.jdwp.JdwpConstants.StepDepth
+	 */
+	public int getDepth() {
+		return _depth;
+	}
+
+	private int stackDepth(StackFrame stackFrame) {
+		int depth = 0;
+		while (previousNonSyntheticStackFrame(stackFrame) != null) {
+			stackFrame = previousNonSyntheticStackFrame(stackFrame);
+			++depth;
+		}
+		return depth;
+	}
+
+	private StackFrame previousNonSyntheticStackFrame(StackFrame stackFrame) {
+		while (stackFrame.getPrevious() != null) {
+			stackFrame = stackFrame.getPrevious();
+			if (!stackFrame.isSynthetic()) {
+				return stackFrame;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Does the given event match the filter?
+	 * 
+	 * @param event
+	 *            the <code>Event</code> to scrutinize
+	 */
+	public boolean matches(Event event) // TODO need to restrict this to
+										// StepEvent only (polymorphism and use
+										// generics)
+	{
+		if (event instanceof SingleStepEvent) {
+			SingleStepEvent stepEvent = (SingleStepEvent) event;
+
+			Instruction currentInstruction = stepEvent.getLocation().getInstruction();
+
+			
+
+			ThreadInfo currentThread = ((SingleStepEvent) event).getThread();
+			
+			/* Are we in a right thread? */
+			if (VMIdManager.getDefault().getObjectId(currentThread) != _tid) {
+				return false;
+			}
+			
+			StackFrame currentStackFrame = currentThread.getLastNonSyntheticStackFrame();
+			int currentStackFrameDepth = stackDepth(currentStackFrame);
+			
+			/* If we're in a synthetic method, return immediately */
+			if (currentInstruction != currentStackFrame.getPC()) {
+				return false;
+			}
+			
+			System.out.println("STEP FILTER: current instruction: " + currentInstruction + ", current frame: " + currentStackFrame + " (filesource: " + currentInstruction.getFileLocation() + "), depth: " + currentStackFrameDepth);
+
+			switch (_size) {
+			case JdwpConstants.StepSize.LINE:
+				switch (_depth) {
+				case JdwpConstants.StepDepth.INTO:
+
+					/* we just stepped in some method */
+					if (currentStackFrameDepth == stackSnapshot.size()) {
+						System.out.println("stepped in some method");
+						
+						/* we're accepting only method start and we don't step into native methods */ 
+						if (currentInstruction.getInstructionIndex() == 0 && !(currentInstruction instanceof EXECUTENATIVE)) {
+							return true;
+						}
+
+					}
+					
+					/* we're in the same method */
+					if (currentStackFrameDepth == stackSnapshot.size() - 1) {
+						
+						/* we're already on different line */
+						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+							return true;
+						}
+						
+					}
+					
+					/* we're in the caller's method */
+					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
+						
+						/* we're already on different line */
+						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+							return true;
+						}
+						
+						/* we're about to enter another method at the same line */
+						if (currentInstruction instanceof InvokeInstruction) {
+							return true;
+						}
+
+					}
+
+					break;
+				case JdwpConstants.StepDepth.OUT:
+					
+					/* we just stepped out of some method */
+					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
+						
+						/* we're already on different line */
+						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+							return true;
+						}
+						
+						/* we're about to enter another method at the same line */
+						if (currentInstruction instanceof InvokeInstruction) {
+							return true;
+						}
+						
+					}
+					break;
+
+				case JdwpConstants.StepDepth.OVER:
+					
+					/* we're at the same stack depth as when step was requested */
+					if (currentStackFrameDepth == stackSnapshot.size() - 1) {
+						
+						/* we're already on different line */
+						if (stackSnapshot.get(0).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+							return true;
+						}
+					}
+					
+					/* we just stepped out of some method */
+					if (currentStackFrameDepth == stackSnapshot.size() - 2) {
+						
+						/* we're already on different line */
+						if (stackSnapshot.get(1).pc.getLineNumber() != currentStackFrame.getPC().getLineNumber()) {
+							return true;
+						}
+						
+						/* we're about to enter another method at the same line */
+						if (currentInstruction instanceof InvokeInstruction) {
+							return true;
+						}
+					}
+					
+					break;
+				default:
+					// TODO Error handling
+					throw new RuntimeException("dead block reached");
+					// TODO remove this
+				}
+
+				break;
+			case JdwpConstants.StepSize.MIN:
+				if (stackSnapshot.get(0).pc != currentInstruction) {
+					return true;
+				}
+				break;
+			default:
+				// TODO Error handling
+				throw new RuntimeException("dead block reached"); // TODO remove
+																	// this
+			}
+
+		}
+		return false;
+	}
 }

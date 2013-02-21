@@ -43,6 +43,8 @@ import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.Location;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -58,27 +60,30 @@ public class SingleStepEvent
     extends Event
 {
   // the thread where the event occurred
-  private Thread _thread;
+  private ThreadInfo _thread;
 
   // the location where the event occurred
   private Location _location;
 
   //object instance
-  private Object _instance;
+  private ClassInfo _instance;
+
+private Location previousLocation;
 
   /**
    * Constructs a new <code>SingleStepEvent</code>
    *
-   * @param thread the thread where the exception occurred
+   * @param threadInfo the thread where the exception occurred
    * @param location the location single stepped to
    * @param instance the instance in which the single step occurred
    */
-  public SingleStepEvent(Thread thread, Location location, Object instance)
+  public SingleStepEvent(ThreadInfo threadInfo, Location location, ClassInfo instance, Location previousLocation)
   {
     super(JdwpConstants.EventKind.SINGLE_STEP);
-    _thread = thread;
+    _thread = threadInfo;
     _location = location;
     _instance = instance;
+    this.previousLocation = previousLocation;
   }
 
   /**
@@ -97,7 +102,7 @@ public class SingleStepEvent
     else if (type == EVENT_INSTANCE)
       return _instance;
     else if (type == EVENT_CLASS)
-      return _instance.getClass();
+      return _instance.getClass(); // TODO maybe this is incorrect
 
     return null;
   }
@@ -117,5 +122,16 @@ public class SingleStepEvent
     tid.write(outStream);
     _location.write(outStream);
   }
+
+  public Location getLocation() {
+	  return _location;
+  }
+  
+  public ThreadInfo getThread() {
+	  return _thread;
+  }
+public Location getPreviousLocation() {
+	return previousLocation;
+}
 
 }

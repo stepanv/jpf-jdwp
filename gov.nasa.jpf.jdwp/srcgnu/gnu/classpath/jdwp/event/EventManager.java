@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Manages event requests and filters event notifications.
@@ -157,7 +159,7 @@ public class EventManager
    */
   public EventRequest[] getEventRequests(Event event)
   {
-    ArrayList interestedEvents = new ArrayList();
+    List interestedEvents = new CopyOnWriteArrayList();
     Hashtable requests;
     Byte kind = new Byte(event.getEventKind());
     requests = (Hashtable) _requests.get(kind);
@@ -212,6 +214,7 @@ public class EventManager
     // Register the event with the VM
     VMVirtualMachine.vm.registerEventRequest (request);
     requests.put (new Integer (request.getId ()), request);
+    System.out.println("Registered event request: " + request);
   }
 
   /**
@@ -237,8 +240,10 @@ public class EventManager
     EventRequest request = (EventRequest) requests.get (iid);
     if (request != null)
       {
+    	
         VMVirtualMachine.unregisterEvent (request);
         requests.remove (iid);
+        System.out.println("Removed event request: " + request);
       }
   }
 

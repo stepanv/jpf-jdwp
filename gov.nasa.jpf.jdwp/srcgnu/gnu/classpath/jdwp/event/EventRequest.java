@@ -187,7 +187,7 @@ public class EventRequest
   private static Object _idLock = new Object ();
 
   // A list of filters
-  private LinkedList _filters;
+  private LinkedList<IEventFilter> _filters;
 
   // The ID of this request
   private int _id;
@@ -206,7 +206,7 @@ public class EventRequest
    */
   public EventRequest (byte kind, byte suspendPolicy)
   {
-    _filters = new LinkedList ();
+    _filters = new LinkedList<IEventFilter> ();
     synchronized (_idLock)
       {
         _id = ++_last_id;
@@ -224,7 +224,7 @@ public class EventRequest
    */
   public EventRequest (int id, byte kind, byte suspendPolicy)
   {
-    _filters = new LinkedList ();
+    _filters = new LinkedList<IEventFilter> ();
     _kind = kind;
     _suspendPolicy = suspendPolicy;
   }
@@ -242,7 +242,7 @@ public class EventRequest
     // Check validity of filter for this request
     boolean valid = true;
 
-    Class clazz = filter.getClass ();
+    Class<? extends IEventFilter> clazz = filter.getClass ();
     if (clazz == ClassExcludeFilter.class)
       {
         if (_kind == EVENT_THREAD_START
@@ -323,7 +323,7 @@ public class EventRequest
   /**
    * Returns the filters attached to this request
    */
-  public Collection getFilters ()
+  public Collection<IEventFilter> getFilters ()
   {
     return _filters;
   }
@@ -367,43 +367,50 @@ public class EventRequest
    */
   public boolean matches (Event theEvent)
   {
-    boolean matches = true;
 
-    // Loop through filters; all must match
-    // Note that we must allow EVERY filter to evaluate. This way
-    // things like CountFilter will work.
-    Iterator iter = _filters.iterator ();
+   /*
+    * filters are actually position dependent
+    * and we must not apply count filter if previous filter didn't match  
+    */
+    Iterator<IEventFilter> iter = _filters.iterator ();
     while (iter.hasNext ())
       {
-        IEventFilter filter = (IEventFilter) iter.next ();
+        IEventFilter filter = iter.next ();
         if (!filter.matches (theEvent))
-          matches = false;
+          return false;
       }
 
-    return matches;
+    return true;
+  }
+  
+  public String toString() {
+	  String eventRequestName = "??? #" + _kind  + "(id: " + getId() + ")";
+	  
+	try {
+		Class eventRequestKind = Class.forName("gnu.classpath.jdwp.JdwpConstants$EventKind");
+	
+	  
+	  for (Field field : eventRequestKind.getFields()) {
+		  try {
+			Byte value = (Byte)field.get(null);
+			if (value.equals(_kind)) {
+				eventRequestName = field.getName() + " #" + _kind + "(id: " + getId() + ")";
+				break;
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		  
+	  }
+	} catch (ClassNotFoundException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
+	}
+	  
+	  return eventRequestName;
   }
 
-	public void printDebugInfo() throws ClassNotFoundException {
-		  // let's use a bit of reflection to get right debug info
-		  Class eventRequestKind = Class.forName("gnu.classpath.jdwp.JdwpConstants$EventKind");
-		  String eventRequestName = "#" + _kind;
-		  for (Field field : eventRequestKind.getFields()) {
-			  try {
-				Byte value = (Byte)field.get(null);
-				if (value.equals(_kind)) {
-					eventRequestName = field.getName() + " #" + _kind;
-					break;
-				}
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			  
-		  }
-		  
-		  System.out.println("Registered request: " + eventRequestName);
-	  }
-	
 	
 }

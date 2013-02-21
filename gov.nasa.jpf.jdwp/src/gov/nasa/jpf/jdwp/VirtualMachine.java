@@ -6,11 +6,14 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import gnu.classpath.jdwp.Jdwp;
+import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.event.ThreadStartEvent;
 import gnu.classpath.jdwp.event.VmInitEvent;
+import gnu.classpath.jdwp.event.filters.IEventFilter;
+import gnu.classpath.jdwp.event.filters.StepFilter;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.proxy.ThreadProxy;
 import gov.nasa.jpf.jvm.ClassInfo;
@@ -35,7 +38,7 @@ public class VirtualMachine {
 				events.add(new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0));
 			}
 			postponedLoadedClasses.clear();
-			Jdwp.notify(events.toArray(new Event[events.size()]));
+			Jdwp.notify(events.toArray(new Event[events.size()])); // TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
 			
 			VmInitEvent vmInitEvent = new VmInitEvent(vm.getCurrentThread());
 			System.out.println("Notifying about vm started");
@@ -95,20 +98,29 @@ public class VirtualMachine {
 	public List<EventRequest> getRequests() {
 		return requests;
 	}
+	
+	private List<StepFilter> stepFilters = new CopyOnWriteArrayList<StepFilter>();
 
 	public void registerEventRequest(EventRequest request) {
-		try {
-			request.printDebugInfo();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		requests.add(request);
-		
 	}
 
 	public JPF getJpf() {
 		return jpf;
+	}
+
+	public void conditionallyTriggerStepEvent(JVM vm) {
+		for (EventRequest request : requests) {
+			if (request.getEventKind() == JdwpConstants.EventKind.SINGLE_STEP) {
+				for (IEventFilter filter : request.getFilters()) {
+					if (filter instanceof StepFilter) {
+						
+					}
+				}
+			}
+		}
+		// TODO Auto-generated method stub
+		
 	}
 
 }
