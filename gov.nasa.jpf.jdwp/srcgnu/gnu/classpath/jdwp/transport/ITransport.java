@@ -73,7 +73,7 @@ public interface ITransport
    * Shutdown the transport
    */
   public void shutdown ();
-
+  
   /**
    * Get the input stream for the transport
    */
@@ -85,4 +85,10 @@ public interface ITransport
    */
   public OutputStream getOutputStream ()
     throws IOException;
+
+public boolean isServer();
+
+public String getName();
+
+public String getAddress();
 }

@@ -116,6 +116,7 @@ public class JdwpConnection
     throws TransportException
   {
     // Initialize transport (connect socket, e.g.)
+	  
     _transport.initialize ();
 
     // Do handshake

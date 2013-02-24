@@ -120,6 +120,7 @@ class SocketTransport
             _port = Integer.parseInt(s[1]);
           }
       }
+    
   }
 
   /**
@@ -193,4 +194,19 @@ class SocketTransport
   {
     return _socket.getOutputStream ();
   }
+
+@Override
+public boolean isServer() {
+	return _server;
+}
+
+@Override
+public String getName() {
+	return NAME;
+}
+
+@Override
+public String getAddress() {
+	return _host + ":"  +_port;
+}
 }

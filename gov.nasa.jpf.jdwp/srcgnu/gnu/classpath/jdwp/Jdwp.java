@@ -81,11 +81,12 @@ public class Jdwp
   private Thread _ppThread;
 
   // JDWP configuration properties
-  private HashMap _properties;
+  private HashMap<String, String> _properties;
 
   // The suspend property of the configure string
   // (-Xrunjdwp:..suspend=<boolean>)
   private static final String _PROPERTY_SUSPEND = "suspend";
+  private static final String _PROPERTY_QUIET = "quiet";
 
   // Connection to debugger
   private JdwpConnection _connection;
@@ -162,6 +163,13 @@ public class Jdwp
     // initialize transport
     ITransport transport = TransportFactory.newInstance (_properties);
     _connection = new JdwpConnection (_group, transport);
+    
+    // Get quiet {form: "y" or "n"} .. applies only when server=y
+    if (_properties.get(_PROPERTY_QUIET) == null || _properties.get(_PROPERTY_QUIET).toLowerCase().equals("y")) {
+    	if (transport.isServer()) { 
+    		System.out.println("Listening for transport " + transport.getName() + " at address: " + transport.getAddress());
+    	}
+    }
     _connection.initialize ();
     _connection.start ();
 
@@ -411,7 +419,7 @@ public class Jdwp
   {
     // Loop through configuration arguments looking for a
     // transport name
-    _properties = new HashMap ();
+    _properties = new HashMap<String, String> ();
     String[] options = configString.split (",");
     for (int i = 0; i < options.length; ++i)
       {
