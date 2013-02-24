@@ -40,7 +40,7 @@ public class JDWPRunner {
 			jpf.getVM().addListener(new JDWPListener(jpf, vm));
 			jdwp.start();
 
-			while (Jdwp.suspendOnStartup()) {
+			while (Jdwp.suspendOnStartup() || !jdwp.isServer()) {
 				try {
 					jdwp.join();
 					break;

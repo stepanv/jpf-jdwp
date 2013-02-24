@@ -72,4 +72,16 @@ public class TransportException
   {
     super (t);
   }
+  
+  /**
+   * Constructs a <code>TransportException</code> with the
+   * given <code>Throwable</code> root cause and message
+   *
+   * @param message the message
+   * @param t  the cause of the exception
+   */
+  public TransportException (String message, Throwable t)
+  {
+    super (message, t);
+  }
 }

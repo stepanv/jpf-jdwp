@@ -87,6 +87,7 @@ public class Jdwp
   // (-Xrunjdwp:..suspend=<boolean>)
   private static final String _PROPERTY_SUSPEND = "suspend";
   private static final String _PROPERTY_QUIET = "quiet";
+  private static final String _PROPERTY_SERVER = "server";
 
   // Connection to debugger
   private JdwpConnection _connection;
@@ -144,6 +145,18 @@ public class Jdwp
       }
 
     return false;
+  }
+  
+  public boolean isServer() {
+	  Jdwp jdwp = getDefault ();
+	    if (jdwp != null)
+	      {
+	        String suspend = (String) jdwp._properties.get (_PROPERTY_SERVER);
+	        if (suspend != null && suspend.equals ("y"))
+	          return true;
+	      }
+
+	    return false;
   }
 
   /**
@@ -336,7 +349,7 @@ public class Jdwp
     throws IOException
   {
     Jdwp jdwp = getDefault();
-    if (jdwp != null)
+    if (jdwp != null && isDebugging)
       {
         synchronized (jdwp._connection)
           {

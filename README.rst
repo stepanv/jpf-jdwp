@@ -55,6 +55,7 @@ Create new *Debug/Run Java Application* configuration:
  #. To enable JDWP, add VM property ``jdwp`` with standard JDWP arguments.
     For example: ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=51255``
  #. Run or Debug it
+ #. Attach the debugger (assuming you're running JPF as a jdwp server)
 
 Apparently, it's possible to run it without Eclipse, but there is no build system yet.
     
