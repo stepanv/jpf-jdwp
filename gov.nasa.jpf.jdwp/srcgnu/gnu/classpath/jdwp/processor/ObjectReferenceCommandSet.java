@@ -137,7 +137,7 @@ public class ObjectReferenceCommandSet
     } else if (obj instanceof JdwpObjectContainer<?, ?>) {
     	clazz = ((JdwpObjectContainer<?, ?>)obj).getClassInfo();
     } else {
-    	throw new RuntimeException("object needs an reference type implementation"); //TODO complete the implementation
+    	throw new RuntimeException("object: ." + obj + "'(class: " + obj.getClass() + ") needs an reference type implementation"); //TODO complete the implementation
     }
     //throw new RuntimeException("not implemented");
     ReferenceTypeId refId = idMan.getReferenceTypeId(clazz);

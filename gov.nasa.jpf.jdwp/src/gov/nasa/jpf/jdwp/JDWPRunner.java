@@ -17,15 +17,13 @@ public class JDWPRunner {
 	public static void main(String[] args2) {
 		List<String> args = new ArrayList<String>();
 
-		if (args2.length != 2) {
+		if (args2.length != 1) {
 			System.err.println("Illegal number of arguments.. Allowed only two:");
 			System.err.println("  [1] main class to run");
-			System.err.println("  [2] port for debugging to attach to");
 			return;
 		}
 
 		String classToRun = args2[0];
-		int port = Integer.parseInt(args2[1]);
 
 		// TODO [for PJA] How do we want to start JPF (with JDWP enabled)?
 		args.add("+target=" + classToRun);
@@ -43,27 +41,33 @@ public class JDWPRunner {
 
 		JPF jpf = new JPF(conf);
 
-		Jdwp jdwp = new Jdwp();
-		jdwp.configure("transport=dt_socket,server=y,suspend=y,address=" + port);
+		String jdwpProperty = System.getProperty("jdwp");
 
-		VirtualMachine vm = new VirtualMachine(jpf);
-		VMVirtualMachine.vm = vm;
+		if (jdwpProperty != null) {
+			Jdwp jdwp = new Jdwp();
+			jdwp.configure(jdwpProperty);
 
-		jpf.getVM().addListener(new JDWPListener(jpf, vm));
-		jdwp.start();
+			VirtualMachine vm = new VirtualMachine(jpf);
+			VMVirtualMachine.vm = vm;
 
-		while (Jdwp.suspendOnStartup()) {
-			try {
-				jdwp.join();
-				break;
-			} catch (InterruptedException e) {
+			jpf.getVM().addListener(new JDWPListener(jpf, vm));
+			jdwp.start();
+
+			while (Jdwp.suspendOnStartup()) {
+				try {
+					jdwp.join();
+					break;
+				} catch (InterruptedException e) {
+				}
 			}
+			jpf.run();
+
+			Jdwp.notify(new VmDeathEvent());
+
+			jdwp.shutdown();
+		} else {
+			jpf.run();
 		}
-		jpf.run();
-
-		Jdwp.notify(new VmDeathEvent());
-
-		jdwp.shutdown();
 
 	}
 

@@ -106,6 +106,7 @@ public class Jdwp
    */
   public Jdwp ()
   {
+	  super("JDWP-initializator");
     _shutdown = false;
     _instance = this;
   }
