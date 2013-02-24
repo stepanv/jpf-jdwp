@@ -41,7 +41,7 @@ JDWP-to-JPF Building and Installing
 Eclipse workspace preparation:
 ------------------------------
 
- 1. clone ``elipse-plugin`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
+ 1. clone ``jdwp`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
  #. clone this repository and import ``gov.nasa.jpf.jdwp`` into Eclipse
 
 Running:
