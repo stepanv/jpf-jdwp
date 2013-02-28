@@ -1,4 +1,4 @@
-package gov.nasa.jpd.jdwp.event;
+package gov.nasa.jpf.jdwp.event;
 
 import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.jvm.ThreadInfo;

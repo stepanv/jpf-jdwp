@@ -1,8 +1,8 @@
-package gov.nasa.jpd.jdwp.event;
+package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpd.jdwp.event.Event.EventKind;
-import gov.nasa.jpd.jdwp.event.filter.Filter;
-import gov.nasa.jpd.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.filter.Filter;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 
 import java.util.ArrayList;
 import java.util.List;

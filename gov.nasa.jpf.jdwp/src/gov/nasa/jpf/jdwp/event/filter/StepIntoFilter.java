@@ -1,10 +1,10 @@
-package gov.nasa.jpd.jdwp.event.filter;
+package gov.nasa.jpf.jdwp.event.filter;
 
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
-import gov.nasa.jpd.jdwp.event.Event;
-import gov.nasa.jpd.jdwp.event.EventRequest;
-import gov.nasa.jpd.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventRequest;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.Instruction;

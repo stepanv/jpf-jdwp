@@ -1,4 +1,4 @@
-package gov.nasa.jpd.jdwp.exception;
+package gov.nasa.jpf.jdwp.exception;
 
 public class InvalidCount extends JdwpException {
 

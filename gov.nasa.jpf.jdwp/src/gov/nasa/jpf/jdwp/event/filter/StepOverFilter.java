@@ -1,4 +1,4 @@
-package gov.nasa.jpd.jdwp.event.filter;
+package gov.nasa.jpf.jdwp.event.filter;
 
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
