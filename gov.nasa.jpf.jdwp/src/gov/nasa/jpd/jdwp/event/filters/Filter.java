@@ -1,5 +1,9 @@
 package gov.nasa.jpd.jdwp.event.filters;
 
-public class Filter {
+import gov.nasa.jpd.jdwp.event.Event;
+
+public abstract class Filter {
+
+	public abstract <T extends Event> boolean matches(T event);
 
 }

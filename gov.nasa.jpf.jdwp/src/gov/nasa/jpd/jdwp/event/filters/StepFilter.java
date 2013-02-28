@@ -3,12 +3,11 @@ package gov.nasa.jpd.jdwp.event.filters;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
+import gov.nasa.jpd.jdwp.event.Event;
 import gov.nasa.jpd.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,7 +23,7 @@ import java.util.logging.Logger;
  * @author stepan
  * 
  */
-public class StepFilter {
+public abstract class StepFilter extends Filter {
 
 	private static Logger log = Logger.getLogger(StepFilter.class.getName());
 
@@ -46,17 +45,6 @@ public class StepFilter {
 
 	}
 
-	public static enum StepDepth {
-		/** Step into any method calls that occur before the end of the step. */
-		INTO,
-
-		/** Step over any method calls that occur before the end of the step. */
-		OVER,
-
-		/** Step out of the current method. */
-		OUT
-	}
-
 	/**
 	 * Thread in which to step
 	 */
@@ -68,13 +56,6 @@ public class StepFilter {
 	 * @see {@link StepSize}
 	 */
 	private StepSize size;
-
-	/**
-	 * Relative call stack limit.
-	 * 
-	 * @see {@link StepDepth}
-	 */
-	private StepDepth depth;
 
 	/**
 	 * A stack frame snapshot to refer when detecting a current program state.
@@ -94,16 +75,15 @@ public class StepFilter {
 		}
 	}
 
-	private List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
+	protected List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
 
-	public StepFilter(ThreadId thread, StepSize size, StepDepth depth, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
+	public StepFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
 		if (thread.getReference().get() == null) {
 			throw new InvalidThreadException(thread.getId());
 		}
 
 		this.thread = thread;
 		this.size = size;
-		this.depth = depth;
 
 		while (stackFrameIterator.hasNext()) {
 			StackFrame frame = stackFrameIterator.next();
@@ -155,7 +135,19 @@ public class StepFilter {
 	 * @param event
 	 *            the <code>Event</code> to scrutinize
 	 */
-	public boolean matches(SingleStepEvent event) {
+	@Override
+	public <T extends Event> boolean matches(T event) {
+
+		/* This modifier can be used with step event kinds only. */
+		if (event instanceof SingleStepEvent) {
+			return matches((SingleStepEvent) event);
+		} else {
+			return false;
+		}
+
+	}
+
+	private boolean matches(SingleStepEvent event) {
 
 		Instruction currentInstruction = event.getLocation().getInstruction();
 
@@ -181,110 +173,8 @@ public class StepFilter {
 
 		switch (size) {
 		case LINE:
-			switch (depth) {
-			case INTO:
+			return matches(currentStackFrameSize, currentInstruction);
 
-				/* we just stepped in some method */
-				if (currentStackFrameSize > stackSnapshot.size()) {
-
-					/*
-					 * we're accepting only method very beginnings and we don't
-					 * step into native methods
-					 */
-					if (currentInstruction.getInstructionIndex() == 0 && !(currentInstruction instanceof EXECUTENATIVE)) {
-						return true;
-					}
-
-				}
-
-				/* we're in the same method */
-				if (currentStackFrameSize == stackSnapshot.size()) {
-
-					/* we're already on different line */
-					if (currentLineDiffers(currentInstruction)) {
-						return true;
-					}
-
-				}
-
-				/* we're in the caller's method */
-				if (currentStackFrameSize < stackSnapshot.size()) {
-
-					/* we're already on a different line */
-					if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
-						return true;
-					}
-
-					/*
-					 * we're about to enter another method at the same line from
-					 * where our method was invoked
-					 */
-					if (currentInstruction instanceof InvokeInstruction) {
-
-						/*
-						 * this might be tricky because instance of
-						 * InvokeInstruction could also invoke just a native or
-						 * synthetic method where we won't be able to step in.
-						 * 
-						 * Let's do not care about this...
-						 */
-						return true;
-					}
-
-				}
-
-				break;
-			case OUT:
-
-				/* we just stepped out of some method */
-				if (currentStackFrameSize < stackSnapshot.size()) {
-
-					/* we're already on a different line */
-					if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
-						return true;
-					}
-
-					/* we're about to enter another method at the same line */
-					if (currentInstruction instanceof InvokeInstruction) {
-						return true;
-					}
-
-				}
-				break;
-
-			case OVER:
-
-				/* we're at the same stack depth as when step was requested */
-				if (currentStackFrameSize == stackSnapshot.size()) {
-
-					/* we're already on a different line */
-					if (currentLineDiffers(currentInstruction)) {
-						return true;
-					}
-				}
-
-				/* we just stepped out of some method */
-				if (currentStackFrameSize < stackSnapshot.size()) {
-
-					/* we're already on a different line */
-					if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
-						return true;
-					}
-
-					/* we're about to enter another method at the same line */
-					if (currentInstruction instanceof InvokeInstruction) {
-						return true;
-					}
-				}
-
-				break;
-			default:
-				// TODO Error handling
-				throw new RuntimeException("dead block reached");
-				// TODO remove this
-			}
-
-			break;
 		case MIN:
 			if (stackSnapshot.get(0).pc != currentInstruction) {
 				return true;
@@ -310,7 +200,7 @@ public class StepFilter {
 	 * @return Whether given instruction when compared to the instruction at the
 	 *         given stack depth is located at a different line.
 	 */
-	private boolean lineDiffers(int snapshotStackDepth, Instruction instruction) {
+	protected boolean lineDiffers(int snapshotStackDepth, Instruction instruction) {
 		return stackSnapshot.get(snapshotStackDepth).pc.getLineNumber() != instruction.getLineNumber();
 	}
 
@@ -322,8 +212,10 @@ public class StepFilter {
 	 * @return Whether given instruction when compared to the instruction at the
 	 *         top of the stack is located at a different line.
 	 */
-	private boolean currentLineDiffers(Instruction instruction) {
+	protected boolean currentLineDiffers(Instruction instruction) {
 		return lineDiffers(0, instruction);
 	}
+
+	protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
 
 }
