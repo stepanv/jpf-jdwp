@@ -1,4 +1,4 @@
-package gov.nasa.jpd.jdwp.event.filters;
+package gov.nasa.jpd.jdwp.event.filter;
 
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
@@ -9,19 +9,28 @@ import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import java.util.Iterator;
 
 /**
- * Step out of the current method.
+ * Step over any method calls that occur before the end of the step.
  * 
  * @author stepan
- * 
+ *
  */
-public class StepOutFilter extends StepFilter {
+public class StepOverFilter extends StepFilter {
 
-	public StepOutFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
+	public StepOverFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
 		super(thread, size, stackFrameIterator);
 	}
 
 	@Override
 	protected boolean matches(int currentStackFrameSize, Instruction currentInstruction) {
+		/* we're at the same stack depth as when step was requested */
+		if (currentStackFrameSize == stackSnapshot.size()) {
+
+			/* we're already on a different line */
+			if (currentLineDiffers(currentInstruction)) {
+				return true;
+			}
+		}
+
 		/* we just stepped out of some method */
 		if (currentStackFrameSize < stackSnapshot.size()) {
 
@@ -34,7 +43,6 @@ public class StepOutFilter extends StepFilter {
 			if (currentInstruction instanceof InvokeInstruction) {
 				return true;
 			}
-
 		}
 		return false;
 	}

@@ -1,8 +1,10 @@
-package gov.nasa.jpd.jdwp.event.filters;
+package gov.nasa.jpd.jdwp.event.filter;
 
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
 import gov.nasa.jpd.jdwp.event.Event;
+import gov.nasa.jpd.jdwp.event.EventRequest;
+import gov.nasa.jpd.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -64,7 +66,7 @@ public class StepIntoFilter extends StepFilter {
 				/*
 				 * this might be tricky because instance of
 				 * InvokeInstruction could also invoke just a native or
-				 * synthetic method where we won't be able to step in.
+				 * a synthetic method where we won't be able to step in.
 				 * 
 				 * Let's do not care about this...
 				 */

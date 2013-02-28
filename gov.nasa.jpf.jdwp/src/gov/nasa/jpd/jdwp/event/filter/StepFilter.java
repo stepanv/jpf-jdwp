@@ -1,10 +1,13 @@
-package gov.nasa.jpd.jdwp.event.filters;
+package gov.nasa.jpd.jdwp.event.filter;
 
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
 import gov.nasa.jpd.jdwp.event.Event;
+import gov.nasa.jpd.jdwp.event.EventRequest;
 import gov.nasa.jpd.jdwp.event.SingleStepEvent;
+import gov.nasa.jpd.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpd.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
@@ -78,6 +81,8 @@ public abstract class StepFilter extends Filter {
 	protected List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
 
 	public StepFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
+		super(ModKind.STEP);
+
 		if (thread.getReference().get() == null) {
 			throw new InvalidThreadException(thread.getId());
 		}
@@ -150,7 +155,6 @@ public abstract class StepFilter extends Filter {
 	private boolean matches(SingleStepEvent event) {
 
 		Instruction currentInstruction = event.getLocation().getInstruction();
-
 		ThreadInfo currentThread = event.getThread();
 
 		/* Are we in the right thread? */
@@ -217,5 +221,14 @@ public abstract class StepFilter extends Filter {
 	}
 
 	protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
+	
+	@Override
+	public void addToEventRequest(EventRequest eventRequest) throws JdwpException {
+		if (eventRequest.getEventKind() == Event.EventKind.SINGLE_STEP) {
+			return;
+		}
+		
+		throw new IllegalArgumentException();
+	}
 
 }
