@@ -1,18 +1,12 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gnu.classpath.jdwp.util.Location;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.jdwp.type.Location;
 
-public class SingleStepEvent extends Event {
 
-	public Location getLocation() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public class SingleStepEvent extends LocatableEvent {
 
-	public ThreadInfo getThread() {
-		// TODO Auto-generated method stub
-		return null;
+	public SingleStepEvent(Location location) {
+		super(EventKind.SINGLE_STEP, location);
 	}
 
 }

@@ -1,6 +1,14 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.id.ThreadId;
+
 public abstract class Event {
+	
+	private EventKind eventKind;
+
+	public Event(EventKind eventKind) {
+		this.eventKind = eventKind;
+	}
 	
 	public static enum EventKind {
 		/** Never sent across JDWP */
@@ -38,6 +46,16 @@ public abstract class Event {
 		EventKind(EventKind eventKind) {
 			this.value = eventKind.value;
 		}
+	}
+
+	private ThreadId threadId;
+	
+	public ThreadId getThread() {
+		return threadId;
+	}
+
+	public EventKind getEventKind() {
+		return eventKind;
 	}
 
 }

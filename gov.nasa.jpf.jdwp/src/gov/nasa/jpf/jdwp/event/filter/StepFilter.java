@@ -6,6 +6,7 @@ import gnu.classpath.jdwp.id.ThreadId;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
+import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jvm.StackFrame;
@@ -26,7 +27,7 @@ import java.util.logging.Logger;
  * @author stepan
  * 
  */
-public abstract class StepFilter extends Filter {
+public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 	private static Logger log = Logger.getLogger(StepFilter.class.getName());
 
@@ -134,28 +135,11 @@ public abstract class StepFilter extends Filter {
 		return null;
 	}
 
-	/**
-	 * Does the given event match the filter?
-	 * 
-	 * @param event
-	 *            the <code>Event</code> to scrutinize
-	 */
 	@Override
-	public <T extends Event> boolean matches(T event) {
-
-		/* This modifier can be used with step event kinds only. */
-		if (event instanceof SingleStepEvent) {
-			return matches((SingleStepEvent) event);
-		} else {
-			return false;
-		}
-
-	}
-
-	private boolean matches(SingleStepEvent event) {
+	public boolean matches(SingleStepEvent event) {
 
 		Instruction currentInstruction = event.getLocation().getInstruction();
-		ThreadInfo currentThread = event.getThread();
+		ThreadInfo currentThread = event.getThread().get();
 
 		/* Are we in the right thread? */
 		if (VMIdManager.getDefault().getObjectId(currentThread) != thread) {
@@ -223,12 +207,14 @@ public abstract class StepFilter extends Filter {
 	protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
 	
 	@Override
-	public void addToEventRequest(EventRequest eventRequest) throws JdwpException {
-		if (eventRequest.getEventKind() == Event.EventKind.SINGLE_STEP) {
-			return;
+	public boolean isAllowedEventKind(EventKind eventKind) {
+		switch(eventKind) {
+		case SINGLE_STEP:
+			return true;
+		default:
+			return false;
 		}
-		
-		throw new IllegalArgumentException();
 	}
+
 
 }
