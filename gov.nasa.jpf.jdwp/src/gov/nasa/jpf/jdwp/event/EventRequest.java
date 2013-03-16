@@ -2,7 +2,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
-import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class EventRequest {
 		return true;
 	}
 	
-	public void addFilter(Filter filter) throws JdwpException {
+	public void addFilter(Filter filter) throws JdwpError {
 		filter.addToEventRequest(this);
 	}
 

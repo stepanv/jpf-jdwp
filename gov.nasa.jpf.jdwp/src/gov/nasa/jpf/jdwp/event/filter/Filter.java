@@ -4,7 +4,7 @@ import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
-import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 /**
  * 
@@ -47,7 +47,7 @@ public abstract class Filter<T> {
 
 	public abstract boolean isAllowedEventKind(EventKind eventKind);
 	
-	public void addToEventRequest(EventRequest eventRequest) throws JdwpException {
+	public void addToEventRequest(EventRequest eventRequest) throws JdwpError {
 		if (isAllowedEventKind(eventRequest.getEventKind())) {
 			eventRequest.addFilter(this);
 		} else 		{

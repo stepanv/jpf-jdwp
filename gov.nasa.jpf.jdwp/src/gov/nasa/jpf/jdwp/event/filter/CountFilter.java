@@ -3,14 +3,14 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.exception.InvalidCount;
-import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 public class CountFilter extends Filter<Event> {
 
 	private int count;
 	private boolean expired;
 
-	public CountFilter(int count) throws JdwpException {
+	public CountFilter(int count) throws JdwpError {
 		super(Filter.ModKind.COUNT);
 
 		if (count <= 0) {

@@ -1,6 +1,10 @@
 package gov.nasa.jpf.jdwp.exception;
 
-public class InvalidThreadException extends JdwpException {
+public class InvalidThreadException extends JdwpError {
+
+	InvalidThreadException() {
+		super(ErrorType.INVALID_THREAD);
+	}
 
 	/**
 	 * 
