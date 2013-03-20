@@ -7,10 +7,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum InterfaceTypeCommandSet implements Command, IdentifiableEnum<Byte, InterfaceTypeCommandSet> {
+public enum InterfaceTypeCommand implements Command, IdentifiableEnum<Byte, InterfaceTypeCommand> {
 		NONE;
 		
-		private static ReverseEnumMap<Byte, InterfaceTypeCommandSet> map = new ReverseEnumMap<Byte, InterfaceTypeCommandSet>(InterfaceTypeCommandSet.class);
+		private static ReverseEnumMap<Byte, InterfaceTypeCommand> map = new ReverseEnumMap<Byte, InterfaceTypeCommand>(InterfaceTypeCommand.class);
 
 		@Override
 		public Byte identifier() {
@@ -18,7 +18,7 @@ public enum InterfaceTypeCommandSet implements Command, IdentifiableEnum<Byte, I
 		}
 
 		@Override
-		public InterfaceTypeCommandSet convert(Byte val) throws JdwpError {
+		public InterfaceTypeCommand convert(Byte val) throws JdwpError {
 			return map.get(val);
 		}
 

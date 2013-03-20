@@ -7,22 +7,36 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum ThreadGroupReferenceCommandSet implements Command, IdentifiableEnum<Byte, ThreadGroupReferenceCommandSet> {
-	NAME(1) {
+public enum MethodCommand implements Command, IdentifiableEnum<Byte, MethodCommand> {
+	LINETABLE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
 
 		}
 	},
-	PARENT(2) {
+	VARIABLETABLE(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
 
 		}
 	},
-	CHILDREN(3) {
+	BYTECODES(3) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	ISOBSOLETE(4) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	VARIABLETABLEWITHGENERIC(5) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
@@ -31,12 +45,11 @@ public enum ThreadGroupReferenceCommandSet implements Command, IdentifiableEnum<
 	};
 	private byte commandId;
 
-	private ThreadGroupReferenceCommandSet(int commandId) {
+	private MethodCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
 
-	private static ReverseEnumMap<Byte, ThreadGroupReferenceCommandSet> map = new ReverseEnumMap<Byte, ThreadGroupReferenceCommandSet>(
-			ThreadGroupReferenceCommandSet.class);
+	private static ReverseEnumMap<Byte, MethodCommand> map = new ReverseEnumMap<Byte, MethodCommand>(MethodCommand.class);
 
 	@Override
 	public Byte identifier() {
@@ -44,7 +57,7 @@ public enum ThreadGroupReferenceCommandSet implements Command, IdentifiableEnum<
 	}
 
 	@Override
-	public ThreadGroupReferenceCommandSet convert(Byte val) throws JdwpError {
+	public MethodCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 

@@ -7,98 +7,121 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum ThreadReferenceCommandSet implements Command, IdentifiableEnum<Byte, ThreadReferenceCommandSet> {
-	NAME(1) {
+public enum ReferenceTypeCommand implements Command, IdentifiableEnum<Byte, ReferenceTypeCommand> {
+	SIGNATURE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	SUSPEND(2) {
+	}, 
+	CLASSLOADER(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	RESUME(3) {
+	}, 
+	MODIFIERS(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	STATUS(4) {
+	}, 
+	FIELDS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	THREADGROUP(5) {
+	}, 
+	METHODS(5) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	FRAMES(6) {
+	}, 
+	GETVALUES(6) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	FRAMECOUNT(7) {
+	}, 
+	SOURCEFILE(7) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	OWNEDMONITORS(8) {
+	}, 
+	NESTEDTYPES(8) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	CURRENTCONTENDEDMONITOR(9) {
+	}, 
+	STATUS(9) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	STOP(10) {
+	}, 
+	INTERFACES(10) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	INTERRUPT(11) {
+	}, 
+	CLASSOBJECT(11) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	SUSPENDCOUNT(12) {
+	}, 
+	SOURCEDEBUGEXTENSION(12) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
+		}
+	}, 
+	SIGNATUREWITHGENERIC(13) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+			
+		}
+	}, 
+	FIELDSWITHGENERIC(14) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+			
+		}
+	}, 
+	METHODSWITHGENERIC(15) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+			
 		}
 	};
+	
 	private byte commandId;
 
-	private ThreadReferenceCommandSet(int commandId) {
+	private ReferenceTypeCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
 
-	private static ReverseEnumMap<Byte, ThreadReferenceCommandSet> map = new ReverseEnumMap<Byte, ThreadReferenceCommandSet>(ThreadReferenceCommandSet.class);
+	private static ReverseEnumMap<Byte, ReferenceTypeCommand> map = new ReverseEnumMap<Byte, ReferenceTypeCommand>(ReferenceTypeCommand.class);
+
 
 	@Override
 	public Byte identifier() {
@@ -106,7 +129,7 @@ public enum ThreadReferenceCommandSet implements Command, IdentifiableEnum<Byte,
 	}
 
 	@Override
-	public ThreadReferenceCommandSet convert(Byte val) throws JdwpError {
+	public ReferenceTypeCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 

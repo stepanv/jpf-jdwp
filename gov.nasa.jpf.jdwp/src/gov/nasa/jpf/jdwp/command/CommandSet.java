@@ -10,22 +10,22 @@ import java.nio.ByteBuffer;
 
 public enum CommandSet implements IdentifiableEnum<Byte, CommandSet> {
 	VIRTUALMACHINE(1, VirtualMachineCommand.ALLCLASSES),
-	REFERENCETYPE(2, ReferenceTypeCommandSet.class),
-	CLASSTYPE(3, ClassTypeCommandSet.INVOKEMETHOD),
-	ARRAYTYPE(4, ArrayTypeCommandSet.NEWINSTANCE),
-	INTERFACETYPE(5, InterfaceTypeCommandSet.class),
-	METHOD(6, MethodCommandSet.BYTECODES),
-	FIELD(8, FieldCommandSet.class),
-	OBJECTREFERENCE(9, ObjectReferenceCommandSet.DISABLECOLLECTION),
-	STRINGREFERENCE(10, StringReferenceCommandSet.VALUE),
-	THREADREFERENCE(11, ThreadReferenceCommandSet.NAME),
-	THREADGROUPREFERENCE(12, ThreadGroupReferenceCommandSet.CHILDREN),
-	ARRAYREFERENCE(13, ArrayReferenceCommandSet.GETVALUES),
-	CLASSLOADERREFERENCE(14, ClassLoaderReferenceCommandSet.VISIBLECLASSES),
-	EVENTREQUEST(15, EventRequestCommandSet.CLEAR),
+	REFERENCETYPE(2, ReferenceTypeCommand.class),
+	CLASSTYPE(3, ClassTypeCommand.INVOKEMETHOD),
+	ARRAYTYPE(4, ArrayTypeCommand.NEWINSTANCE),
+	INTERFACETYPE(5, InterfaceTypeCommand.class),
+	METHOD(6, MethodCommand.BYTECODES),
+	FIELD(8, FieldCommand.class),
+	OBJECTREFERENCE(9, ObjectReferenceCommand.DISABLECOLLECTION),
+	STRINGREFERENCE(10, StringReferenceCommand.VALUE),
+	THREADREFERENCE(11, ThreadReferenceCommand.NAME),
+	THREADGROUPREFERENCE(12, ThreadGroupReferenceCommand.CHILDREN),
+	ARRAYREFERENCE(13, ArrayReferenceCommand.GETVALUES),
+	CLASSLOADERREFERENCE(14, ClassLoaderReferenceCommand.VISIBLECLASSES),
+	EVENTREQUEST(15, EventRequestCommand.CLEAR),
 	STACKFRAME(16, StackFrameCommand.GETVALUES),
-	CLASSOBJECTREFERENCE(17, ClassObjectReferenceCommandSet.REFLECTEDTYPE),
-	EVENT(64, EventCommandSet.COMPOSITE);
+	CLASSOBJECTREFERENCE(17, ClassObjectReferenceCommand.REFLECTEDTYPE),
+	EVENT(64, EventCommand.COMPOSITE);
 
 	private static ReverseEnumMap<Byte, CommandSet> map = new ReverseEnumMap<Byte, CommandSet>(CommandSet.class);
 

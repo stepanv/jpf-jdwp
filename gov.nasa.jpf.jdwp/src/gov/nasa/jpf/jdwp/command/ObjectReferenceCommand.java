@@ -7,7 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum ObjectReferenceCommandSet implements Command, IdentifiableEnum<Byte, ObjectReferenceCommandSet> {
+public enum ObjectReferenceCommand implements Command, IdentifiableEnum<Byte, ObjectReferenceCommand> {
 	REFERENCETYPE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
@@ -66,11 +66,11 @@ public enum ObjectReferenceCommandSet implements Command, IdentifiableEnum<Byte,
 	};
 	private byte commandId;
 
-	private ObjectReferenceCommandSet(int commandId) {
+	private ObjectReferenceCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
 
-	private static ReverseEnumMap<Byte, ObjectReferenceCommandSet> map = new ReverseEnumMap<Byte, ObjectReferenceCommandSet>(ObjectReferenceCommandSet.class);
+	private static ReverseEnumMap<Byte, ObjectReferenceCommand> map = new ReverseEnumMap<Byte, ObjectReferenceCommand>(ObjectReferenceCommand.class);
 
 	@Override
 	public Byte identifier() {
@@ -78,7 +78,7 @@ public enum ObjectReferenceCommandSet implements Command, IdentifiableEnum<Byte,
 	}
 
 	@Override
-	public ObjectReferenceCommandSet convert(Byte val) throws JdwpError {
+	public ObjectReferenceCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 

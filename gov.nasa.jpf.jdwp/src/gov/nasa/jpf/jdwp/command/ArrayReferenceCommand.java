@@ -7,49 +7,34 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum MethodCommandSet implements Command, IdentifiableEnum<Byte, MethodCommandSet> {
-	LINETABLE(1) {
+public enum ArrayReferenceCommand implements Command, IdentifiableEnum<Byte, ArrayReferenceCommand> {
+	LENGTH(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	VARIABLETABLE(2) {
+	}, GETVALUES(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
+			
 		}
-	},
-	BYTECODES(3) {
+	}, SETVALUES(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
 			// TODO Auto-generated method stub
-
-		}
-	},
-	ISOBSOLETE(4) {
-		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
-
-		}
-	},
-	VARIABLETABLEWITHGENERIC(5) {
-		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
-
+			
 		}
 	};
+
 	private byte commandId;
 
-	private MethodCommandSet(int commandId) {
+	private ArrayReferenceCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
 
-	private static ReverseEnumMap<Byte, MethodCommandSet> map = new ReverseEnumMap<Byte, MethodCommandSet>(MethodCommandSet.class);
+	private static ReverseEnumMap<Byte, ArrayReferenceCommand> map = new ReverseEnumMap<Byte, ArrayReferenceCommand>(ArrayReferenceCommand.class);
 
 	@Override
 	public Byte identifier() {
@@ -57,7 +42,7 @@ public enum MethodCommandSet implements Command, IdentifiableEnum<Byte, MethodCo
 	}
 
 	@Override
-	public MethodCommandSet convert(Byte val) throws JdwpError {
+	public ArrayReferenceCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 

@@ -7,10 +7,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum FieldCommandSet implements Command, IdentifiableEnum<Byte, FieldCommandSet> {
+public enum FieldCommand implements Command, IdentifiableEnum<Byte, FieldCommand> {
 	NONE;
 
-	private static ReverseEnumMap<Byte, FieldCommandSet> map = new ReverseEnumMap<Byte, FieldCommandSet>(FieldCommandSet.class);
+	private static ReverseEnumMap<Byte, FieldCommand> map = new ReverseEnumMap<Byte, FieldCommand>(FieldCommand.class);
 
 	@Override
 	public Byte identifier() {
@@ -18,7 +18,7 @@ public enum FieldCommandSet implements Command, IdentifiableEnum<Byte, FieldComm
 	}
 
 	@Override
-	public FieldCommandSet convert(Byte val) throws JdwpError {
+	public FieldCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 

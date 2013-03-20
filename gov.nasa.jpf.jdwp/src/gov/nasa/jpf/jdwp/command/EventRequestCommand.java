@@ -7,7 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum EventRequestCommandSet implements Command, IdentifiableEnum<Byte, EventRequestCommandSet> {
+public enum EventRequestCommand implements Command, IdentifiableEnum<Byte, EventRequestCommand> {
 	SET(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
@@ -31,11 +31,11 @@ public enum EventRequestCommandSet implements Command, IdentifiableEnum<Byte, Ev
 	};
 	private byte commandId;
 
-	private EventRequestCommandSet(int commandId) {
+	private EventRequestCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
 
-	private static ReverseEnumMap<Byte, EventRequestCommandSet> map = new ReverseEnumMap<Byte, EventRequestCommandSet>(EventRequestCommandSet.class);
+	private static ReverseEnumMap<Byte, EventRequestCommand> map = new ReverseEnumMap<Byte, EventRequestCommand>(EventRequestCommand.class);
 
 	@Override
 	public Byte identifier() {
@@ -43,7 +43,7 @@ public enum EventRequestCommandSet implements Command, IdentifiableEnum<Byte, Ev
 	}
 
 	@Override
-	public EventRequestCommandSet convert(Byte val) throws JdwpError {
+	public EventRequestCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
 	}
 
