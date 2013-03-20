@@ -1,15 +1,12 @@
 package gov.nasa.jpf.jdwp;
 
-import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.JdwpConstants;
-import gnu.classpath.jdwp.event.ClassPrepareEvent;
-import gnu.classpath.jdwp.event.Event;
-import gnu.classpath.jdwp.event.EventRequest;
-import gnu.classpath.jdwp.event.ThreadStartEvent;
-import gnu.classpath.jdwp.event.VmInitEvent;
-import gnu.classpath.jdwp.event.filters.IEventFilter;
-import gnu.classpath.jdwp.event.filters.StepFilter;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventRequest;
+import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
+import gov.nasa.jpf.jdwp.event.VmInitEvent;
+import gov.nasa.jpf.jdwp.event.filter.StepFilter;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 
@@ -98,28 +95,13 @@ public class VirtualMachine {
 		return requests;
 	}
 	
-	private List<StepFilter> stepFilters = new CopyOnWriteArrayList<StepFilter>();
-
-	public void registerEventRequest(EventRequest request) {
-		requests.add(request);
+	public void registerEventRequest(EventRequest eventRequest) {
+		requests.add(eventRequest);
 	}
 
 	public JPF getJpf() {
 		return jpf;
 	}
 
-	public void conditionallyTriggerStepEvent(JVM vm) {
-		for (EventRequest request : requests) {
-			if (request.getEventKind() == JdwpConstants.EventKind.SINGLE_STEP) {
-				for (IEventFilter filter : request.getFilters()) {
-					if (filter instanceof StepFilter) {
-						
-					}
-				}
-			}
-		}
-		// TODO Auto-generated method stub
-		
-	}
 
 }

@@ -196,7 +196,7 @@ public class PacketProcessor
         ByteBuffer bb = ByteBuffer.wrap(commandPkt.getData());
         
         try {
-			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommandSet(), commandPkt.getCommand(), bb, _os, null);
+			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommandSet(), commandPkt.getCommand(), bb, _os, ccp);
 		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

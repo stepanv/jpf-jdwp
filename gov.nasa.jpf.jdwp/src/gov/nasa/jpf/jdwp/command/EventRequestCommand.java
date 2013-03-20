@@ -1,5 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 
@@ -11,8 +13,8 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	SET(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			EventRequest eventRequest = EventRequest.factory(bytes);
+			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
 		}
 	},
 	CLEAR(2) {
