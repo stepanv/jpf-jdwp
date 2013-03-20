@@ -11,7 +11,9 @@ public class ReverseEnumMap<T, V extends Enum<V> & IdentifiableEnum<T, ?>> {
 
 	public ReverseEnumMap(Class<V> enumIdentifierClassType) {
 		for (V v : enumIdentifierClassType.getEnumConstants()) {
-			map.put(v.identifier(), v);
+			if (v.identifier() != null) {
+				map.put(v.identifier(), v);
+			}
 		}
 	}
 
@@ -22,5 +24,5 @@ public class ReverseEnumMap<T, V extends Enum<V> & IdentifiableEnum<T, ?>> {
 		}
 		throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 	}
-	
+
 }

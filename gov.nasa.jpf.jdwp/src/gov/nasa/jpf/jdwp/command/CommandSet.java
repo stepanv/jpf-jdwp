@@ -9,8 +9,23 @@ import java.nio.ByteBuffer;
 
 
 public enum CommandSet implements IdentifiableEnum<Byte, CommandSet> {
-	VIRTUALMACHINE(1, VirtualMachineCommand.class),
-	STACKFRAME(16, StackFrameCommand.GETVALUES);
+	VIRTUALMACHINE(1, VirtualMachineCommand.ALLCLASSES),
+	REFERENCETYPE(2, ReferenceTypeCommandSet.class),
+	CLASSTYPE(3, ClassTypeCommandSet.INVOKEMETHOD),
+	ARRAYTYPE(4, ArrayTypeCommandSet.NEWINSTANCE),
+	INTERFACETYPE(5, InterfaceTypeCommandSet.class),
+	METHOD(6, MethodCommandSet.BYTECODES),
+	FIELD(8, FieldCommandSet.class),
+	OBJECTREFERENCE(9, ObjectReferenceCommandSet.DISABLECOLLECTION),
+	STRINGREFERENCE(10, StringReferenceCommandSet.VALUE),
+	THREADREFERENCE(11, ThreadReferenceCommandSet.NAME),
+	THREADGROUPREFERENCE(12, ThreadGroupReferenceCommandSet.CHILDREN),
+	ARRAYREFERENCE(13, ArrayReferenceCommandSet.GETVALUES),
+	CLASSLOADERREFERENCE(14, ClassLoaderReferenceCommandSet.VISIBLECLASSES),
+	EVENTREQUEST(15, EventRequestCommandSet.CLEAR),
+	STACKFRAME(16, StackFrameCommand.GETVALUES),
+	CLASSOBJECTREFERENCE(17, ClassObjectReferenceCommandSet.REFLECTEDTYPE),
+	EVENT(64, EventCommandSet.COMPOSITE);
 
 	private static ReverseEnumMap<Byte, CommandSet> map = new ReverseEnumMap<Byte, CommandSet>(CommandSet.class);
 

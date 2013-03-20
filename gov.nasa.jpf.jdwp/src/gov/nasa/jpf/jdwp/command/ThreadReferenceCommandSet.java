@@ -1,5 +1,115 @@
 package gov.nasa.jpf.jdwp.command;
 
-public class ThreadReferenceCommandSet {
+import gov.nasa.jpf.jdwp.JdwpIdManager;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+public enum ThreadReferenceCommandSet implements Command, IdentifiableEnum<Byte, ThreadReferenceCommandSet> {
+	NAME(1) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	SUSPEND(2) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	RESUME(3) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	STATUS(4) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	THREADGROUP(5) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	FRAMES(6) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	FRAMECOUNT(7) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	OWNEDMONITORS(8) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	CURRENTCONTENDEDMONITOR(9) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	STOP(10) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	INTERRUPT(11) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	},
+	SUSPENDCOUNT(12) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+			// TODO Auto-generated method stub
+
+		}
+	};
+	private byte commandId;
+
+	private ThreadReferenceCommandSet(int commandId) {
+		this.commandId = (byte) commandId;
+	}
+
+	private static ReverseEnumMap<Byte, ThreadReferenceCommandSet> map = new ReverseEnumMap<Byte, ThreadReferenceCommandSet>(ThreadReferenceCommandSet.class);
+
+	@Override
+	public Byte identifier() {
+		return commandId;
+	}
+
+	@Override
+	public ThreadReferenceCommandSet convert(Byte val) throws JdwpError {
+		return map.get(val);
+	}
+
+	@Override
+	public abstract void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError;
 }
