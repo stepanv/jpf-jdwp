@@ -1,10 +1,5 @@
 package gov.nasa.jpf.jdwp;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
@@ -15,9 +10,13 @@ import gnu.classpath.jdwp.event.VmInitEvent;
 import gnu.classpath.jdwp.event.filters.IEventFilter;
 import gnu.classpath.jdwp.event.filters.StepFilter;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.jdwp.proxy.ThreadProxy;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class VirtualMachine {
 	private JPF jpf;
@@ -60,7 +59,7 @@ public class VirtualMachine {
 		
 	}
 
-	public Collection getAllLoadedClasses() {
+	public Collection<ClassInfo> getAllLoadedClasses() {
 		return loadedClases;
 	}
 	

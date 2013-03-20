@@ -2,7 +2,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.event.LocatableEvent;
-import gov.nasa.jpf.jdwp.id.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
 
 public class ThreadOnlyFilter extends Filter<LocatableEvent> {
 

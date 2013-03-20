@@ -1,10 +1,9 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.JdwpIdManager;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.ThreadId;
-import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.variable.Value;
 import gov.nasa.jpf.jvm.LocalVarInfo;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
@@ -13,11 +12,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum StackFrameCommand implements Command, IdentifiableEnum<Byte, StackFrameCommand> {
+public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFrameCommand> {
 	GETVALUES(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			ThreadId threadId = idManager.readThreadId(bytes);
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
 			ThreadInfo thread = threadId.get();
 
 			long frameID = bytes.getLong();
@@ -47,17 +46,17 @@ public enum StackFrameCommand implements Command, IdentifiableEnum<Byte, StackFr
 	},
 	SETVALUES(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) {
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) {
 		}
 	},
 	THISOBJECT(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) {
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) {
 		}
 	},
 	POPFRAMES(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) {
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) {
 		}
 	};
 	

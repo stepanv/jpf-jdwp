@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
 
 public abstract class Event {
 	

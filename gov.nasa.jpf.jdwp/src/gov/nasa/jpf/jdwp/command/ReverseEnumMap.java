@@ -6,7 +6,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReverseEnumMap<T, V extends Enum<V> & IdentifiableEnum<T, ?>> {
+public class ReverseEnumMap<T, V extends Enum<V> & IdentifiableEnum<T>> {
 	private Map<T, V> map = new HashMap<T, V>();
 
 	public ReverseEnumMap(Class<V> enumIdentifierClassType) {

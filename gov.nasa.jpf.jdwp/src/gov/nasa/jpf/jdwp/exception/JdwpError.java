@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class JdwpError extends Exception {
 
-	public static enum ErrorType implements IdentifiableEnum<Short, ErrorType> {
+	public static enum ErrorType implements IdentifiableEnum<Short> {
 		/** No error has occurred. */
 		NONE(0),
 		/** Passed thread is null, is not a valid thread or has exited. */
@@ -169,11 +169,6 @@ public class JdwpError extends Exception {
 			return id;
 		}
 
-		@Override
-		public ErrorType convert(Short val) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 	}
 	
 	public JdwpError(ErrorType errorType) {

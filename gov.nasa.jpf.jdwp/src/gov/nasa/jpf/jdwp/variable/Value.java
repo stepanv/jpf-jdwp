@@ -1,4 +1,4 @@
-package gov.nasa.jpf.jdwp.value;
+package gov.nasa.jpf.jdwp.variable;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

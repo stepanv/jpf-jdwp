@@ -1,13 +1,12 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.JdwpIdManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum FieldCommand implements Command, IdentifiableEnum<Byte, FieldCommand> {
+public enum FieldCommand implements Command, ConvertibleEnum<Byte, FieldCommand> {
 	NONE;
 
 	private static ReverseEnumMap<Byte, FieldCommand> map = new ReverseEnumMap<Byte, FieldCommand>(FieldCommand.class);
@@ -23,6 +22,6 @@ public enum FieldCommand implements Command, IdentifiableEnum<Byte, FieldCommand
 	}
 
 	@Override
-	public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 	}
 }

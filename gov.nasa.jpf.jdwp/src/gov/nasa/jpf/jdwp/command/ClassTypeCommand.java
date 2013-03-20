@@ -1,38 +1,38 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.JdwpIdManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum ClassTypeCommand implements Command, IdentifiableEnum<Byte, ClassTypeCommand> {
+public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassTypeCommand> {
 	SUPERCLASS(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	SETVALUES(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	INVOKEMETHOD(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	NEWINSTANCE(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	};
@@ -55,5 +55,5 @@ public enum ClassTypeCommand implements Command, IdentifiableEnum<Byte, ClassTyp
 	}
 
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError;
+	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

@@ -1,17 +1,17 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.JdwpIdManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public enum StringReferenceCommand implements Command, IdentifiableEnum<Byte, StringReferenceCommand> {
+public enum StringReferenceCommand implements Command, ConvertibleEnum<Byte, StringReferenceCommand> {
 	VALUE(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError {
-			// TODO Auto-generated method stub
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	};
@@ -34,5 +34,5 @@ public enum StringReferenceCommand implements Command, IdentifiableEnum<Byte, St
 	}
 
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, JdwpIdManager idManager) throws IOException, JdwpError;
+	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

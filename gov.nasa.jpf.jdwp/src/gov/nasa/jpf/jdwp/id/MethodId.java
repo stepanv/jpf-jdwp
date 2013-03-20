@@ -1,5 +1,13 @@
 package gov.nasa.jpf.jdwp.id;
 
-public class MethodId {
+import gov.nasa.jpf.jvm.MethodInfo;
+
+public class MethodId extends Identifier<MethodInfo> {
+
+	public MethodId(long id, MethodInfo object) {
+		super(0, object);
+		throw new RuntimeException("NOT IMPLEMENTED YET: " + object);
+	}
+
 
 }

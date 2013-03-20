@@ -2,8 +2,6 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
-public interface IdentifiableEnum<T, E extends Enum<E> & IdentifiableEnum<T, E>> {
+public interface IdentifiableEnum<T> {
 	T identifier();
-
-	E convert(T val) throws JdwpError;
 }

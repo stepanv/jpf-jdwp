@@ -1,4 +1,4 @@
-package gov.nasa.jpf.jdwp.value;
+package gov.nasa.jpf.jdwp.variable;
 
 public abstract class PrimitiveValue extends Value {
 
