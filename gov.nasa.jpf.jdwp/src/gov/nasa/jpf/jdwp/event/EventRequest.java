@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
@@ -42,7 +43,7 @@ public class EventRequest {
 
 	private SuspendPolicy suspendPolicy;
 	
-	public static EventRequest factory(ByteBuffer bytes) throws JdwpError {
+	public static EventRequest factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
 		SuspendPolicy suspendPolicy = SuspendPolicy.ALL.convert(bytes.get());
 		
@@ -50,7 +51,7 @@ public class EventRequest {
 		
 		int modifiers = bytes.getInt();
 		for (int i = 0; i < modifiers; ++i) {
-			filters.add(ModKind.createFilter(bytes));
+			filters.add(Filter.factory(bytes, contextProvider));
 		}
 		
 		return new EventRequest(eventKind, suspendPolicy, filters);

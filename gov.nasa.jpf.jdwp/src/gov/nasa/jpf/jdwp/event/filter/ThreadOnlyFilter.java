@@ -1,10 +1,10 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.event.LocatableEvent;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 
-public class ThreadOnlyFilter extends Filter<LocatableEvent> {
+public class ThreadOnlyFilter extends Filter<Event> {
 
 	private ThreadId threadId;
 
@@ -14,10 +14,7 @@ public class ThreadOnlyFilter extends Filter<LocatableEvent> {
 	}
 
 	@Override
-	public boolean matches(LocatableEvent event) {
-		if (!isAllowedEventKind(event.getEventKind())) {
-			return false;
-		}
+	public boolean matchesInternal(Event event) {
 		return event.getThread() == threadId;
 	}
 

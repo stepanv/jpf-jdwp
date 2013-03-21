@@ -22,7 +22,7 @@ public class CountFilter extends Filter<Event> {
 	}
 
 	@Override
-	public boolean matches(Event event) {
+	public boolean matchesInternal(Event event) {
 		assert expired == false;
 
 		if (--count > 0) {

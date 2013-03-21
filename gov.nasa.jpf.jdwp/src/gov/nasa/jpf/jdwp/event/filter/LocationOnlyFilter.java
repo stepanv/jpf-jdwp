@@ -15,10 +15,11 @@ public class LocationOnlyFilter extends Filter<LocatableEvent> {
 	}
 
 	@Override
-	public boolean matches(LocatableEvent event) {
+	public boolean matchesInternal(LocatableEvent event) {
 		return location == event.getLocation();
 	}
 
+	@Override
 	public boolean isAllowedEventKind(EventKind eventKind) {
 		switch(eventKind) {
 		case BREAKPOINT:

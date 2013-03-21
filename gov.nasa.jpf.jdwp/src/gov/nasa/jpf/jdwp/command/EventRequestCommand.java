@@ -13,7 +13,7 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	SET(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			EventRequest eventRequest = EventRequest.factory(bytes);
+			EventRequest eventRequest = EventRequest.factory(bytes, contextProvider);
 			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
 		}
 	},
