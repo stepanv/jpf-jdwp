@@ -1,18 +1,23 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gnu.classpath.jdwp.VMIdManager;
-import gnu.classpath.jdwp.exception.InvalidThreadException;
-import gnu.classpath.jdwp.id.ThreadId;
+import gov.nasa.jpf.jdwp.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.command.CommandContextProvider;
+import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
+import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jvm.StackFrame;
 import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 
+import java.lang.reflect.Constructor;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +36,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 	private static Logger log = Logger.getLogger(StepFilter.class.getName());
 
-	public static enum StepSize {
+	public static enum StepSize implements ConvertibleEnum<Integer, StepSize> {
 		/** Step by the minimum possible amount (often a bytecode instruction). */
 		MIN(0),
 
@@ -41,11 +46,68 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 		 */
 		LINE(1);
 
-		private int value;
+		private int stepSizeId;
 
-		private StepSize(int value) {
-			this.value = value;
+		private StepSize(int stepSizeId) {
+			this.stepSizeId = stepSizeId;
 		}
+
+		@Override
+		public Integer identifier() {
+			return stepSizeId;
+		}
+
+		ReverseEnumMap<Integer, StepSize> map = new ReverseEnumMap<Integer, StepFilter.StepSize>(StepSize.class);
+
+		@Override
+		public StepSize convert(Integer stepSizeId) throws JdwpError {
+			return map.get(stepSizeId);
+		}
+
+	}
+
+	public static enum StepDepth implements ConvertibleEnum<Integer, StepDepth> {
+		/** Step into any method calls that occur before the end of the step. */
+		INTO(0) {
+			@Override
+			public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+				return new StepIntoFilter(threadId, stepSize);
+			}
+		},
+		/** Step over any method calls that occur before the end of the step. */
+		OVER(1) {
+			@Override
+			public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+				return new StepOverFilter(threadId, stepSize);
+			}
+		},
+		/** Step out of the current method. */
+		OUT(2) {
+			@Override
+			public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+				return new StepOutFilter(threadId, stepSize);
+			}
+		};
+
+		private int stepDepthId;
+
+		private StepDepth(int stepDepthId) {
+			this.stepDepthId = stepDepthId;
+		}
+
+		@Override
+		public Integer identifier() {
+			return stepDepthId;
+		}
+
+		ReverseEnumMap<Integer, StepDepth> map = new ReverseEnumMap<Integer, StepDepth>(StepDepth.class);
+
+		@Override
+		public StepDepth convert(Integer stepDepthId) throws JdwpError {
+			return map.get(stepDepthId);
+		}
+		
+		public abstract StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError;
 
 	}
 
@@ -81,15 +143,17 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 	protected List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
 
-	public StepFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
+	public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException {
 		super(ModKind.STEP);
 
-		if (thread.getReference().get() == null) {
-			throw new InvalidThreadException(thread.getId());
+		if (threadId.get() == null) {
+			throw new InvalidThreadException(threadId);
 		}
 
-		this.thread = thread;
+		this.thread = threadId;
 		this.size = size;
+		
+		Iterator<StackFrame> stackFrameIterator = threadId.get().iterator();
 
 		while (stackFrameIterator.hasNext()) {
 			StackFrame frame = stackFrameIterator.next();
@@ -142,7 +206,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 		ThreadInfo currentThread = event.getThread().get();
 
 		/* Are we in the right thread? */
-		if (VMIdManager.getDefault().getObjectId(currentThread) != thread) {
+		if (JdwpObjectManager.getInstance().getObjectId(currentThread) != thread) {
 			return false;
 		}
 
@@ -205,10 +269,10 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 	}
 
 	protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
-	
+
 	@Override
 	public boolean isAllowedEventKind(EventKind eventKind) {
-		switch(eventKind) {
+		switch (eventKind) {
 		case SINGLE_STEP:
 			return true;
 		default:
@@ -216,5 +280,12 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 		}
 	}
 
+	public static StepFilter factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+		int size = bytes.getInt();
+		int depth = bytes.getInt();
+		
+		return StepDepth.INTO.convert(depth).createStepFilter(threadId, StepSize.LINE.convert(size), contextProvider);
+	}
 
 }

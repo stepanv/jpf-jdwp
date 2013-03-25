@@ -1,17 +1,10 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gnu.classpath.jdwp.exception.InvalidThreadException;
-import gnu.classpath.jdwp.id.ThreadId;
-import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.event.EventRequest;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
 import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-
-import java.util.Iterator;
 
 /**
  * Step into any method calls that occur before the end of the step.
@@ -21,8 +14,8 @@ import java.util.Iterator;
  */
 public class StepIntoFilter extends StepFilter {
 
-	public StepIntoFilter(ThreadId thread, StepSize size, Iterator<StackFrame> stackFrameIterator) throws InvalidThreadException {
-		super(thread, size, stackFrameIterator);
+	public StepIntoFilter(ThreadId thread, StepSize size) throws InvalidThreadException {
+		super(thread, size);
 	}
 
 	@Override

@@ -11,7 +11,12 @@ import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.FieldId;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.jdwp.variable.StringRaw;
 
 /**
  * 
@@ -53,57 +58,59 @@ public abstract class Filter<T extends Event> {
 		CLASS_ONLY(4) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+				return new ClassOnlyFilter(referenceTypeId);
 			}
 		},
 		CLASS_MATCH(5) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				String classPattern = StringRaw.readString(bytes);
+				return new ClassMatchFilter(classPattern);
 			}
 		},
 		CLASS_EXCLUDE(6) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				String classPattern = StringRaw.readString(bytes);
+				return new ClassExcludeFilter(classPattern);
 			}
 		},
 		LOCATION_ONLY(7) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				Location location = Location.factory(bytes, contextProvider);
+				return new LocationOnlyFilter(location);
 			}
 		},
 		EXCEPTION_ONLY(8) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+				boolean uncaught = bytes.get() != 0;
+				boolean caught = bytes.get() != 0;
+				return new ExceptionOnlyFilter(exceptionOrNull, caught, uncaught);
 			}
 		},
 		FIELD_ONLY(9) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider)throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+				FieldId fieldId = FieldId.factory(bytes, contextProvider);
+				return new FieldOnlyFilter(declaring, fieldId);
 			}
 		},
 		STEP(10) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				return StepFilter.factory(bytes, contextProvider);
 			}
 		},
 		INSTANCE_ONLY(11) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+				ObjectId<?> objectId = contextProvider.getObjectManager().readThreadId(bytes); // TODO THIS IS WRONG need to call readObjectId() method
+				return new InstanceOnlyFilter(objectId);
 			}
 		},
 		SOURCE_NAME_MATCH(12) {
