@@ -1,32 +1,30 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.variable.StringRaw;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class ClassUnloadEvent extends Event {
 
-	int requestId;
-	public ClassUnloadEvent(int requestId, EventKind eventKind) {
-		super(requestId, eventKind, null);
-		this.requestId = requestId;
-		// TODO Auto-generated constructor stub
+	private String signature;
+
+	public ClassUnloadEvent(String signature) {
+		super(EventKind.CLASS_UNLOAD, null);
+		this.signature = signature;
 	}
 	
 	/**
 	 * Must be overridden because this event type, as an exception, doesn't have associated thread
 	 */
 	@Override
-	public void write(DataOutputStream os) throws IOException {
-		
+	public void write(DataOutputStream os, int requestId) throws IOException {
 		os.writeInt(requestId);
-		threadId.write(os);
-		
+		new StringRaw(signature).write(os);
 	}
 
 	@Override
 	protected void writeSpecific(DataOutputStream os) throws IOException {
-		// TODO Auto-generated method stub
-
 	}
 
 }
