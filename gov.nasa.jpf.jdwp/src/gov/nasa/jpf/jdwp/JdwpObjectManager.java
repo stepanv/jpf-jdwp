@@ -13,6 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class JdwpObjectManager {
 	
+	private static class JdwpObjectManagerHolder {
+		private static final JdwpObjectManager instance = new JdwpObjectManager();
+	}
+	
+	public static JdwpObjectManager getInstance() {
+		return JdwpObjectManagerHolder.instance;
+	}
+	
 	public ThreadId readThreadId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
 		
@@ -21,6 +29,18 @@ public class JdwpObjectManager {
 				throw new JdwpError(ErrorType.INVALID_THREAD);
 			}
 			return (ThreadId) idObjectMap.get(id);
+		}
+		
+	}
+	
+	public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
+		long id = bytes.getLong();
+		
+		synchronized (idReferenceTypeMap) {
+			if (!idReferenceTypeMap.containsKey(id)) {
+				throw new JdwpError(ErrorType.INVALID_CLASS);
+			}
+			return idReferenceTypeMap.get(id);
 		}
 		
 	}

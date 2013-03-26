@@ -2,7 +2,9 @@ package gov.nasa.jpf.jdwp.type;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
+import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
@@ -23,6 +25,11 @@ public class Location {
 	 public static Location factory(Instruction instruction) {
 		  return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
 	  }
+	 
+	 public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) {
+		 
+		 contextProvider.getObjectManager().readReferenceTypeId(bytes)
+	 }
 
 	public Instruction getInstruction() {
 		return instruction;
