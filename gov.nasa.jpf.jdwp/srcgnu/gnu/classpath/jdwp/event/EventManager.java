@@ -212,7 +212,7 @@ public class EventManager
       }
 
     // Register the event with the VM
-    VMVirtualMachine.vm.registerEventRequest (request);
+//    VMVirtualMachine.vm.registerEventRequest (request);
     requests.put (new Integer (request.getId ()), request);
     System.out.println("Registered event request: " + request);
   }

@@ -83,7 +83,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			
-			virtualMachine.conditionallyTriggerStepEvent(vm);
+			//virtualMachine.conditionallyTriggerStepEvent(vm);
 			SingleStepEvent singleStepEvent = new SingleStepEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo(), Location.factory(lastInstruction));
 			dispatchEvent(singleStepEvent);
 		}

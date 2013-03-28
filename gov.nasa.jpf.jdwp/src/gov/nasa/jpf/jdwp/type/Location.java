@@ -4,7 +4,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
+import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.MethodInfo;
@@ -21,32 +25,58 @@ public class Location {
 		this.index = index;
 		this.instruction = instruction;
 	}
+
+	public static Location factory(Instruction instruction) {
+		return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
+	}
 	
-	 public static Location factory(Instruction instruction) {
-		  return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
-	  }
-	 
-	 public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) {
-		 
-		 contextProvider.getObjectManager().readReferenceTypeId(bytes)
-	 }
+	private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {
+		System.out.println("looking for METHOD global id: " + id + " of CLASS: " + classInfo);
+		  for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
+			  if (id == methodInfo.getGlobalId()) {
+				  System.out.println("METHOD found: " + methodInfo);
+				  return methodInfo;
+			  }
+		  }
+		  // also try super types
+		  if (classInfo.getSuperClass() != null) {
+			  return methodInfoLookup(classInfo.getSuperClass(), id);
+		  }
+		  throw new InvalidMethodId(id);
+	}
+
+	public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+		byte typeTag = bytes.get(); // TODO we have unique id for all referenceTypeIds regardless of its type tag
+		ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		
+		ClassInfo classInfo = referenceTypeId.get();
+		
+		long id = bytes.getLong();
+		
+		long index = bytes.getLong();
+		
+		MethodInfo methodInfo = methodInfoLookup(classInfo, id);
+		
+		return new Location(methodInfo, (int) index, methodInfo.getInstruction((int) index));
+	}
 
 	public Instruction getInstruction() {
 		return instruction;
 	}
-	
+
 	private TypeTag typeTag;
 
 	public void write(DataOutputStream os) throws IOException {
 		if (methodInfo != null) {
-			
+
 		}
-		
-		 = instruction.getMethodInfo();
-		 ClassInfo classInfo
-		os.write(typeTag.identifier());
-		// TODO Auto-generated method stub
-		
+		JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
+
+		ClassInfo classInfo = methodInfo.getClassInfo();
+		objectManager.getReferenceTypeId(classInfo).writeTagged(os);
+		objectManager.getObjectId(methodInfo).write(os);
+		os.writeLong(index);
+
 	}
 
 }
