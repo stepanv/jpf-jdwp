@@ -41,15 +41,16 @@ package gnu.classpath.jdwp;
 
 import gnu.classpath.jdwp.event.BreakpointEvent;
 import gnu.classpath.jdwp.event.ClassPrepareEvent;
-import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.EventManager;
-import gnu.classpath.jdwp.event.EventRequest;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.processor.PacketProcessor;
 import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventRequest;
+import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 
 import java.io.IOException;
 import java.security.AccessController;
@@ -245,7 +246,6 @@ public class Jdwp
           {
             try
               {
-            	event.printDebugInfo();
                 sendEvent(requests[i], event);
                 jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
               }
@@ -279,7 +279,7 @@ public class Jdwp
 
     if (jdwp != null)
       {
-        byte suspendPolicy = JdwpConstants.SuspendPolicy.NONE;
+    	SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
         EventManager em = EventManager.getDefault();
         ArrayList allEvents = new ArrayList ();
         ArrayList allRequests = new ArrayList ();
@@ -294,9 +294,11 @@ public class Jdwp
                 allEvents.add (events[i]);
                 allRequests.add (r[j]);
 
-                // Perhaps this is overkill?
-                if (r[j].getSuspendPolicy() > suspendPolicy)
-                  suspendPolicy = r[j].getSuspendPolicy();
+             // Perhaps this is overkill?
+                if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
+                	 suspendPolicy = r[j].getSuspendPolicy();
+                }
+                
               }
           }
 
@@ -341,11 +343,11 @@ public class Jdwp
    *
    * @param  requests  list of debugger requests for the events
    * @param  events    the events to send
-   * @param  suspendPolicy the suspendPolicy enforced by the VM
+   * @param  suspendPolicy.identifier() the suspendPolicy enforced by the VM
    * @throws IOException if a communications failure occurs
    */
   public static void sendEvents (EventRequest[] requests, Event[] events,
-                                 byte suspendPolicy)
+                                 SuspendPolicy suspendPolicy)
     throws IOException
   {
     Jdwp jdwp = getDefault();
@@ -353,28 +355,28 @@ public class Jdwp
       {
         synchronized (jdwp._connection)
           {
-            jdwp._connection.sendEvents (requests, events, suspendPolicy);
+            jdwp._connection.sendEvents (requests, events, suspendPolicy.identifier());
           }
       }
   }
 
   // Helper function to enforce suspend policies on event notification
-  private void _enforceSuspendPolicy (byte suspendPolicy)
+  private void _enforceSuspendPolicy (SuspendPolicy suspendPolicy)
     throws JdwpException
   {
     switch (suspendPolicy)
       {
-      case EventRequest.SUSPEND_NONE:
+      case NONE:
         // do nothing
         break;
 
-      case EventRequest.SUSPEND_THREAD:
+      case EVENT_THREAD:
     	  // TODO how to solve just one thread suspension?
     	  VMVirtualMachine.suspendAllThreads ();
         //VMVirtualMachine.suspendThread (Thread.currentThread ());
         break;
 
-      case EventRequest.SUSPEND_ALL:
+      case ALL:
         VMVirtualMachine.suspendAllThreads ();
         break;
       }

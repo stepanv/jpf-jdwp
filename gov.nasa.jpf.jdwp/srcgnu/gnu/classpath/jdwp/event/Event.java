@@ -144,8 +144,8 @@ public abstract class Event
    * @returns a <code>JdwpPacket</code> of the events
    */
   public static JdwpPacket toPacket (DataOutputStream dos,
-                                     Event[] events,
-                                     EventRequest[] requests,
+                                     gov.nasa.jpf.jdwp.event.Event[] events,
+                                     gov.nasa.jpf.jdwp.event.EventRequest[] requests,
                                      byte suspendPolicy)
   {
     JdwpPacket pkt;
@@ -169,14 +169,13 @@ public abstract class Event
   }
 
   // Helper function for toPacket
-  private static void _toData (DataOutputStream dos, Event event,
-                               EventRequest request)
+  private static void _toData (DataOutputStream dos, gov.nasa.jpf.jdwp.event.Event events,
+                               gov.nasa.jpf.jdwp.event.EventRequest requests)
     throws IOException
   {
-	  System.out.println(" >>>>>>>>> Sending event: " + event._eventKind);
-    dos.writeByte (event._eventKind);
-    dos.writeInt (request.getId ());
-    event._writeData (dos);
+	  System.out.println(" >>>>>>>>> Sending event: " + events.getEventKind());
+    dos.writeByte (events.getEventKind().identifier());
+    events.write(dos, requests.getId ());
   }
   
   public void printDebugInfo() {

@@ -11,6 +11,8 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 public class EventRequest {
 
@@ -42,6 +44,10 @@ public class EventRequest {
 	}
 
 	private SuspendPolicy suspendPolicy;
+
+	private int id;
+	
+	private static AtomicInteger requestIdCounter = new AtomicInteger(0);
 	
 	public static EventRequest factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
@@ -61,6 +67,7 @@ public class EventRequest {
 		this.eventKind = eventKind;
 		this.suspendPolicy = suspendPolicy;
 		this.filters = filters;
+		this.id = requestIdCounter.incrementAndGet();
 	}
 
 	private List<Filter<?>> filters;
@@ -81,6 +88,9 @@ public class EventRequest {
 	 * @return Whether given event matches this request.
 	 */
 	public boolean matches(Event event) {
+		if (filters == null) {
+			return true;
+		}
 		for (Filter filter : filters) {
 			if (!filter.matches(event)) {
 				return false;
@@ -96,6 +106,14 @@ public class EventRequest {
 
 	public EventKind getEventKind() {
 		return eventKind;
+	}
+	
+	public SuspendPolicy getSuspendPolicy() {
+		return suspendPolicy;
+	}
+	
+	public int getId() {
+		return id;
 	}
 
 }

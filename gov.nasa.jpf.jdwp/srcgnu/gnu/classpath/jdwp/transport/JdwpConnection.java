@@ -282,7 +282,7 @@ public class JdwpConnection
    * @param suspendPolicy  the suspend policy enforced by the VM
    * @throws IOException
    */
-  public void sendEvents(EventRequest[] requests, Event[] events,
+  public void sendEvents(gov.nasa.jpf.jdwp.event.EventRequest[] requests, gov.nasa.jpf.jdwp.event.Event[] events,
                          byte suspendPolicy)
     throws IOException
   {

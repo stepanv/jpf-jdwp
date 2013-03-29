@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp;
 
+import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;

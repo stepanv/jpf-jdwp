@@ -200,7 +200,7 @@ public class EventRequestCommandSet
         eventReq.addFilter(filter);
       }
 
-    EventManager.getDefault().requestEvent(eventReq);
+ //   EventManager.getDefault().requestEvent(eventReq);
     os.writeInt(eventReq.getId());
 
   }
@@ -210,14 +210,14 @@ public class EventRequestCommandSet
   {
     byte eventKind = bb.get();
     int requestId = bb.getInt();
-    EventManager.getDefault().deleteRequest(eventKind, requestId);
+//    EventManager.getDefault().deleteRequest(eventKind, requestId);
   }
 
   private void executeClearAllBreakpoints(ByteBuffer bb, DataOutputStream os)
       throws JdwpException, IOException
   {
     byte eventKind = bb.get ();
-    EventManager.getDefault().clearRequests (eventKind);
+//    EventManager.getDefault().clearRequests (eventKind);
   }
 
 }

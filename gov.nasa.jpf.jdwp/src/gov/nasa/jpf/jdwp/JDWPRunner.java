@@ -2,12 +2,9 @@ package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.event.VmDeathEvent;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-
-import java.util.ArrayList;
-import java.util.List;
+import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 public class JDWPRunner {
 

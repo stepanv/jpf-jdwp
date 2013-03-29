@@ -15,8 +15,6 @@ public class SingleStepEvent extends LocatableEvent {
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		// TODO Auto-generated method stub
-		
 	}
 
 }

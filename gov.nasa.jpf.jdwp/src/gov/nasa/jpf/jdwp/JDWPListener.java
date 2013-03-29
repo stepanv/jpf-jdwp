@@ -5,15 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.event.BreakpointEvent;
-import gnu.classpath.jdwp.event.ClassPrepareEvent;
-import gnu.classpath.jdwp.event.Event;
-import gnu.classpath.jdwp.event.MethodEntryEvent;
-import gnu.classpath.jdwp.event.SingleStepEvent;
-import gnu.classpath.jdwp.event.ThreadStartEvent;
-import gnu.classpath.jdwp.util.Location;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
+import gov.nasa.jpf.jdwp.event.BreakpointEvent;
+import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
+import gov.nasa.jpf.jdwp.event.SingleStepEvent;
+import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.JVM;
 import gov.nasa.jpf.jvm.VMListener;
@@ -33,7 +34,8 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		
 		Instruction instruction = vm.getLastMethodInfo().getInstruction(0);
 		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
-			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(vm.getLastThreadInfo(), Location.factory(instruction), vm.getLastMethodInfo().getClassInfo());
+			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(vm.getLastThreadInfo());
+			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(threadId, Location.factory(instruction));
 			dispatchEvent(methodEntryEvent);
 		}
 	}
@@ -78,13 +80,14 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		Instruction nextInstruction = vm.getNextInstruction();
 		if (nextInstruction.getMethodInfo() != null && nextInstruction.getMethodInfo().getClassInfo() != null) {
-			BreakpointEvent breakpointEvent = new BreakpointEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo());
+			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(vm.getCurrentThread());
+			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(nextInstruction));
 			dispatchEvent(breakpointEvent);
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			
 			//virtualMachine.conditionallyTriggerStepEvent(vm);
-			SingleStepEvent singleStepEvent = new SingleStepEvent(vm.getCurrentThread(), Location.factory(nextInstruction), nextInstruction.getMethodInfo().getClassInfo(), Location.factory(lastInstruction));
+			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(nextInstruction));
 			dispatchEvent(singleStepEvent);
 		}
 		lastInstruction = nextInstruction;
