@@ -44,7 +44,7 @@ public abstract class Event {
 			return eventId;
 		}
 
-		ReverseEnumMap<Byte, EventKind> map = new ReverseEnumMap<Byte, EventKind>(EventKind.class);
+		private static ReverseEnumMap<Byte, EventKind> map = new ReverseEnumMap<Byte, EventKind>(EventKind.class);
 
 		@Override
 		public EventKind convert(Byte eventId) throws JdwpError {

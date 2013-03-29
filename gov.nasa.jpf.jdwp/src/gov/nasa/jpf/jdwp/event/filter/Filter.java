@@ -132,7 +132,7 @@ public abstract class Filter<T extends Event> {
 			return modKindId;
 		}
 
-		ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
+		private static ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
 		
 		@Override
 		public ModKind convert(Byte val) throws JdwpError {

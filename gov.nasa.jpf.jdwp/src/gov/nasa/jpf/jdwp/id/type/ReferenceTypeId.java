@@ -67,7 +67,7 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 			return typeTagId;
 		}
 		
-		ReverseEnumMap<Byte, TypeTag> map = new ReverseEnumMap<Byte, ReferenceTypeId.TypeTag>(TypeTag.class);
+		private static ReverseEnumMap<Byte, TypeTag> map = new ReverseEnumMap<Byte, ReferenceTypeId.TypeTag>(TypeTag.class);
 
 		@Override
 		public TypeTag convert(Byte val) throws JdwpError {

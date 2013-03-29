@@ -4,6 +4,9 @@ import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 public class JDWPRunner {
@@ -12,6 +15,8 @@ public class JDWPRunner {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		System.out.println(VirtualMachineCommand.ALLCLASSES);
+		System.out.println(EventKind.BREAKPOINT);
 
 		// this initializes the JPF configuration from default.properties,
 		// site.properties

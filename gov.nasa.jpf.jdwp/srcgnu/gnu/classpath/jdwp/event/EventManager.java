@@ -75,7 +75,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class EventManager
 {
   // Single instance
-  private static EventManager _instance = null;
+  private static class EventManagerHolder {
+	  private static final EventManager _instance = new EventManager();
+  }
 
   // maps event (EVENT_*) to lists of EventRequests
   private Hashtable<EventKind, Hashtable<Integer, EventRequest>> _requests = null;
@@ -87,10 +89,7 @@ public class EventManager
    */
   public static EventManager getDefault()
   {
-    if (_instance == null)
-      _instance = new EventManager();
-
-    return _instance;
+    return EventManagerHolder._instance;
   }
 
   // Private constructs a new <code>EventManager</code>

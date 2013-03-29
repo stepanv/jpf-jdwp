@@ -35,7 +35,7 @@ public class EventRequest {
 			return suspendPolicyId;
 		}
 
-		ReverseEnumMap<Byte, SuspendPolicy> map = new ReverseEnumMap<Byte, SuspendPolicy>(SuspendPolicy.class);
+		private static ReverseEnumMap<Byte, SuspendPolicy> map = new ReverseEnumMap<Byte, SuspendPolicy>(SuspendPolicy.class);
 
 		@Override
 		public SuspendPolicy convert(Byte val) throws JdwpError {

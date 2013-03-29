@@ -57,7 +57,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 			return stepSizeId;
 		}
 
-		ReverseEnumMap<Integer, StepSize> map = new ReverseEnumMap<Integer, StepFilter.StepSize>(StepSize.class);
+		private static ReverseEnumMap<Integer, StepSize> map = new ReverseEnumMap<Integer, StepFilter.StepSize>(StepSize.class);
 
 		@Override
 		public StepSize convert(Integer stepSizeId) throws JdwpError {
@@ -100,7 +100,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 			return stepDepthId;
 		}
 
-		ReverseEnumMap<Integer, StepDepth> map = new ReverseEnumMap<Integer, StepDepth>(StepDepth.class);
+		private static ReverseEnumMap<Integer, StepDepth> map = new ReverseEnumMap<Integer, StepDepth>(StepDepth.class);
 
 		@Override
 		public StepDepth convert(Integer stepDepthId) throws JdwpError {
