@@ -197,12 +197,12 @@ public class PacketProcessor
         
         try {
 			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommandSet(), commandPkt.getCommand(), bb, _os, ccp);
+			reply.setData(_outputBytes.toByteArray());
 		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			reply.setErrorCode(e.getErrorType().identifier());
 		}
-        
+//        
 //        byte command = commandPkt.getCommand();
 //        byte commandSet = commandPkt.getCommandSet();
 //

@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -8,6 +9,7 @@ import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -65,8 +67,13 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	ALLTHREADS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			ThreadInfo[] threads = VMVirtualMachine.allThreads();
+			  os.writeInt(threads.length);
+			  for (ThreadInfo thread : threads) {
+				  
+				  contextProvider.getObjectManager().getObjectId(thread).write(os);
+			  }
+			
 		}
 	},
 	TOPLEVELTHREADGROUPS(5) {

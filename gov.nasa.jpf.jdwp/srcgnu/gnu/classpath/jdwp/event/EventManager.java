@@ -130,6 +130,11 @@ public class EventManager
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.VM_DEATH,
                    new Hashtable <Integer, EventRequest>());
+    
+    _requests.put (EventKind.VM_START,
+    		_requests.get(EventKind.VM_INIT));
+    _requests.put (EventKind.THREAD_DEATH,
+    		_requests.get(EventKind.THREAD_END));
 
     // Add auto-generated event notifications
     // only two: VM_INIT, VM_DEATH

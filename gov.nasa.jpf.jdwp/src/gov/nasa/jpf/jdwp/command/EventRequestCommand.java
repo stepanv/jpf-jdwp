@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gnu.classpath.jdwp.event.EventManager;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -14,7 +14,11 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			EventRequest eventRequest = EventRequest.factory(bytes, contextProvider);
+			
+			EventManager.getDefault().requestEvent(eventRequest);
 			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
+			
+			os.writeInt(eventRequest.getId());
 		}
 	},
 	CLEAR(2) {

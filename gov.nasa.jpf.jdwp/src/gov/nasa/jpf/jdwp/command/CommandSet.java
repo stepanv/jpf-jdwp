@@ -53,7 +53,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 		try {
 			command.execute(bytes, os, contextProvider);
 		} finally {
-			if (JVM.getVM().isTerminated()) {
+			if (JVM.getVM().isTerminated() && contextProvider.getVirtualMachine().isStarted()) {
 				// If JVM has terminated we don't care about any other exceptions
 				throw new JdwpError(ErrorType.VM_DEAD);
 			}

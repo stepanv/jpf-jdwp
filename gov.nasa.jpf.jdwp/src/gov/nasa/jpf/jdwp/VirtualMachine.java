@@ -20,6 +20,10 @@ public class VirtualMachine {
 	private JPF jpf;
 	private List<ClassInfo> loadedClases = new CopyOnWriteArrayList<ClassInfo>();
 	private boolean started;
+	
+	public boolean isStarted() {
+		return started;
+	}
 
 	public VirtualMachine(JPF jpf) {
 		this.jpf = jpf;
