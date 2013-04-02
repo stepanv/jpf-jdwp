@@ -110,8 +110,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	RESUME(9) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			contextProvider.getVirtualMachine().resumeAllThreads();
 		}
 	},
 	EXIT(10) {
@@ -131,8 +130,9 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	CAPABILITIES(12) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			for (int i = 0; i < 7; ++i) {
+				os.writeBoolean(false); // we're the most stupid vm ever TODO
+			}
 		}
 	},
 	CLASSPATHS(13) {
@@ -166,8 +166,11 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	CAPABILITIESNEW(17) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			CAPABILITIES.execute(bytes, os, contextProvider);
+			
+			for (int i = 7; i < 32; ++i) {
+				os.writeBoolean(false); // TODO check which capabilities we're able to provide
+			}
 		}
 	},
 	REDEFINECLASSES(18) {

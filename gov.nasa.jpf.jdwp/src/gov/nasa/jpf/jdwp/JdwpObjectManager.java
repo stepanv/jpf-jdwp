@@ -32,6 +32,17 @@ public class JdwpObjectManager {
 		}
 		
 	}
+	public ObjectId readObjectId(ByteBuffer bytes) throws JdwpError {
+		long id = bytes.getLong();
+		
+		synchronized (idObjectMap) {
+			if (!idObjectMap.containsKey(id)) {
+				throw new JdwpError(ErrorType.INVALID_OBJECT);
+			}
+			return (ObjectId) idObjectMap.get(id);
+		}
+		
+	}
 	
 	public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();

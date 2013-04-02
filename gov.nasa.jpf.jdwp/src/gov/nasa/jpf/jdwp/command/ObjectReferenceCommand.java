@@ -2,6 +2,12 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,8 +17,22 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	REFERENCETYPE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			 ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+			    Object obj = oid.get();
+			    
+			    ClassInfo clazz = null;
+			    if (obj instanceof ThreadInfo) {
+			    	clazz = ((ThreadInfo)obj).getClassInfo();
+			    } else if (obj instanceof StackFrame) {
+			    	clazz = ((StackFrame)obj).getClassInfo();
+			    } else if (obj instanceof ElementInfo) {
+			    	clazz = ((ElementInfo)obj).getClassInfo();
+			    } else {
+			    	throw new RuntimeException("object: ." + obj + "'(class: " + obj.getClass() + ") needs an reference type implementation"); //TODO complete the implementation
+			    }
+			    //throw new RuntimeException("not implemented");
+			    ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+			    refId.writeTagged(os);
 		}
 	},
 	GETVALUES(2) {

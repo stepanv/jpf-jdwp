@@ -2,6 +2,10 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,7 +36,19 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	FIELDS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+			    ClassInfo clazz = refId.get();
+
+			    FieldInfo[] fields = clazz.getInstanceFields();
+			    os.writeInt(fields.length);
+			    for (int i = 0; i < fields.length; i++)
+			      {
+			        FieldInfo field = fields[i];
+			        contextProvider.getObjectManager().getObjectId(field).write(os);
+			        new StringRaw(field.getName()).write(os);
+			        new StringRaw(field.getClassInfo().getSignature()).write(os);
+			        os.writeInt(field.getModifiers());
+			      }
 			
 		}
 	}, 

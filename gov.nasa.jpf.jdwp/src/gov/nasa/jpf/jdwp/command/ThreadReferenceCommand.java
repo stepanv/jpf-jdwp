@@ -2,6 +2,10 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,7 +43,12 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	THREADGROUP(5) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			 ThreadId tid = contextProvider.getObjectManager().readThreadId(bytes);
+			    ThreadInfo thread = tid.get();
+			    int group = thread.getThreadGroupRef();
+			    ElementInfo ei = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
+			    ObjectId groupId = contextProvider.getObjectManager().getObjectId(ei);
+			    groupId.write(os);
 
 		}
 	},

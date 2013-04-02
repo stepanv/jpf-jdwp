@@ -47,7 +47,7 @@ public class EventRequest {
 
 	private int id;
 	
-	private static AtomicInteger requestIdCounter = new AtomicInteger(0);
+	private static AtomicInteger requestIdCounter = new AtomicInteger(1);
 	
 	public static EventRequest factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
@@ -64,10 +64,18 @@ public class EventRequest {
 	}
 
 	public EventRequest(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<?>> filters) {
+		this(eventKind, suspendPolicy, filters, requestIdCounter.incrementAndGet());
+	}
+	
+	private EventRequest(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<?>> filters, int eventRequestId) {
 		this.eventKind = eventKind;
 		this.suspendPolicy = suspendPolicy;
 		this.filters = filters;
-		this.id = requestIdCounter.incrementAndGet();
+		this.id = eventRequestId;
+	}
+	
+	public static EventRequest nullRequestIdFactory(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<?>> filters) {
+		return new EventRequest(eventKind, suspendPolicy, filters, 0);
 	}
 
 	private List<Filter<?>> filters;
@@ -114,6 +122,10 @@ public class EventRequest {
 	
 	public int getId() {
 		return id;
+	}
+	
+	public String toString() {
+		return String.format("Request ID %d, kind: %s", id, eventKind) ;
 	}
 
 }
