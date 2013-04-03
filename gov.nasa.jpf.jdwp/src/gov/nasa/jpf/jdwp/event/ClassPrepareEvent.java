@@ -33,7 +33,7 @@ public class ClassPrepareEvent extends Event {
 	
 	@Override
 	public boolean matchesClassPattern(ClassMatchFilter classMatchFilter) {
-		return classMatchFilter.matches(classInfo.getSimpleName());
+		return classMatchFilter.matches(classInfo.getName());
 	}
 
 }
