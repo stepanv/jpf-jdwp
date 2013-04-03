@@ -1,11 +1,15 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMIdManager;
+import gnu.classpath.jdwp.util.JdwpString;
+import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,7 +21,9 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	SIGNATURE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+			    String sig = Signature.computeClassSignature(refId.get());
+			    JdwpString.writeString(os, sig);
 			
 		}
 	}, 
@@ -57,7 +63,22 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	METHODS(5) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		    ClassInfo clazz = refId.get();
+
+		    System.out.println("METHODS FOR CLASS: " + clazz + " JDWP ID: " + VMIdManager.getDefault().getObjectId(clazz));
+		    MethodInfo[] methods = clazz.getDeclaredMethodInfos();
+		    os.writeInt (methods.length);
+		    for (int i = 0; i < methods.length; i++)
+		      {
+		        MethodInfo method = methods[i];
+		        os.writeLong(method.getGlobalId());
+		        System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
+		        //method.writeId(os);
+		        JdwpString.writeString(os, method.getName());
+		        JdwpString.writeString(os, method.getSignature());
+		        os.writeInt(method.getModifiers());
+		      }
 			
 		}
 	}, 

@@ -36,7 +36,9 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	RESUME(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		    ThreadId tid = (ThreadId) contextProvider.getObjectManager().readObjectId(bytes);
+		    ThreadInfo thread = tid.get();
+		    contextProvider.getVirtualMachine().resumeAllThreads(); // TODO solve this
 
 		}
 	},

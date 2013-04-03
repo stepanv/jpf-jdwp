@@ -67,6 +67,7 @@ public class JdwpObjectManager {
 		synchronized (referenceIdGenerator) {
 			id = referenceIdGenerator++;
 		}
+		System.out.println("CREATED REF TYPE id: " + id + " classinfo:" + classInfo);
 		ReferenceTypeId referenceTypeId = ReferenceTypeId.factory(id, classInfo);
 		idReferenceTypeMap.put(id, referenceTypeId);
 		return referenceTypeId;
@@ -111,6 +112,8 @@ public class JdwpObjectManager {
 		synchronized (objectIdGenerator) {
 			id = objectIdGenerator++;
 		}
+		
+		System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass());
 		
 		ObjectId objectId = ObjectId.factory(id, object);
 		idObjectMap.put(id, objectId);
