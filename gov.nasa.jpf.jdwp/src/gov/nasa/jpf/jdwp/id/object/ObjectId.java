@@ -3,6 +3,8 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.jvm.IntegerFieldInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
 public class ObjectId<T> extends TaggableIdentifier<T> {
@@ -43,9 +45,15 @@ public class ObjectId<T> extends TaggableIdentifier<T> {
 	    	return new StringId(id, (ElementInfo) object);
 	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.Class")) {
 	    	return new ClassObjectId(id, (ElementInfo) object);
+	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.ThreadGroup")) {
+	    	return new ThreadGroupId(id, (ElementInfo) object);
+	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.ClassLoader")) {
+	    	return new ClassLoaderId(id, (ElementInfo) object);
+	    } else {
+	    	return new ObjectId(Tag.OBJECT, id, object);
 	    }
 		
-		throw new RuntimeException("FACTORY NOT FULLY IMPLEMENTED YET. For object: " + object + " class: " + object.getClass());
+		//throw new RuntimeException("FACTORY NOT FULLY IMPLEMENTED YET. For object: " + object + " class: " + object.getClass());
 	}
 
 	@Override

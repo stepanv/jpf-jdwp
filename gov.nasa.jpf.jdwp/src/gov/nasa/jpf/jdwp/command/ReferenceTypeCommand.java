@@ -10,6 +10,8 @@ import gov.nasa.jpf.jvm.FieldInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
+import java.util.Set;
 
 public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, ReferenceTypeCommand> {
 	SIGNATURE(1) {
@@ -90,7 +92,17 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	INTERFACES(10) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		    ClassInfo clazz = refId.get();
+		    Set<ClassInfo> interfaces = clazz.getAllInterfaceClassInfos();
+		    os.writeInt(interfaces.size());
+		    for (Iterator<ClassInfo> i = interfaces.iterator(); i.hasNext();)
+		      {
+		        ClassInfo interfaceClass = i.next();
+		        ReferenceTypeId intId = contextProvider.getObjectManager().getReferenceTypeId(interfaceClass);
+		        intId.write(os);
+		      }
+
 			
 		}
 	}, 

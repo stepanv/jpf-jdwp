@@ -2,6 +2,8 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jvm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +13,16 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 	SUPERCLASS(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		    ClassInfo clazz = refId.get();
+		    ClassInfo superClazz = clazz.getSuperClass();
+
+		    if (superClazz == null) {
+		        os.writeLong(0L);
+		    } else {
+		        ReferenceTypeId clazzId = contextProvider.getObjectManager().getReferenceTypeId(superClazz);
+		        clazzId.write(os);
+		    }
 
 		}
 	},

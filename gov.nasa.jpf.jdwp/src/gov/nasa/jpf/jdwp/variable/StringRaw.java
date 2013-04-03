@@ -21,6 +21,7 @@ public class StringRaw {
 	public static String readString(ByteBuffer bytes) {
 		int size = bytes.getInt();
 		byte[] string = new byte[size];
+		bytes.get(string);
 		try {
 			return new String(string, "UTF-8");
 		} catch (UnsupportedEncodingException e) {

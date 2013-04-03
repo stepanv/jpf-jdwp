@@ -1,9 +1,14 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.VMVirtualMachine;
+import gnu.classpath.jdwp.util.JdwpString;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
+import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.jvm.ElementInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
@@ -15,7 +20,9 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	NAME(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ThreadId tid = (ThreadId) contextProvider.getObjectManager().readObjectId(bytes);
+		    ThreadInfo thread = tid.get();
+		    new StringRaw(thread.getName()).write(os);
 
 		}
 	},
@@ -36,7 +43,16 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	STATUS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			// TODO not fully implemented
+			ThreadId tid = contextProvider.getObjectManager().readThreadId(bytes);
+		    ThreadInfo thread = tid.get();
+		    ThreadStatus threadStatus = threadStatus(thread);
+		
+		    // There's only one possible SuspendStatus...
+		    int suspendStatus = JdwpConstants.SuspendStatus.SUSPENDED;
+
+		    os.writeInt(threadStatus.identifier());
+		    os.writeInt(suspendStatus);
 
 		}
 	},
@@ -117,6 +133,20 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	@Override
 	public ThreadReferenceCommand convert(Byte val) throws JdwpError {
 		return map.get(val);
+	}
+	
+	private static ThreadStatus threadStatus(ThreadInfo thread) {
+		// [TODO] not fully implemented yet
+		  switch (thread.getState()) {
+		  case BLOCKED:
+			  return ThreadStatus.WAIT;
+		  case RUNNING:
+			  return ThreadStatus.RUNNING;
+		  case SLEEPING:
+			  return ThreadStatus.SLEEPING;
+		  default:
+			  return ThreadStatus.RUNNING;
+		  }
 	}
 
 	@Override

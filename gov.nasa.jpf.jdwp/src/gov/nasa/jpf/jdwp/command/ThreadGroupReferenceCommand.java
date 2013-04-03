@@ -1,7 +1,11 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jvm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,14 +15,23 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 	NAME(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+		    ElementInfo group = (ElementInfo) oid.get();
+		    int nameref = group.getReferenceField("name");
+		    ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
+		    new StringRaw(name.asString()).write(os);
 		}
 	},
 	PARENT(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			  ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+			    ElementInfo group = (ElementInfo) oid.get();
+			    int parentref = group.getReferenceField("parent");
+			    ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
+			    System.out.println("Thread group parent: " + parent);
+			    
+			    os.writeLong(0L); //TODO this is not finished
 
 		}
 	},

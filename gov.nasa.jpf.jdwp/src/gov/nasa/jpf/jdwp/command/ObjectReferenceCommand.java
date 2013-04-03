@@ -80,7 +80,9 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	ISCOLLECTED(9) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+		    boolean collected = oid.get () == null; // TODO finish this
+		    os.writeBoolean(collected);
 
 		}
 	};

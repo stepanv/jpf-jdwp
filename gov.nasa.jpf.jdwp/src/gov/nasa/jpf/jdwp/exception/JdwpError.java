@@ -189,5 +189,9 @@ public class JdwpError extends Exception {
 	public void write(DataOutputStream os) throws IOException {
 		errorType.write(os);
 	}
+	
+	public String toString() {
+		return "" + this.getClass() + " Error Type: " + errorType;
+	}
 
 }

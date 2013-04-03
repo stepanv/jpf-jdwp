@@ -26,6 +26,7 @@ public class JdwpObjectManager {
 		
 		synchronized (idObjectMap) {
 			if (!idObjectMap.containsKey(id)) {
+				System.err.println("Invalid id: " + id);
 				throw new JdwpError(ErrorType.INVALID_THREAD);
 			}
 			return (ThreadId) idObjectMap.get(id);
@@ -37,6 +38,7 @@ public class JdwpObjectManager {
 		
 		synchronized (idObjectMap) {
 			if (!idObjectMap.containsKey(id)) {
+				System.err.println("Invalid id: " + id);
 				throw new JdwpError(ErrorType.INVALID_OBJECT);
 			}
 			return (ObjectId) idObjectMap.get(id);
@@ -49,6 +51,7 @@ public class JdwpObjectManager {
 		
 		synchronized (idReferenceTypeMap) {
 			if (!idReferenceTypeMap.containsKey(id)) {
+				System.err.println("Invalid id: " + id);
 				throw new JdwpError(ErrorType.INVALID_CLASS);
 			}
 			return idReferenceTypeMap.get(id);
