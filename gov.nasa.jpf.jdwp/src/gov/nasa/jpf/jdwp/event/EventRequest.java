@@ -55,7 +55,7 @@ public class EventRequest<T extends IEvent>  {
 		
 		int modifiers = bytes.getInt();
 		for (int i = 0; i < modifiers; ++i) {
-			filters.add(Filter.factory(bytes, contextProvider));
+			filters.add((Filter<T>) Filter.factory(bytes, contextProvider)); // TODO use this and throw illegal argument if class cast error
 		}
 		
 		return new EventRequest<T>(eventKind, suspendPolicy, filters);

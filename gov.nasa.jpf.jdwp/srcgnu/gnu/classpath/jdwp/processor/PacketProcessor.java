@@ -160,7 +160,7 @@ public class PacketProcessor
     return null;
   }
   
-  private static CommandContextProvider ccp = new CommandContextProvider(VMVirtualMachine.vm, new JdwpObjectManager());
+  private static CommandContextProvider ccp = new CommandContextProvider(VMVirtualMachine.vm, JdwpObjectManager.getInstance());
 
   /**
    * Shutdown the packet processor

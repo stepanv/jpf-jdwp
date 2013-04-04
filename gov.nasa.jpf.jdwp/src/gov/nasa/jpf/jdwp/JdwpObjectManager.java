@@ -117,6 +117,7 @@ public class JdwpObjectManager {
 		
 		ObjectId objectId = ObjectId.factory(id, object);
 		idObjectMap.put(id, objectId);
+		System.out.println(idObjectMap + " id: " + id + " objectIdGenerator: " + objectIdGenerator + " this: " + this);
 		
 		return objectId;
 	}
