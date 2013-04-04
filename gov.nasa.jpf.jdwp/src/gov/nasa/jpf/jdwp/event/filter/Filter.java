@@ -33,7 +33,7 @@ import gov.nasa.jpf.jdwp.variable.StringRaw;
  * 
  */
 public abstract class Filter<T extends Event> {
-	
+
 	public enum ModKind implements ConvertibleEnum<Byte, ModKind> {
 		COUNT(1) {
 			@Override
@@ -94,7 +94,7 @@ public abstract class Filter<T extends Event> {
 		},
 		FIELD_ONLY(9) {
 			@Override
-			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider)throws JdwpError {
+			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 				FieldId fieldId = FieldId.factory(bytes, contextProvider);
 				return new FieldOnlyFilter(declaring, fieldId);
@@ -109,7 +109,15 @@ public abstract class Filter<T extends Event> {
 		INSTANCE_ONLY(11) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ObjectId<?> objectId = contextProvider.getObjectManager().readThreadId(bytes); // TODO THIS IS WRONG need to call readObjectId() method
+				ObjectId<?> objectId = contextProvider.getObjectManager().readThreadId(bytes); // TODO
+																								// THIS
+																								// IS
+																								// WRONG
+																								// need
+																								// to
+																								// call
+																								// readObjectId()
+																								// method
 				return new InstanceOnlyFilter(objectId);
 			}
 		},
@@ -120,7 +128,7 @@ public abstract class Filter<T extends Event> {
 				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 			}
 		};
-		
+
 		private byte modKindId;
 
 		ModKind(int modKindId) {
@@ -133,7 +141,7 @@ public abstract class Filter<T extends Event> {
 		}
 
 		private static ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
-		
+
 		@Override
 		public ModKind convert(Byte val) throws JdwpError {
 			return map.get(val);
@@ -143,33 +151,38 @@ public abstract class Filter<T extends Event> {
 	}
 
 	private ModKind modKind;
-	
+
 	public Filter(ModKind modKind) {
 		this.modKind = modKind;
 	}
-	
+
 	public static Filter<?> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		return ModKind.COUNT.convert(bytes.get()).createFilter(bytes, contextProvider);
 	}
 
-	protected abstract boolean matchesInternal(T event);
-	
-	final public boolean matches(T event) {
-		if (!isAllowedEventKind(event.getEventKind())) {
-			return false;
-		}
+	/**
+	 * Whether this filter allows the event given as a parameter.
+	 * 
+	 * @param event
+	 *            The event to be filtered.
+	 * @return True of false as a result of filtering.
+	 */
+	public boolean matches(T event) {
 		return matchesInternal(event);
 	}
 
-	public abstract boolean isAllowedEventKind(EventKind eventKind);
-	
+	protected abstract boolean matchesInternal(T event);
+
 	public void addToEventRequest(EventRequest eventRequest) throws JdwpError {
+
 		if (isAllowedEventKind(eventRequest.getEventKind())) {
 			eventRequest.addFilter(this);
-		} else 		{
+		} else {
 			throw new IllegalArgumentException();
 		}
 
 	}
+
+	protected abstract boolean isAllowedEventKind(EventKind eventKind);
 
 }

@@ -174,6 +174,18 @@ public class JdwpError extends Exception {
 	public JdwpError(ErrorType errorType) {
 		this.errorType = errorType;
 	}
+	public JdwpError(ErrorType errorType, String message) {
+		super(message);
+		this.errorType = errorType;
+	}
+	public JdwpError(ErrorType errorType, Throwable cause) {
+		super(cause);
+		this.errorType = errorType;
+	}
+	public JdwpError(ErrorType errorType, String message, Throwable cause) {
+		super(message, cause);
+		this.errorType = errorType;
+	}
 	
 	public ErrorType getErrorType() {
 		return errorType;

@@ -33,7 +33,7 @@ public abstract class LocatableEvent extends Event implements Locatable {
 	@Override
 	public boolean matchesClassPattern(ClassMatchFilter classMatchFilter) {
 		String className = location.getInstruction().getMethodInfo().getClassName();
-		return classMatchFilter.matches(className);
+		return classMatchFilter.accepts(className);
 	}
 
 	protected abstract void writeLocatableSpecific(DataOutputStream os)throws IOException;
