@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassMatchFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.jvm.ClassInfo;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
-public class ClassPrepareEvent extends Event {
+public class ClassPrepareEvent extends Event implements ClassFilterable {
 
 	private int status;
 	private ClassInfo classInfo;
@@ -32,7 +33,7 @@ public class ClassPrepareEvent extends Event {
 	}
 	
 	@Override
-	public boolean matchesClassPattern(ClassMatchFilter classMatchFilter) {
+	public boolean visit(ClassFilter classMatchFilter) {
 		return classMatchFilter.accepts(classInfo.getName());
 	}
 

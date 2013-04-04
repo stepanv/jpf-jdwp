@@ -69,10 +69,4 @@ public class CountFilter extends Filter<Event> {
 		return true;
 	}
 
-	@Override
-	protected boolean matchesInternal(Event event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 }

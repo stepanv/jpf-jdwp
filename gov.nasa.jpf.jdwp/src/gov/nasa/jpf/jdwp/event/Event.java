@@ -6,11 +6,12 @@ import java.util.regex.Pattern;
 
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
+import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassMatchFilter;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 
-public abstract class Event {
+public abstract class Event implements IEvent {
 
 	private EventKind eventKind;
 
@@ -70,10 +71,6 @@ public abstract class Event {
 		os.writeInt(requestId);
 		threadId.write(os);
 		writeSpecific(os);
-	}
-
-	public boolean matchesClassPattern(ClassMatchFilter classMatchFilter) {
-		return false;
 	}
 
 }

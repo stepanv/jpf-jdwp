@@ -1,14 +1,11 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import java.nio.ByteBuffer;
-
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.event.IEvent;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
@@ -17,6 +14,8 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
+
+import java.nio.ByteBuffer;
 
 /**
  * 
@@ -32,7 +31,7 @@ import gov.nasa.jpf.jdwp.variable.StringRaw;
  * @author stepan
  * 
  */
-public abstract class Filter<T extends Event> {
+public abstract class Filter<T extends IEvent> {
 
 	public enum ModKind implements ConvertibleEnum<Byte, ModKind> {
 		COUNT(1) {
@@ -109,15 +108,7 @@ public abstract class Filter<T extends Event> {
 		INSTANCE_ONLY(11) {
 			@Override
 			public Filter<?> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ObjectId<?> objectId = contextProvider.getObjectManager().readThreadId(bytes); // TODO
-																								// THIS
-																								// IS
-																								// WRONG
-																								// need
-																								// to
-																								// call
-																								// readObjectId()
-																								// method
+				ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
 				return new InstanceOnlyFilter(objectId);
 			}
 		},
@@ -171,18 +162,12 @@ public abstract class Filter<T extends Event> {
 		return matchesInternal(event);
 	}
 
-	protected abstract boolean matchesInternal(T event);
-
-	public void addToEventRequest(EventRequest eventRequest) throws JdwpError {
-
-		if (isAllowedEventKind(eventRequest.getEventKind())) {
-			eventRequest.addFilter(this);
-		} else {
-			throw new IllegalArgumentException();
-		}
-
+	protected boolean matchesInternal(T event) {
+		return false;
 	}
 
-	protected abstract boolean isAllowedEventKind(EventKind eventKind);
+	protected boolean isAllowedEventKind(EventKind eventKind) {
+		return false;
+	}
 
 }

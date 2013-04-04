@@ -108,10 +108,6 @@ public class EventRequest {
 		return true;
 	}
 
-	public void addFilter(Filter filter) throws JdwpError {
-		filter.addToEventRequest(this);
-	}
-
 	public EventKind getEventKind() {
 		return eventKind;
 	}

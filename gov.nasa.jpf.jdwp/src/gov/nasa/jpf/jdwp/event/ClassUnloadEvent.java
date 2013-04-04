@@ -1,11 +1,12 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClassUnloadEvent extends Event {
+public class ClassUnloadEvent extends Event implements ClassFilterable {
 
 	private String signature;
 
@@ -25,6 +26,11 @@ public class ClassUnloadEvent extends Event {
 
 	@Override
 	protected void writeSpecific(DataOutputStream os) throws IOException {
+	}
+
+	@Override
+	public boolean visit(ClassFilter classMatchFilter) {
+		return classMatchFilter.accepts(signature);
 	}
 
 }
