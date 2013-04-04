@@ -2,9 +2,10 @@ package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.IEvent;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
-public class InstanceOnlyFilter extends Filter<Event> {
+public class InstanceOnlyFilter extends Filter<IEvent> {
 
 	private ObjectId<?> objectId;
 
@@ -14,7 +15,7 @@ public class InstanceOnlyFilter extends Filter<Event> {
 	}
 
 	@Override
-	protected boolean matchesInternal(Event event) {
+	protected boolean matchesInternal(IEvent event) {
 		// TODO Auto-generated method stub
 		return false;
 	}

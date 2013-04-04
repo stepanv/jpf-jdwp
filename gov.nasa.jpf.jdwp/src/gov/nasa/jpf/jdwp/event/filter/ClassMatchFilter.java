@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-
 /**
  * <p>
  * <h2>JDWP Specification</h2>

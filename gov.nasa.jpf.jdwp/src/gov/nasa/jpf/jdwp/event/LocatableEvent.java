@@ -1,16 +1,14 @@
 package gov.nasa.jpf.jdwp.event;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.regex.Pattern;
-
 import gov.nasa.jpf.jdwp.Locatable;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
-import gov.nasa.jpf.jdwp.event.filter.ClassMatchFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jvm.ClassInfo;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public abstract class LocatableEvent extends Event implements Locatable {
 

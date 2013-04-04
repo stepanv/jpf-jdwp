@@ -2,7 +2,6 @@ package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.command.EventRequestCommand;
 import gov.nasa.jpf.jdwp.event.ClassFilterable;
-import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 
 /**
