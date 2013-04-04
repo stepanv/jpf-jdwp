@@ -3,10 +3,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.event.ClassUnloadEvent;
-import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.IEvent;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -18,7 +15,6 @@ import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 
 import java.nio.ByteBuffer;
-import java.util.List;
 
 /**
  * 
@@ -160,10 +156,6 @@ public abstract class Filter<T extends IEvent> {
 	 * @return True of false as a result of filtering.
 	 */
 	public boolean matches(T event) {
-		return matchesInternal(event);
-	}
-
-	protected boolean matchesInternal(T event) {
 		return false;
 	}
 

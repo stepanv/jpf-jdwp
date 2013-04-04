@@ -17,7 +17,7 @@ public class ExceptionOnlyFilter extends Filter<ExceptionEvent> {
 	}
 
 	@Override
-	protected boolean matchesInternal(ExceptionEvent event) {
+	public boolean matches(ExceptionEvent event) {
 		// TODO Auto-generated method stub
 		return false;
 	}

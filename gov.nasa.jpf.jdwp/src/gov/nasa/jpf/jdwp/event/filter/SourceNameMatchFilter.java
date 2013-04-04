@@ -12,7 +12,7 @@ public class SourceNameMatchFilter extends Filter<ClassPrepareEvent> {
 	}
 
 	@Override
-	protected boolean matchesInternal(ClassPrepareEvent event) {
+	public boolean matches(ClassPrepareEvent event) {
 		// TODO Auto-generated method stub
 		return false;
 	}

@@ -15,7 +15,7 @@ public class LocationOnlyFilter extends Filter<LocatableEvent> {
 	}
 
 	@Override
-	public boolean matchesInternal(LocatableEvent event) {
+	public boolean matches(LocatableEvent event) {
 		return location == event.getLocation();
 	}
 

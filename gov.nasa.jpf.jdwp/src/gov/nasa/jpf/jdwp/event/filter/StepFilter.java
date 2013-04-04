@@ -196,7 +196,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 	}
 
 	@Override
-	public boolean matchesInternal(SingleStepEvent event) {
+	public boolean matches(SingleStepEvent event) {
 
 		Instruction currentInstruction = event.getLocation().getInstruction();
 		ThreadInfo currentThread = event.getThread().get();

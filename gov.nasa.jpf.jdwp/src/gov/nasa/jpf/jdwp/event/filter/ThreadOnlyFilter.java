@@ -14,7 +14,7 @@ public class ThreadOnlyFilter extends Filter<Event> {
 	}
 
 	@Override
-	public boolean matchesInternal(Event event) {
+	public boolean matches(Event event) {
 		return event.getThread() == threadId;
 	}
 

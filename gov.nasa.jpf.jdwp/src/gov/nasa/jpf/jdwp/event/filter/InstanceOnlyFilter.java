@@ -15,7 +15,7 @@ public class InstanceOnlyFilter extends Filter<IEvent> {
 	}
 
 	@Override
-	protected boolean matchesInternal(IEvent event) {
+	public boolean matches(IEvent event) {
 		// TODO Auto-generated method stub
 		return false;
 	}

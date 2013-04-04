@@ -25,7 +25,7 @@ public class FieldOnlyFilter extends Filter<Event> {
 	}
 
 	@Override
-	protected boolean matchesInternal(Event event) {
+	public boolean matches(Event event) {
 		// TODO Auto-generated method stub
 		return false;
 	}
