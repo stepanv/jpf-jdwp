@@ -3,6 +3,8 @@ package gov.nasa.jpf.jdwp.command;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.util.JdwpString;
+import gnu.classpath.jdwp.util.Location;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -10,45 +12,41 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadReferenceCommand> {
 	NAME(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ThreadId tid = (ThreadId) contextProvider.getObjectManager().readObjectId(bytes);
-		    ThreadInfo thread = tid.get();
-		    new StringRaw(thread.getName()).write(os);
-
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		    new StringRaw(threadInfo.getName()).write(os);
 		}
 	},
 	SUSPEND(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			contextProvider.getVirtualMachine().suspendAllThreads(); // TODO solve this - just for a single thread
 		}
 	},
 	RESUME(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		    ThreadId tid = (ThreadId) contextProvider.getObjectManager().readObjectId(bytes);
-		    ThreadInfo thread = tid.get();
-		    contextProvider.getVirtualMachine().resumeAllThreads(); // TODO solve this
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		    contextProvider.getVirtualMachine().resumeAllThreads(); // TODO solve this - just for a single thread
 
 		}
 	},
 	STATUS(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			// TODO not fully implemented
-			ThreadId tid = contextProvider.getObjectManager().readThreadId(bytes);
-		    ThreadInfo thread = tid.get();
-		    ThreadStatus threadStatus = threadStatus(thread);
+		    ThreadStatus threadStatus = threadStatus(threadInfo);
 		
 		    // There's only one possible SuspendStatus...
 		    int suspendStatus = JdwpConstants.SuspendStatus.SUSPENDED;
@@ -60,63 +58,77 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	},
 	THREADGROUP(5) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 ThreadId tid = contextProvider.getObjectManager().readThreadId(bytes);
-			    ThreadInfo thread = tid.get();
-			    int group = thread.getThreadGroupRef();
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			    int group = threadInfo.getThreadGroupRef();
 			    ElementInfo ei = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
 			    ObjectId groupId = contextProvider.getObjectManager().getObjectId(ei);
 			    groupId.write(os);
-
 		}
 	},
 	FRAMES(6) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			int startFrame = bytes.getInt();
+		    int length = bytes.getInt();
+
+		    List<StackFrame> frames = VirtualMachineHelper.getFrames(threadInfo, startFrame, length);
+		    os.writeInt(frames.size());
+		    for (int i = 0; i < frames.size(); i++)
+		      {
+		    	StackFrame frame = (StackFrame) frames.get(i);
+		        os.writeLong(frame.getThis());
+		        
+		        Instruction instruction = frame.getPC();
+				
+				while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+					instruction = instruction.getNext(threadInfo);
+				}
+		        Location location = Location.factory(instruction);
+		        location.write(os);
+		      }
 
 		}
 	},
 	FRAMECOUNT(7) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			int frameCount = VirtualMachineHelper.getFrameCount(threadInfo);
+		    os.writeInt(frameCount);
 
 		}
 	},
 	OWNEDMONITORS(8) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	CURRENTCONTENDEDMONITOR(9) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	STOP(10) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	INTERRUPT(11) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	SUSPENDCOUNT(12) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			os.writeInt(threadInfo.threadDataClone().getSuspendCount());
 		}
 	};
 	private byte commandId;
@@ -151,6 +163,13 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		  }
 	}
 
+	
+	protected abstract void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		ThreadId tid = (ThreadId) contextProvider.getObjectManager().readObjectId(bytes);
+	    ThreadInfo thread = tid.get();
+	    execute(thread, bytes, os, contextProvider);
+	}
 }

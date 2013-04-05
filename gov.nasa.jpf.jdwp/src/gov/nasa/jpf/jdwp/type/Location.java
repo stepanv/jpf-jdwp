@@ -81,7 +81,8 @@ public class Location {
 
 		ClassInfo classInfo = methodInfo.getClassInfo();
 		objectManager.getReferenceTypeId(classInfo).writeTagged(os);
-		objectManager.getObjectId(methodInfo).write(os);
+		os.writeLong(methodInfo.getGlobalId());
+		//objectManager.getObjectId(methodInfo).write(os);
 		os.writeLong(index);
 
 	}

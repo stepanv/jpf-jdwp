@@ -66,7 +66,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		// TODO [for PJA] This is weird.. According to JDWP we should sent threadID where this class loaded event occurred
 		// but in case of JPF it doesn't have a system thread 
 		// (which caused class load before the main thread was executed) .. does it?
-		if (vm.getCurrentThread() != null) {
+		if (vm.getCurrentThread() != null && vm.isInitialized()) {
 			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
 			dispatchEvent(classPrepareEvent);
 		} else {

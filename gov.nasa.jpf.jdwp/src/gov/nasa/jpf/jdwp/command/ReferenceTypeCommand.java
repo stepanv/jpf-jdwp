@@ -1,10 +1,8 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMIdManager;
-import gnu.classpath.jdwp.util.JdwpString;
-import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -16,153 +14,157 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, ReferenceTypeCommand> {
 	SIGNATURE(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-			    String sig = Signature.computeClassSignature(refId.get());
-			    JdwpString.writeString(os, sig);
-			
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			new StringRaw(classInfo.getSignature()).write(os);
 		}
-	}, 
+	},
 	CLASSLOADER(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	MODIFIERS(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	FIELDS(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-			    ClassInfo clazz = refId.get();
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 
-			    FieldInfo[] fields = clazz.getInstanceFields();
-			    os.writeInt(fields.length);
-			    for (int i = 0; i < fields.length; i++)
-			      {
-			        FieldInfo field = fields[i];
-			        contextProvider.getObjectManager().getObjectId(field).write(os);
-			        new StringRaw(field.getName()).write(os);
-			        new StringRaw(field.getClassInfo().getSignature()).write(os);
-			        os.writeInt(field.getModifiers());
-			      }
-			
+			FieldInfo[] fields = classInfo.getInstanceFields();
+			os.writeInt(fields.length);
+			for (int i = 0; i < fields.length; i++) {
+				FieldInfo field = fields[i];
+				contextProvider.getObjectManager().getObjectId(field).write(os);
+				new StringRaw(field.getName()).write(os);
+				new StringRaw(field.getClassInfo().getSignature()).write(os);
+				os.writeInt(field.getModifiers());
+			}
+
 		}
-	}, 
+	},
 	METHODS(5) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-		    ClassInfo clazz = refId.get();
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 
-		    System.out.println("METHODS FOR CLASS: " + clazz + " JDWP ID: " + VMIdManager.getDefault().getObjectId(clazz));
-		    MethodInfo[] methods = clazz.getDeclaredMethodInfos();
-		    os.writeInt (methods.length);
-		    for (int i = 0; i < methods.length; i++)
-		      {
-		        MethodInfo method = methods[i];
-		        os.writeLong(method.getGlobalId());
-		        System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
-		        //method.writeId(os);
-		        JdwpString.writeString(os, method.getName());
-		        JdwpString.writeString(os, method.getSignature());
-		        os.writeInt(method.getModifiers());
-		      }
-			
+			System.out.println("METHODS FOR CLASS: " + classInfo + " JDWP ID: " + contextProvider.getObjectManager().getObjectId(classInfo));
+			MethodInfo[] methods = classInfo.getDeclaredMethodInfos();
+			os.writeInt(methods.length);
+			for (int i = 0; i < methods.length; i++) {
+				MethodInfo method = methods[i];
+				os.writeLong(method.getGlobalId());
+				System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
+				// method.writeId(os);
+				new StringRaw(method.getName()).write(os);
+				new StringRaw(method.getSignature()).write(os);
+				os.writeInt(method.getModifiers());
+			}
+
 		}
-	}, 
+	},
 	GETVALUES(6) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	SOURCEFILE(7) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			String sourceFileName = classInfo.getSourceFileName();
+			new StringRaw(SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst("")).write(os);
 		}
-	}, 
+	},
 	NESTEDTYPES(8) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	STATUS(9) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	INTERFACES(10) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-		    ClassInfo clazz = refId.get();
-		    Set<ClassInfo> interfaces = clazz.getAllInterfaceClassInfos();
-		    os.writeInt(interfaces.size());
-		    for (Iterator<ClassInfo> i = interfaces.iterator(); i.hasNext();)
-		      {
-		        ClassInfo interfaceClass = i.next();
-		        ReferenceTypeId intId = contextProvider.getObjectManager().getReferenceTypeId(interfaceClass);
-		        intId.write(os);
-		      }
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			Set<ClassInfo> interfaces = classInfo.getAllInterfaceClassInfos();
+			os.writeInt(interfaces.size());
+			for (Iterator<ClassInfo> i = interfaces.iterator(); i.hasNext();) {
+				ClassInfo interfaceClass = i.next();
+				ReferenceTypeId intId = contextProvider.getObjectManager().getReferenceTypeId(interfaceClass);
+				intId.write(os);
+			}
 
-			
 		}
-	}, 
+	},
 	CLASSOBJECT(11) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			ObjectId clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo);
+			clazzObjectId.write(os);
+
 		}
-	}, 
+	},
 	SOURCEDEBUGEXTENSION(12) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	SIGNATUREWITHGENERIC(13) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	FIELDSWITHGENERIC(14) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
-	}, 
+	},
 	METHODSWITHGENERIC(15) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+
 		}
 	};
-	
+
 	private byte commandId;
 
 	private ReferenceTypeCommand(int commandId) {
@@ -170,7 +172,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	}
 
 	private static ReverseEnumMap<Byte, ReferenceTypeCommand> map = new ReverseEnumMap<Byte, ReferenceTypeCommand>(ReferenceTypeCommand.class);
-
+	private static final Pattern SOURCEFILENAME_FIX_PATTERN = Pattern.compile("^.*[/\\\\]");
 
 	@Override
 	public Byte identifier() {
@@ -182,6 +184,13 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		return map.get(val);
 	}
 
+	protected abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+			JdwpError;
+
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		execute(refId.get(), bytes, os, contextProvider);
+	}
+
 }
