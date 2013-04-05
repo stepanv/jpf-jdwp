@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.Locatable;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -32,15 +31,15 @@ public abstract class LocatableEvent extends Event implements Locatable {
 	}
 	
 	@Override
-	public boolean visit(ClassFilter classMatchFilter) {
+	public boolean matches(ClassFilter classMatchFilter) {
 		String className = location.getInstruction().getMethodInfo().getClassName();
 		return classMatchFilter.accepts(className);
 	}
 
 	@Override
-	public boolean visit(ClassOnlyFilter classOnlyFilter) {
+	public boolean matches(ClassOnlyFilter classOnlyFilter) {
 		ClassInfo classInfo = location.getInstruction().getMethodInfo().getClassInfo();
-		return classOnlyFilter.accepts(classInfo);
+		return classOnlyFilter.matches(classInfo);
 	}
 
 	protected abstract void writeLocatableSpecific(DataOutputStream os)throws IOException;

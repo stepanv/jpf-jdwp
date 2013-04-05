@@ -4,8 +4,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.event.SingleStepEvent;
+import gov.nasa.jpf.jdwp.event.StepFilterable;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -22,13 +21,16 @@ import java.util.logging.Logger;
 /**
  * 
  * 
+ * <p>
+ * <h2>JDWP Specification</h2>
  * Restricts reported step events to those which satisfy depth and size
  * constraints. This modifier can be used with step event kinds only.
+ * </p>
  * 
  * @author stepan
  * 
  */
-public abstract class StepFilter extends Filter<SingleStepEvent> {
+public abstract class StepFilter extends Filter<StepFilterable> {
 
 	private static Logger log = Logger.getLogger(StepFilter.class.getName());
 
@@ -102,7 +104,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 		public StepDepth convert(Integer stepDepthId) throws JdwpError {
 			return map.get(stepDepthId);
 		}
-		
+
 		public abstract StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError;
 
 	}
@@ -139,6 +141,14 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 	protected List<StackFrameSnapshot> stackSnapshot = new ArrayList<StepFilter.StackFrameSnapshot>();
 
+	/**
+	 * 
+	 * @param threadId
+	 *            Thread in which to step
+	 * @param size
+	 *            Size of each step
+	 * @throws InvalidThreadException
+	 */
 	public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException {
 		super(ModKind.STEP);
 
@@ -148,7 +158,7 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 		this.thread = threadId;
 		this.size = size;
-		
+
 		Iterator<StackFrame> stackFrameIterator = threadId.get().iterator();
 
 		while (stackFrameIterator.hasNext()) {
@@ -196,10 +206,11 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 	}
 
 	@Override
-	public boolean matches(SingleStepEvent event) {
+	public boolean matches(StepFilterable event) {
+		return matches(event.getLocation().getInstruction(), event.getThread().get());
+	}
 
-		Instruction currentInstruction = event.getLocation().getInstruction();
-		ThreadInfo currentThread = event.getThread().get();
+	private boolean matches(Instruction currentInstruction, ThreadInfo currentThread) {
 
 		/* Are we in the right thread? */
 		if (JdwpObjectManager.getInstance().getObjectId(currentThread) != thread) {
@@ -266,21 +277,11 @@ public abstract class StepFilter extends Filter<SingleStepEvent> {
 
 	protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
 
-	@Override
-	public boolean isAllowedEventKind(EventKind eventKind) {
-		switch (eventKind) {
-		case SINGLE_STEP:
-			return true;
-		default:
-			return false;
-		}
-	}
-
 	public static StepFilter factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
 		int size = bytes.getInt();
 		int depth = bytes.getInt();
-		
+
 		return StepDepth.INTO.convert(depth).createStepFilter(threadId, StepSize.LINE.convert(size), contextProvider);
 	}
 

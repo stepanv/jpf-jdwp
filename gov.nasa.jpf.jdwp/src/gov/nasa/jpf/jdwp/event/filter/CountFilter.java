@@ -1,12 +1,16 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.IEvent;
 import gov.nasa.jpf.jdwp.exception.InvalidCount;
 
 /**
+ * <p>
  * Count filter class that restricts reporting of the event to specific moment
  * based on a counter.
+ * </p>
+ * <p>
+ * Can be used with any event, hence {@link IEvent};
+ * </p>
  * <p>
  * <h2>JDWP Specification</h2>
  * Limit the requested event to be reported at most once after a given number of
@@ -25,7 +29,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidCount;
  * @author stepan
  * 
  */
-public class CountFilter extends Filter<Event> {
+public class CountFilter extends Filter<IEvent> {
 
 	private int count;
 	private boolean expired;
@@ -51,7 +55,7 @@ public class CountFilter extends Filter<Event> {
 	}
 
 	@Override
-	public boolean matches(Event event) {
+	public boolean matches(IEvent event) {
 		assert expired == false;
 
 		if (--count > 0) {
@@ -59,14 +63,6 @@ public class CountFilter extends Filter<Event> {
 		}
 		expired = true;
 		return --count == 0;
-	}
-
-	/**
-	 * According to spec, any event is allowed.
-	 */
-	@Override
-	public boolean isAllowedEventKind(EventKind eventKind) {
-		return true;
 	}
 
 }

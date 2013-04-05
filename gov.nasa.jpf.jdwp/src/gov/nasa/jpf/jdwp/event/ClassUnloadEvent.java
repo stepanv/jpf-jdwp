@@ -29,7 +29,7 @@ public class ClassUnloadEvent extends Event implements ClassFilterable {
 	}
 
 	@Override
-	public boolean visit(ClassFilter classMatchFilter) {
+	public boolean matches(ClassFilter classMatchFilter) {
 		return classMatchFilter.accepts(signature);
 	}
 

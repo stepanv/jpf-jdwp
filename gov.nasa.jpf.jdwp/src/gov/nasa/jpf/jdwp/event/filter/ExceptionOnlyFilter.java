@@ -1,14 +1,47 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
+import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 
-public class ExceptionOnlyFilter extends Filter<ExceptionEvent> {
+/**
+ * <p>
+ * Exception Only filter class that restricts reported exceptions.
+ * </p>
+ * <p>
+ * Can be used with {@link ExceptionOnlyFilterable} events.
+ * </p>
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * Restricts reported exceptions by their class and whether they are caught or
+ * uncaught. This modifier can be used with exception event kinds only.
+ * </p>
+ * 
+ * @see ExceptionEvent
+ * @see ExceptionOnlyFilterable
+ * 
+ * @author stepan
+ * 
+ */
+public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 	ReferenceTypeId exceptionOrNull;
 	boolean caught;
 	boolean uncaught;
 
+	/**
+	 * 
+	 * @param exceptionOrNull
+	 *            Exception to report. Null (0) means report exceptions of all
+	 *            types. A non-null type restricts the reported exception events
+	 *            to exceptions of the given type or any of its subtypes.
+	 * @param caught
+	 *            Report caught exceptions
+	 * @param uncaught
+	 *            Report uncaught exceptions. Note that it is not always
+	 *            possible to determine whether an exception is caught or
+	 *            uncaught at the time it is thrown. See the exception event
+	 *            catch location under composite events for more information.
+	 */
 	public ExceptionOnlyFilter(ReferenceTypeId exceptionOrNull, boolean caught, boolean uncaught) {
 		super(ModKind.EXCEPTION_ONLY);
 		this.exceptionOrNull = exceptionOrNull;
@@ -17,26 +50,8 @@ public class ExceptionOnlyFilter extends Filter<ExceptionEvent> {
 	}
 
 	@Override
-	public boolean matches(ExceptionEvent event) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/** 
-	 * <p>JDWP Spec is vague with this:<br/>
-	 * <em>This modifier can be used with exception event kinds only.</em></p>
-	 * <p> TODO needs to be investigated from other JDWP implementations </p>
-	 *  
-	 */
-	@Override
-	public boolean isAllowedEventKind(EventKind eventKind) {
-		switch (eventKind) {
-		case EXCEPTION_CATCH:
-		case EXCEPTION:
-			return true;
-		default:
-			return false;
-		}
+	public boolean matches(ExceptionOnlyFilterable event) {
+		return event.visit(this);
 	}
 
 }

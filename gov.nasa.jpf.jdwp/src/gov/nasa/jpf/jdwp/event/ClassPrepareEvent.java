@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
+import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.jvm.ClassInfo;
@@ -10,7 +11,7 @@ import gov.nasa.jpf.jvm.ThreadInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClassPrepareEvent extends Event implements ClassFilterable {
+public class ClassPrepareEvent extends Event implements Threadable, ClassFilterable, ClassOnlyFilterable, SourceNameMatchFilterable {
 
 	private int status;
 	private ClassInfo classInfo;
@@ -31,8 +32,13 @@ public class ClassPrepareEvent extends Event implements ClassFilterable {
 	}
 	
 	@Override
-	public boolean visit(ClassFilter classMatchFilter) {
+	public boolean matches(ClassFilter classMatchFilter) {
 		return classMatchFilter.accepts(classInfo.getName());
+	}
+
+	@Override
+	public boolean matches(ClassOnlyFilter classOnlyFilter) {
+		return classOnlyFilter.matches(classInfo);
 	}
 
 }

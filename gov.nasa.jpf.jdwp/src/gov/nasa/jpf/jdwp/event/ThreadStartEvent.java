@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jvm.ThreadInfo;
 
-public class ThreadStartEvent extends Event {
+public class ThreadStartEvent extends Event implements Threadable {
 
 	public ThreadStartEvent(ThreadInfo currentThread) {
 		super(EventKind.THREAD_START, (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread));

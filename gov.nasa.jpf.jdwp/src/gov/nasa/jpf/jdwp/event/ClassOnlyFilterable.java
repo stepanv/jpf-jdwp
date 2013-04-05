@@ -4,6 +4,6 @@ import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 
 public interface ClassOnlyFilterable extends IEvent{
 
-	boolean visit(ClassOnlyFilter classOnlyFilter);
+	boolean matches(ClassOnlyFilter classOnlyFilter);
 
 }

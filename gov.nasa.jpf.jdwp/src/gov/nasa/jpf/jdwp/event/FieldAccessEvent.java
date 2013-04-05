@@ -6,10 +6,10 @@ import gov.nasa.jpf.jdwp.type.Location;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class FieldAccessEvent extends LocatableEvent {
+public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilterable, FieldOnlyFilterable {
 
-	public FieldAccessEvent(EventKind eventKind, ThreadId threadId, Location location) {
-		super(eventKind, threadId, location);
+	public FieldAccessEvent(ThreadId threadId, Location location) {
+		super(EventKind.FIELD_ACCESS, threadId, location);
 		throw new RuntimeException("NOT IMPLEMENTED YET!");
 	}
 

@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 
-public class BreakpointEvent extends LocatableEvent {
+public class BreakpointEvent extends LocatableEvent implements LocationOnlyFilterable {
 
 	public BreakpointEvent(ThreadId threadId, Location location) {
 		super(EventKind.BREAKPOINT, threadId, location);

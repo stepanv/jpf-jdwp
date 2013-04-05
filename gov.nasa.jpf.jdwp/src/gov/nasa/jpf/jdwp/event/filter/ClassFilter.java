@@ -49,7 +49,7 @@ public abstract class ClassFilter extends Filter<ClassFilterable> {
 
 	@Override
 	public boolean matches(ClassFilterable event) {
-		return event.visit(this);
+		return event.matches(this);
 	}
 
 	/**

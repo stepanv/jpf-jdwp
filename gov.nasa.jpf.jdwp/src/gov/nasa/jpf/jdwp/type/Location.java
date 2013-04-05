@@ -16,6 +16,13 @@ import gov.nasa.jpf.jvm.bytecode.Instruction;
 
 public class Location {
 
+	public boolean equals(Location location) {
+		if (location == null) {
+			return false;
+		}
+		return instruction == location.instruction;
+	}
+
 	private Instruction instruction;
 	private MethodInfo methodInfo;
 	private int index;

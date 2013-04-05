@@ -18,14 +18,18 @@ import java.nio.ByteBuffer;
 
 /**
  * 
+ * <p>
+ * <h2>JDWP Specification for modifiers/filters</h2>
  * Constraints used to control the number of generated events. Modifiers specify
  * additional tests that an event must satisfy before it is placed in the event
  * queue. Events are filtered by applying each modifier to an event in the order
  * they are specified in this collection Only events that satisfy all modifiers
  * are reported. A value of 0 means there are no modifiers in the request.
- * 
+ * </p>
+ * <p>
  * Filtering can improve debugger performance dramatically by reducing the
  * amount of event traffic sent from the target VM to the debugger VM.
+ * </p>
  * 
  * @author stepan
  * 
@@ -140,7 +144,6 @@ public abstract class Filter<T extends IEvent> {
 		public abstract Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
 	}
 
-
 	public Filter(ModKind modKind) { // TODO remove unused parameter
 	}
 
@@ -149,17 +152,13 @@ public abstract class Filter<T extends IEvent> {
 	}
 
 	/**
-	 * Whether this filter allows the event given as a parameter.
+	 * Whether this filter allows the given event.
 	 * 
 	 * @param event
 	 *            The event to be filtered.
 	 * @return True of false as a result of filtering.
 	 */
 	public boolean matches(T event) {
-		return false;
-	}
-
-	protected boolean isAllowedEventKind(EventKind eventKind) {
 		return false;
 	}
 
