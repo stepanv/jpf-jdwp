@@ -4,7 +4,7 @@ import gov.nasa.jpf.jdwp.event.ClassOnlyFilterable;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Locatable;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 /**
  * <p>

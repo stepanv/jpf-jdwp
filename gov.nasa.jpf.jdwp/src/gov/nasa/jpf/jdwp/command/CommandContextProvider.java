@@ -4,7 +4,7 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.VirtualMachine;
-import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.vm.VM;
 
 public class CommandContextProvider {
 	
@@ -19,12 +19,12 @@ public class CommandContextProvider {
 		return objectManager;
 	}
 	
-	public JVM getJVM() {
-		return JVM.getVM();
+	public VM getVM() {
+		return VM.getVM();
 	}
 	
 	public JPF getJPF() {
-		return getJVM().getJPF();
+		return getVM().getJPF();
 	}
 	
 	public VirtualMachine getVirtualMachine() {

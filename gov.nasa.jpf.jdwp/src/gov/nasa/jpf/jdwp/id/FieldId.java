@@ -3,7 +3,7 @@ package gov.nasa.jpf.jdwp.id;
 import java.nio.ByteBuffer;
 
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jvm.FieldInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 
 public class FieldId extends Identifier<FieldInfo>{
 

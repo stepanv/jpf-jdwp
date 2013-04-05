@@ -41,7 +41,7 @@ package gnu.classpath.jdwp.event.filters;
 
 import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 /**
  * An event filter which includes events matching a

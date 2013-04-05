@@ -49,10 +49,10 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Location;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

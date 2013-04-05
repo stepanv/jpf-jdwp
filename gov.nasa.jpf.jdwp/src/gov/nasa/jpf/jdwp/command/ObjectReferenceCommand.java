@@ -4,10 +4,10 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

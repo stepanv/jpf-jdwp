@@ -50,9 +50,10 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.VM;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -334,10 +335,10 @@ public class VirtualMachineCommandSet
   {
 	  // is invoked when inspecting an array field for instance (TODO rewrite this method)
     String string = JdwpString.readString(bb); 
-    JVM jvm = VMVirtualMachine.vm.getJpf().getVM();
-    int ref = jvm.getHeap().newString(string, jvm.getCurrentThread()); // TODO [for PJA] which thread we should use?
+    VM jvm = VMVirtualMachine.vm.getJpf().getVM();
+    ElementInfo stringElementInfo = jvm.getHeap().newString(string, jvm.getCurrentThread()); // TODO [for PJA] which thread we should use?
     
-    ObjectId stringId = idMan.getObjectId(jvm.getHeap().get(ref));
+    ObjectId stringId = idMan.getObjectId(stringElementInfo);
 
     // Since this string isn't referenced anywhere we'll disable garbage
     // collection on it so it's still around when the debugger gets back to it.

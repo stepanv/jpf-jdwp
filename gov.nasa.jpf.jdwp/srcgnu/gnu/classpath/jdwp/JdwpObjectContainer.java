@@ -1,7 +1,7 @@
 package gnu.classpath.jdwp;
 
 import gnu.classpath.jdwp.id.ObjectId;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 public abstract class JdwpObjectContainer<T, ID extends ObjectId> {
 	
@@ -18,7 +18,8 @@ public abstract class JdwpObjectContainer<T, ID extends ObjectId> {
 	abstract public ID createId();
 
 	public ClassInfo getClassInfo() {
-		return ClassInfo.getResolvedClassInfo(object.getClass().getCanonicalName());
+		throw new RuntimeException("NOT IMPLEMENTED .. SHOULDN'T BE USED?");
+//		return ClassInfo.getResolvedClassInfo(object.getClass().getCanonicalName());
 	}
 
 }

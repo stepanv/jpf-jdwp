@@ -44,9 +44,9 @@ package gnu.classpath.jdwp;
 import gnu.classpath.jdwp.exception.InvalidClassException;
 import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.id.*;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -127,7 +127,7 @@ public class VMIdManager
       // Special case: arrays
       else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isArray()) {
         id = new ArrayId ();
-    } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) { // TODO don't use string comparison - it's slow
+    } else if (object.getClass().getName().equals("gov.nasa.jpf.vm.ThreadInfo")) { // TODO don't use string comparison - it's slow
     		id = new ThreadId();
     } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isStringClassInfo()) {
     	id = new StringId();

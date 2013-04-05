@@ -43,7 +43,7 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ThreadId;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

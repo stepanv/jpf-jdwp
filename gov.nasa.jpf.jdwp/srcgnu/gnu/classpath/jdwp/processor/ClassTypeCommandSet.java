@@ -55,9 +55,9 @@ import gnu.classpath.jdwp.util.MethodResult;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -45,8 +45,8 @@ import gnu.classpath.jdwp.exception.JdwpInternalErrorException;
 import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

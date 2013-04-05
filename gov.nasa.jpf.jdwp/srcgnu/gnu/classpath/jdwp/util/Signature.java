@@ -39,9 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 
 /**
  * A class to compute class and method signatures.

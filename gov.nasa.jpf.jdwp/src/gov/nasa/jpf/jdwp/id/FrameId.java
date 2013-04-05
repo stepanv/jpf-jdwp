@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jvm.StackFrame;
+import gov.nasa.jpf.vm.StackFrame;
 
 public class FrameId extends Identifier<StackFrame>{
 

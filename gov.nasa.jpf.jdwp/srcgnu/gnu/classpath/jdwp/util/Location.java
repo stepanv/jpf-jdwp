@@ -42,10 +42,10 @@ import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.id.ClassReferenceTypeId;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -40,7 +40,7 @@ package gnu.classpath.jdwp.value;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.VMIdManager;
 import gnu.classpath.jdwp.id.ObjectId;
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

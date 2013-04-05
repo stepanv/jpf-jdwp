@@ -4,9 +4,9 @@ import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.variable.Value;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

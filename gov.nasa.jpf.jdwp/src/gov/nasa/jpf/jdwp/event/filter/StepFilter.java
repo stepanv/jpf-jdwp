@@ -8,9 +8,9 @@ import gov.nasa.jpf.jdwp.event.StepFilterable;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

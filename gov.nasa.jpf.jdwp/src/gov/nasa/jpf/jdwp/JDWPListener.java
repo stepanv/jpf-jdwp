@@ -15,10 +15,12 @@ import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.VMListener;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
+import gov.nasa.jpf.vm.VMListener;
 
 public class JDWPListener extends ListenerAdapter implements VMListener {
 
@@ -29,28 +31,26 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 	
 	@Override
-	public void methodEntered (JVM vm) {
+	public void methodEntered (VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		
-		Instruction instruction = vm.getLastMethodInfo().getInstruction(0);
+		Instruction instruction = enteredMethod.getInstruction(0);
 		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
-			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(vm.getLastThreadInfo());
+			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread);
 			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(threadId, Location.factory(instruction));
 			dispatchEvent(methodEntryEvent);
 		}
 	}
-	
-	
 
 	@Override
-	public void threadStarted(JVM vm) {
-		ThreadStartEvent threadStartEvent = new ThreadStartEvent(vm.getLastThreadInfo());
+	public void threadStarted(VM vm, ThreadInfo startedThread) {
+		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
 		
 		dispatchEvent(threadStartEvent);
 	}
-	
+
 	@Override
-	public void threadTerminated(JVM vm) {
+	public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
 		// TODO [for PJA] there is not relation 1:1 between thread start and thread death events. (e.g. one thread can die multiple times) and JDI doesn't know what to do about that.
 		//if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0) {
 			//ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().get(0));
@@ -61,36 +61,35 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
 	private Instruction lastInstruction;
 	@Override
-	public void classLoaded(JVM vm) {
-		virtualMachine.notifyClassLoaded(vm.getLastClassInfo());
+	public void classLoaded(VM vm, ClassInfo loadedClass) {
+		virtualMachine.notifyClassLoaded(loadedClass);
 		// TODO [for PJA] This is weird.. According to JDWP we should sent threadID where this class loaded event occurred
 		// but in case of JPF it doesn't have a system thread 
 		// (which caused class load before the main thread was executed) .. does it?
 		if (vm.getCurrentThread() != null) {
-			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), vm.getLastClassInfo(), 0);
+			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
 			dispatchEvent(classPrepareEvent);
 		} else {
-			System.out.println("NOT NOTIFYING ABOUT: " + vm.getLastClassInfo());
-			postponedLoadedClasses.add(vm.getLastClassInfo());
+			System.out.println("NOT NOTIFYING ABOUT: " + loadedClass);
+			postponedLoadedClasses.add(loadedClass);
 		}
 	}
 	
 	@Override
-	public void executeInstruction(JVM vm) {
+	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
 		virtualMachine.started(vm, postponedLoadedClasses);
-		Instruction nextInstruction = vm.getNextInstruction();
-		if (nextInstruction.getMethodInfo() != null && nextInstruction.getMethodInfo().getClassInfo() != null) {
+		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(vm.getCurrentThread());
-			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(nextInstruction));
+			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			
 			//virtualMachine.conditionallyTriggerStepEvent(vm);
-			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(nextInstruction));
+			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(singleStepEvent);
 		}
-		lastInstruction = nextInstruction;
+		lastInstruction = instructionToExecute;
 	}
 	
 	private void dispatchEvent(Event event) {

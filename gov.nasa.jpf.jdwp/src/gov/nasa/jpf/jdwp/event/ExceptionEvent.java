@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilterable, LocationOnlyFilterable  {
 

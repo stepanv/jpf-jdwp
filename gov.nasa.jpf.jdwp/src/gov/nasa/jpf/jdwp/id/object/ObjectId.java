@@ -2,10 +2,10 @@ package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.FieldInfo;
-import gov.nasa.jpf.jvm.IntegerFieldInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.IntegerFieldInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ObjectId<T> extends TaggableIdentifier<T> {
 	public static enum Tag implements IdentifiableEnum<Byte>{
@@ -39,7 +39,7 @@ public class ObjectId<T> extends TaggableIdentifier<T> {
 	public static ObjectId factory(long id, Object object) {
 		if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isArray()) {
 	        return new ArrayId(id, (ElementInfo) object);
-	    } else if (object.getClass().getName().equals("gov.nasa.jpf.jvm.ThreadInfo")) { // TODO don't use string comparison - it's slow
+	    } else if (object.getClass().getName().equals("gov.nasa.jpf.vm.ThreadInfo")) { // TODO don't use string comparison - it's slow
 	    	return new ThreadId(id, (ThreadInfo) object);
 	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isStringClassInfo()) {
 	    	return new StringId(id, (ElementInfo) object);

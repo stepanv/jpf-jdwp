@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.id.type;
 
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 
 public class InterfaceTypeReferenceId extends ReferenceTypeId {

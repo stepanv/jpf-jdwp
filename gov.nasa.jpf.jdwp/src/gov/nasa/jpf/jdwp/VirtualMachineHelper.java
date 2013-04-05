@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp;
 
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class VirtualMachineHelper {
 

@@ -44,7 +44,7 @@ import gnu.classpath.jdwp.exception.InvalidObjectException;
 import gnu.classpath.jdwp.value.ArrayValue;
 import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 /**
  * A class which represents a JDWP array id

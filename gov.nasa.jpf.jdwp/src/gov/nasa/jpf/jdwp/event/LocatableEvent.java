@@ -4,7 +4,7 @@ import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

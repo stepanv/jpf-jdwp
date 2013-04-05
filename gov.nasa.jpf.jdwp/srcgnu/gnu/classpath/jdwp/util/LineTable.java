@@ -39,8 +39,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

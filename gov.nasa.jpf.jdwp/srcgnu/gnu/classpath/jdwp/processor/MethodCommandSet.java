@@ -47,8 +47,8 @@ import gnu.classpath.jdwp.exception.NotImplementedException;
 import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

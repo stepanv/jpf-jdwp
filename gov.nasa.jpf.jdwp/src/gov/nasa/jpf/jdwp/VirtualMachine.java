@@ -8,8 +8,8 @@ import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.event.VmInitStart;
 import gov.nasa.jpf.jdwp.event.filter.StepFilter;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,7 +29,7 @@ public class VirtualMachine {
 		this.jpf = jpf;
 	}
 
-	public void started(JVM vm, List<ClassInfo> postponedLoadedClasses) {
+	public void started(VM vm, List<ClassInfo> postponedLoadedClasses) {
 		if (!started) {
 			started = true;
 			System.out.println("About to send vm started event .. sending postponed class loads.");

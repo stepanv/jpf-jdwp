@@ -9,8 +9,8 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -2,7 +2,7 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
-import gov.nasa.jpf.jvm.JVM;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -53,7 +53,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 		try {
 			command.execute(bytes, os, contextProvider);
 		} finally {
-			if (JVM.getVM().isTerminated() && contextProvider.getVirtualMachine().isStarted()) {
+			if (VM.getVM().isEndState() && contextProvider.getVirtualMachine().isStarted()) {
 				// If JVM has terminated we don't care about any other exceptions
 				throw new JdwpError(ErrorType.VM_DEAD);
 			}

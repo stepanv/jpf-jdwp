@@ -44,12 +44,12 @@ import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.event.SingleStepEvent;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
 import gnu.classpath.jdwp.id.ThreadId;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.util.ArrayList;
 import java.util.Iterator;

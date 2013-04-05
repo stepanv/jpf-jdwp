@@ -63,8 +63,7 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Location;
-import gov.nasa.jpf.jvm.JVM;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

@@ -51,8 +51,8 @@ import gnu.classpath.jdwp.id.ObjectId;
 import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

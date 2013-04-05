@@ -40,7 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.exception.InvalidClassException;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

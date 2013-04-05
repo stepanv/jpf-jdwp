@@ -3,8 +3,8 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jvm.bytecode.EXECUTENATIVE;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.vm.Instruction;
 
 /**
  * Step into any method calls that occur before the end of the step.

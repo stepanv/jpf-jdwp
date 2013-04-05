@@ -46,9 +46,9 @@ import java.nio.ByteBuffer;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 
 /**
  * This class is really an amalgamation of two classes: one class

@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 public class ClassObjectId extends ObjectId<ElementInfo> {
 

@@ -46,7 +46,7 @@ import gnu.classpath.jdwp.exception.InvalidStringException;
 import gnu.classpath.jdwp.value.ObjectValue;
 import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
-import gov.nasa.jpf.jvm.ElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 /**
  * A class which represents a JDWP string id

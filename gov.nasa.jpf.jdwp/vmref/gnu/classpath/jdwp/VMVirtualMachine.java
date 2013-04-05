@@ -57,16 +57,16 @@ import gnu.classpath.jdwp.value.StringValue;
 import gnu.classpath.jdwp.value.Value;
 import gnu.classpath.jdwp.value.ValueFactory;
 import gov.nasa.jpf.jdwp.VirtualMachine;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.DirectCallStackFrame;
-import gov.nasa.jpf.jvm.DynamicElementInfo;
-import gov.nasa.jpf.jvm.ElementInfo;
-import gov.nasa.jpf.jvm.ExceptionInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.StackFrame;
-import gov.nasa.jpf.jvm.ThreadInfo;
-import gov.nasa.jpf.jvm.UncaughtException;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DirectCallStackFrame;
+import gov.nasa.jpf.vm.DynamicElementInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.UncaughtException;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -223,9 +223,9 @@ public class VMVirtualMachine
                                             int length)
     throws JdwpException {
 	  
-	  List<gov.nasa.jpf.jvm.StackFrame> frames = new ArrayList<gov.nasa.jpf.jvm.StackFrame>();
-		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
-			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+	  List<gov.nasa.jpf.vm.StackFrame> frames = new ArrayList<gov.nasa.jpf.vm.StackFrame>();
+		for (Iterator<gov.nasa.jpf.vm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.vm.StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
 				frames.add(stackFrame);
 			}
@@ -246,8 +246,8 @@ public class VMVirtualMachine
   public static StackFrame getFrame(ThreadInfo thread, long frameID)
     throws JdwpException {
 	  
-	  for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
-			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+	  for (Iterator<gov.nasa.jpf.vm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.vm.StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
 				if (stackFrame.getThis() == frameID) {
 					return stackFrame;
@@ -267,8 +267,8 @@ public class VMVirtualMachine
   public static int getFrameCount(ThreadInfo thread)
     throws JdwpException {
 	  int frameCount = 0;
-		for (Iterator<gov.nasa.jpf.jvm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
-			gov.nasa.jpf.jvm.StackFrame stackFrame = stackIterator.next();
+		for (Iterator<gov.nasa.jpf.vm.StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+			gov.nasa.jpf.vm.StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
 				++frameCount;
 			}

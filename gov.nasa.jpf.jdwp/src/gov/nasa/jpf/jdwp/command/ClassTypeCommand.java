@@ -3,7 +3,7 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jvm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

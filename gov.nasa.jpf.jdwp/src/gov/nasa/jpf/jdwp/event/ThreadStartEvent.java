@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ThreadStartEvent extends Event implements Threadable {
 

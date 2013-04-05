@@ -41,7 +41,7 @@ package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.InvalidThreadException;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * A class which represents a JDWP thread id

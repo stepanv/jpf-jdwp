@@ -46,8 +46,8 @@ import gnu.classpath.jdwp.id.ReferenceTypeId;
 import gnu.classpath.jdwp.id.ThreadId;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
-import gov.nasa.jpf.jvm.ClassInfo;
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

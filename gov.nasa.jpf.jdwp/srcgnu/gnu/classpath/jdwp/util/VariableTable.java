@@ -38,18 +38,14 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
-import gov.nasa.jpf.JPFException;
-import gov.nasa.jpf.classfile.ClassFile;
-import gov.nasa.jpf.jvm.LocalVarInfo;
-import gov.nasa.jpf.jvm.MethodInfo;
-import gov.nasa.jpf.jvm.bytecode.Instruction;
+import gov.nasa.jpf.vm.LocalVarInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.Instruction;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.plaf.SliderUI;
 
 /**
  * A class representing a Variable Table for a method.
