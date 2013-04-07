@@ -6,7 +6,7 @@ import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
-import gov.nasa.jpf.jdwp.event.VmInitStart;
+import gov.nasa.jpf.jdwp.event.VmStartEvent;
 import gov.nasa.jpf.jdwp.event.filter.StepFilter;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.VM;
@@ -41,7 +41,7 @@ public class VirtualMachine {
 			postponedLoadedClasses.clear();
 			Jdwp.notify(events.toArray(new Event[events.size()])); // TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
 			
-			VmInitStart vmInitEvent = new VmInitStart(vm.getCurrentThread());
+			VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
 			System.out.println("Notifying about vm started");
 			events.add(vmInitEvent);
 			Jdwp.notify(vmInitEvent);
