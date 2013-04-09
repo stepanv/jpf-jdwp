@@ -9,7 +9,7 @@ import gov.nasa.jpf.vm.ClassInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class LocatableEvent extends Event implements Locatable {
+public abstract class LocatableEvent extends EventBase implements Locatable {
 
 	private Location location;
 

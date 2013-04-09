@@ -5,8 +5,8 @@ import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.EventBase;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 public class JDWPRunner {

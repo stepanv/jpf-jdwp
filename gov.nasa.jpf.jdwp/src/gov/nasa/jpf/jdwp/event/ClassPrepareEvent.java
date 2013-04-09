@@ -24,7 +24,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ClassPrepareEvent extends Event implements Threadable, ClassFilterable, ClassOnlyFilterable, SourceNameMatchFilterable {
+public class ClassPrepareEvent extends EventBase implements Threadable, ClassFilterable, ClassOnlyFilterable, SourceNameMatchFilterable {
 
 	private int status;
 	private ClassInfo classInfo;
@@ -46,8 +46,10 @@ public class ClassPrepareEvent extends Event implements Threadable, ClassFiltera
 	 *            Note that the discussion above does not apply to system
 	 *            threads created by the target VM during its normal (non-debug)
 	 *            operation.
-	 * @param classInfo Type being prepared  
-	 * @param status Status of type. See {@link ClassStatus}.  
+	 * @param classInfo
+	 *            Type being prepared
+	 * @param status
+	 *            Status of type. See {@link ClassStatus}.
 	 */
 	public ClassPrepareEvent(ThreadInfo currentThread, ClassInfo classInfo, int status) {
 		super(EventKind.CLASS_PREPARE, (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread));

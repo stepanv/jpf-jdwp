@@ -1,5 +1,5 @@
 package gov.nasa.jpf.jdwp.event;
 
-public interface FieldOnlyFilterable extends IEvent {
+public interface FieldOnlyFilterable extends Event {
 
 }

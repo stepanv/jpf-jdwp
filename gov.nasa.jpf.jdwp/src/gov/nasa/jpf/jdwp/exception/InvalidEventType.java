@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.exception;
 
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 
 public class InvalidEventType extends JdwpError {
 

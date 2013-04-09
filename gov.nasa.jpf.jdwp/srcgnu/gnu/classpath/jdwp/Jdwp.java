@@ -48,7 +48,7 @@ import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
-import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 
@@ -235,7 +235,7 @@ public class Jdwp
    *
    * @param event the event to report
    */
-  public static void notify(Event event)
+  public static void notify(EventBase event)
   {
     Jdwp jdwp = getDefault();
     if (jdwp != null)
@@ -273,7 +273,7 @@ public class Jdwp
    *
    * @param events the events to report
    */
-  public static void notify(Event[] events)
+  public static void notify(EventBase[] events)
   {
     Jdwp jdwp = getDefault();
 
@@ -304,7 +304,7 @@ public class Jdwp
 
         try
           {
-            Event[] e = new Event[allEvents.size()];
+            EventBase[] e = new EventBase[allEvents.size()];
             allEvents.toArray(e);
             EventRequest[] r = new EventRequest[allRequests.size()];
             allRequests.toArray(r);
@@ -329,10 +329,10 @@ public class Jdwp
    * @param  event    the event to send
    * @throws IOException if a communications failure occurs
    */
-  public static void sendEvent (EventRequest request, Event event)
+  public static void sendEvent (EventRequest request, EventBase event)
       throws IOException
   {
-    sendEvents (new EventRequest[] { request }, new Event[] { event },
+    sendEvents (new EventRequest[] { request }, new EventBase[] { event },
                 request.getSuspendPolicy());
   }
 
@@ -346,7 +346,7 @@ public class Jdwp
    * @param  suspendPolicy.identifier() the suspendPolicy enforced by the VM
    * @throws IOException if a communications failure occurs
    */
-  public static void sendEvents (EventRequest[] requests, Event[] events,
+  public static void sendEvents (EventRequest[] requests, EventBase[] events,
                                  SuspendPolicy suspendPolicy)
     throws IOException
   {

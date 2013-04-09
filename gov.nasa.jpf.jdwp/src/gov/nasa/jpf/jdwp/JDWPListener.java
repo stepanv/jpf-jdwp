@@ -9,7 +9,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
-import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
@@ -92,7 +92,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		lastInstruction = instructionToExecute;
 	}
 	
-	private void dispatchEvent(Event event) {
+	private void dispatchEvent(EventBase event) {
 //		for (EventRequest request : requests) {
 //			if (request.matches(event)) {
 //				try {

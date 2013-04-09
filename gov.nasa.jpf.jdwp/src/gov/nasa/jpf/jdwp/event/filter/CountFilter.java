@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.event.IEvent;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.exception.InvalidCount;
 
 /**
@@ -9,7 +9,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidCount;
  * based on a counter.
  * </p>
  * <p>
- * Can be used with any event, hence {@link IEvent};
+ * Can be used with any event, hence {@link Event};
  * </p>
  * <p>
  * <h2>JDWP Specification</h2>
@@ -29,7 +29,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidCount;
  * @author stepan
  * 
  */
-public class CountFilter extends Filter<IEvent> {
+public class CountFilter extends Filter<Event> {
 
 	private int count;
 	private boolean expired;
@@ -55,7 +55,7 @@ public class CountFilter extends Filter<IEvent> {
 	}
 
 	@Override
-	public boolean matches(IEvent event) {
+	public boolean matches(Event event) {
 		assert expired == false;
 
 		if (--count > 0) {

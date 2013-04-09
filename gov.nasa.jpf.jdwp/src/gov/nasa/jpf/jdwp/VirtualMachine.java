@@ -3,7 +3,7 @@ package gov.nasa.jpf.jdwp;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
-import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.event.VmStartEvent;
@@ -33,13 +33,13 @@ public class VirtualMachine {
 		if (!started) {
 			started = true;
 			System.out.println("About to send vm started event .. sending postponed class loads.");
-			List<Event> events = new ArrayList<Event>();
+			List<EventBase> events = new ArrayList<EventBase>();
 			
 			for (ClassInfo classInfo : postponedLoadedClasses) {
 				events.add(new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0));
 			}
 			postponedLoadedClasses.clear();
-			Jdwp.notify(events.toArray(new Event[events.size()])); // TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
+			Jdwp.notify(events.toArray(new EventBase[events.size()])); // TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
 			
 			VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
 			System.out.println("Notifying about vm started");

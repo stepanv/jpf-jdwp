@@ -144,7 +144,7 @@ public abstract class Event
    * @returns a <code>JdwpPacket</code> of the events
    */
   public static JdwpPacket toPacket (DataOutputStream dos,
-                                     gov.nasa.jpf.jdwp.event.Event[] events,
+                                     gov.nasa.jpf.jdwp.event.EventBase[] events,
                                      gov.nasa.jpf.jdwp.event.EventRequest[] requests,
                                      byte suspendPolicy)
   {
@@ -169,7 +169,7 @@ public abstract class Event
   }
 
   // Helper function for toPacket
-  private static void _toData (DataOutputStream dos, gov.nasa.jpf.jdwp.event.Event events,
+  private static void _toData (DataOutputStream dos, gov.nasa.jpf.jdwp.event.EventBase events,
                                gov.nasa.jpf.jdwp.event.EventRequest requests)
     throws IOException
   {

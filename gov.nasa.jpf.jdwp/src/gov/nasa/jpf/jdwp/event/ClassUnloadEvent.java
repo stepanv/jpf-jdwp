@@ -19,7 +19,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ClassUnloadEvent extends Event implements ClassFilterable {
+public class ClassUnloadEvent extends EventBase implements ClassFilterable {
 
 	private String signature;
 

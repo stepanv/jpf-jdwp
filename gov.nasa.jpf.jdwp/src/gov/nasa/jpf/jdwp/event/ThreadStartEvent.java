@@ -30,7 +30,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * @author stepan
  * 
  */
-public class ThreadStartEvent extends Event implements Threadable {
+public class ThreadStartEvent extends EventBase implements Threadable {
 
 	/**
 	 * Creates Thread Start event.

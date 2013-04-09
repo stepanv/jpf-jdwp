@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ThreadDeathEvent extends Event implements Threadable {
+public class ThreadDeathEvent extends EventBase implements Threadable {
 
 	/**
 	 * Creates Thread Death event.

@@ -20,7 +20,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * @author stepan
  * 
  */
-public class VmStartEvent extends Event implements Threadable {
+public class VmStartEvent extends EventBase implements Threadable {
 
 	/**
 	 * Creates VM Start event.

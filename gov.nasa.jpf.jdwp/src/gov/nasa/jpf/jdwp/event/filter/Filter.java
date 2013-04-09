@@ -3,8 +3,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
-import gov.nasa.jpf.jdwp.event.IEvent;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
@@ -34,60 +33,60 @@ import java.nio.ByteBuffer;
  * @author stepan
  * 
  */
-public abstract class Filter<T extends IEvent> {
+public abstract class Filter<T extends Event> {
 
 	public static enum ModKind implements ConvertibleEnum<Byte, ModKind> {
 		COUNT(1) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				return new CountFilter(bytes.getInt());
 			}
 		},
 		CONDITIONAL(2) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				// TODO Auto-generated method stub
 				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 			}
 		},
 		THREAD_ONLY(3) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
 				return new ThreadOnlyFilter(threadId);
 			}
 		},
 		CLASS_ONLY(4) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 				return new ClassOnlyFilter(referenceTypeId);
 			}
 		},
 		CLASS_MATCH(5) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				String classPattern = StringRaw.readString(bytes);
 				return new ClassMatchFilter(classPattern);
 			}
 		},
 		CLASS_EXCLUDE(6) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				String classPattern = StringRaw.readString(bytes);
 				return new ClassExcludeFilter(classPattern);
 			}
 		},
 		LOCATION_ONLY(7) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				Location location = Location.factory(bytes, contextProvider);
 				return new LocationOnlyFilter(location);
 			}
 		},
 		EXCEPTION_ONLY(8) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 				boolean uncaught = bytes.get() != 0;
 				boolean caught = bytes.get() != 0;
@@ -96,7 +95,7 @@ public abstract class Filter<T extends IEvent> {
 		},
 		FIELD_ONLY(9) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 				FieldId fieldId = FieldId.factory(bytes, contextProvider);
 				return new FieldOnlyFilter(declaring, fieldId);
@@ -104,20 +103,20 @@ public abstract class Filter<T extends IEvent> {
 		},
 		STEP(10) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				return StepFilter.factory(bytes, contextProvider);
 			}
 		},
 		INSTANCE_ONLY(11) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
 				return new InstanceOnlyFilter(objectId);
 			}
 		},
 		SOURCE_NAME_MATCH(12) {
 			@Override
-			public Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				// TODO Auto-generated method stub
 				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 			}
@@ -141,13 +140,16 @@ public abstract class Filter<T extends IEvent> {
 			return map.get(val);
 		}
 
-		public abstract Filter<? extends IEvent> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
+		public abstract Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
 	}
+
+	private ModKind modKind;
 
 	public Filter(ModKind modKind) { // TODO remove unused parameter
+		this.modKind = modKind;
 	}
 
-	public static Filter<? extends IEvent> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+	public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		return ModKind.COUNT.convert(bytes.get()).createFilter(bytes, contextProvider);
 	}
 
@@ -160,6 +162,10 @@ public abstract class Filter<T extends IEvent> {
 	 */
 	public boolean matches(T event) {
 		return false;
+	}
+	
+	public String toString() {
+		return "class: " + this.getClass() + "; modKind: " + modKind.toString();
 	}
 
 }

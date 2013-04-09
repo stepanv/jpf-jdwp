@@ -21,6 +21,11 @@ import java.io.IOException;
  */
 public class MethodExitEvent extends LocatableEvent {
 
+	/**
+	 * 
+	 * @param threadId thread which exited method  
+	 * @param location Location of exit  
+	 */
 	public MethodExitEvent(ThreadId threadId, Location location) {
 		super(EventKind.METHOD_EXIT, threadId, location);
 	}

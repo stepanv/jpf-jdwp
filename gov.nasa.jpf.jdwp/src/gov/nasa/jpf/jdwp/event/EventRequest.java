@@ -3,7 +3,7 @@ package gov.nasa.jpf.jdwp.event;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.event.Event.EventKind;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class EventRequest<T extends IEvent>  {
+public class EventRequest<T extends Event> {
 
 	public enum SuspendPolicy implements ConvertibleEnum<Byte, SuspendPolicy> {
 		/** Suspend no threads when this event is encountered. */
@@ -44,35 +44,45 @@ public class EventRequest<T extends IEvent>  {
 	private SuspendPolicy suspendPolicy;
 
 	private int id;
-	
+
 	private static AtomicInteger requestIdCounter = new AtomicInteger(1);
-	
-	public static <T extends IEvent> EventRequest<T> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+
+	public static <T extends Event> EventRequest<T> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
 		SuspendPolicy suspendPolicy = SuspendPolicy.ALL.convert(bytes.get());
-		
+
 		List<Filter<T>> filters = new ArrayList<Filter<T>>();
-		
+
 		int modifiers = bytes.getInt();
 		for (int i = 0; i < modifiers; ++i) {
-			filters.add((Filter<T>) Filter.factory(bytes, contextProvider)); // TODO use this and throw illegal argument if class cast error
+			filters.add((Filter<T>) Filter.factory(bytes, contextProvider)); // TODO
+																				// use
+																				// this
+																				// and
+																				// throw
+																				// illegal
+																				// argument
+																				// if
+																				// class
+																				// cast
+																				// error
 		}
-		
+
 		return new EventRequest<T>(eventKind, suspendPolicy, filters);
 	}
 
 	public EventRequest(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<T>> filters) {
 		this(eventKind, suspendPolicy, filters, requestIdCounter.incrementAndGet());
 	}
-	
+
 	private EventRequest(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<T>> filters, int eventRequestId) {
 		this.eventKind = eventKind;
 		this.suspendPolicy = suspendPolicy;
 		this.filters = filters;
 		this.id = eventRequestId;
 	}
-	
-	public static <T extends IEvent> EventRequest<T> nullRequestIdFactory(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<T>> filters) {
+
+	public static <T extends Event> EventRequest<T> nullRequestIdFactory(EventKind eventKind, SuspendPolicy suspendPolicy, List<Filter<T>> filters) {
 		return new EventRequest<T>(eventKind, suspendPolicy, filters, 0);
 	}
 
@@ -93,12 +103,12 @@ public class EventRequest<T extends IEvent>  {
 	 *            The event to test against the request.
 	 * @return Whether given event matches this request.
 	 */
-	public  boolean matches(T event) {
+	public boolean matches(T event) {
 		if (filters == null) {
 			return true;
 		}
 		for (Filter<T> filter : filters) {
-			if (!filter.matches(event) ) {
+			if (!filter.matches(event)) {
 				return false;
 			}
 		}
@@ -109,17 +119,23 @@ public class EventRequest<T extends IEvent>  {
 	public EventKind getEventKind() {
 		return eventKind;
 	}
-	
+
 	public SuspendPolicy getSuspendPolicy() {
 		return suspendPolicy;
 	}
-	
+
 	public int getId() {
 		return id;
 	}
-	
+
 	public String toString() {
-		return String.format("Request ID %d, kind: %s", id, eventKind) ;
+		StringBuilder filters = new StringBuilder("Filters: ");
+		if (this.filters != null) {
+			for (Filter<? extends Event> filter : this.filters) {
+				filters.append(filter.toString()).append(", ");
+			}
+		}
+		return String.format("Request ID %d, kind: %s; >>> %s <<<", id, eventKind, filters);
 	}
 
 }
