@@ -110,7 +110,7 @@ public class EventManager
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.THREAD_START,
                    new Hashtable <Integer, EventRequest>());
-    _requests.put (EventKind.THREAD_END,
+    _requests.put (EventKind.THREAD_DEATH,
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.CLASS_PREPARE,
                    new Hashtable <Integer, EventRequest>());
@@ -126,15 +126,16 @@ public class EventManager
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.METHOD_EXIT,
                    new Hashtable <Integer, EventRequest>());
-    _requests.put (EventKind.VM_INIT,
+    _requests.put (EventKind.VM_START,
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.VM_DEATH,
                    new Hashtable <Integer, EventRequest>());
     
-    _requests.put (EventKind.VM_START,
-    		_requests.get(EventKind.VM_INIT));
-    _requests.put (EventKind.THREAD_DEATH,
-    		_requests.get(EventKind.THREAD_END));
+    _requests.put (EventKind.VM_INIT,
+    		_requests.get(EventKind.VM_START));
+    _requests.put (EventKind.THREAD_END,
+    		_requests.get(EventKind.THREAD_DEATH));
+
 
     // Add auto-generated event notifications
     // only two: VM_INIT, VM_DEATH
