@@ -150,7 +150,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 	 * @throws InvalidThreadException
 	 */
 	public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException {
-		super(ModKind.STEP);
+		super(ModKind.STEP, StepFilterable.class);
 
 		if (threadId.get() == null) {
 			throw new InvalidThreadException(threadId);

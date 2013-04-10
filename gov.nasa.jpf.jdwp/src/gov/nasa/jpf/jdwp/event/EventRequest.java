@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 import java.nio.ByteBuffer;
@@ -55,17 +56,14 @@ public class EventRequest<T extends Event> {
 
 		int modifiers = bytes.getInt();
 		for (int i = 0; i < modifiers; ++i) {
-			filters.add((Filter<T>) Filter.factory(bytes, contextProvider)); // TODO
-																				// use
-																				// this
-																				// and
-																				// throw
-																				// illegal
-																				// argument
-																				// if
-																				// class
-																				// cast
-																				// error
+			Filter<T> filter = (Filter<T>) Filter.factory(bytes, contextProvider);
+
+			if (!eventKind.isFilterableBy(filter)) {
+				throw new IllegalArgumentException(); // TODO add arguments to the constructor: 'filter' is not allowed for 'eventKind'
+			}
+
+			filters.add((Filter<T>) filter);
+			// TODO use this and throw illegal argument if class cast error
 		}
 
 		return new EventRequest<T>(eventKind, suspendPolicy, filters);

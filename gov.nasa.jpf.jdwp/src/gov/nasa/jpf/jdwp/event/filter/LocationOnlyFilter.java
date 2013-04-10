@@ -51,7 +51,7 @@ public class LocationOnlyFilter extends Filter<LocationOnlyFilterable> {
 	 *            Required location
 	 */
 	public LocationOnlyFilter(Location location) {
-		super(Filter.ModKind.LOCATION_ONLY);
+		super(Filter.ModKind.LOCATION_ONLY, LocationOnlyFilterable.class);
 
 		this.location = location;
 	}

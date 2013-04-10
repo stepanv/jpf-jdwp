@@ -44,7 +44,7 @@ public class CountFilter extends Filter<Event> {
 	 *             In case the count is invalid (i.e. zero or less).
 	 */
 	public CountFilter(int count) throws InvalidCount {
-		super(Filter.ModKind.COUNT);
+		super(ModKind.COUNT, Event.class);
 
 		if (count <= 0) {
 			throw new InvalidCount(count);

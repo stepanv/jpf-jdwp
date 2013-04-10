@@ -27,7 +27,7 @@ public class ThreadOnlyFilter extends Filter<Threadable> {
 	 *            Required thread
 	 */
 	public ThreadOnlyFilter(ThreadId threadId) {
-		super(ModKind.THREAD_ONLY);
+		super(ModKind.THREAD_ONLY, Threadable.class);
 		this.threadId = threadId;
 	}
 

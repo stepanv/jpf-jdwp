@@ -144,9 +144,11 @@ public abstract class Filter<T extends Event> {
 	}
 
 	private ModKind modKind;
+	private Class<T> genericClazz;
 
-	public Filter(ModKind modKind) { // TODO remove unused parameter
+	public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove unused parameter
 		this.modKind = modKind;
+		this.genericClazz = genericClass;
 	}
 
 	public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
@@ -166,6 +168,10 @@ public abstract class Filter<T extends Event> {
 	
 	public String toString() {
 		return "class: " + this.getClass() + "; modKind: " + modKind.toString();
+	}
+	
+	public Class<T> getGenericClass() {
+		return this.genericClazz;
 	}
 
 }

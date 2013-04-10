@@ -43,7 +43,7 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 	 *            catch location under composite events for more information.
 	 */
 	public ExceptionOnlyFilter(ReferenceTypeId exceptionOrNull, boolean caught, boolean uncaught) {
-		super(ModKind.EXCEPTION_ONLY);
+		super(ModKind.EXCEPTION_ONLY, ExceptionOnlyFilterable.class);
 		this.exceptionOrNull = exceptionOrNull;
 		this.caught = caught;
 		this.uncaught = uncaught;

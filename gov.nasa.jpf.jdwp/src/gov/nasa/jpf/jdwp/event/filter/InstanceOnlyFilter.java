@@ -1,9 +1,6 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.InstanceOnlyFilterable;
-import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
-import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
 /**
@@ -23,7 +20,7 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 	private ObjectId<?> objectId;
 
 	public InstanceOnlyFilter(ObjectId<?> objectId) {
-		super(ModKind.INSTANCE_ONLY);
+		super(ModKind.INSTANCE_ONLY, InstanceOnlyFilterable.class);
 		this.objectId = objectId;
 	}
 

@@ -39,7 +39,7 @@ public class ClassOnlyFilter extends Filter<ClassOnlyFilterable> {
 	 *            Required class
 	 */
 	public ClassOnlyFilter(ReferenceTypeId clazz) {
-		super(ModKind.CLASS_ONLY);
+		super(ModKind.CLASS_ONLY, ClassOnlyFilterable.class);
 		this.referenceTypeId = clazz;
 	}
 

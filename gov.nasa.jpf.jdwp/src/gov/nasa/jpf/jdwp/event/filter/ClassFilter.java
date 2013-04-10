@@ -38,7 +38,7 @@ public abstract class ClassFilter extends Filter<ClassFilterable> {
 	 *            or end with '*'; for example, "*.Foo" or "java.*".
 	 */
 	public ClassFilter(ModKind modKind, String classPattern) {
-		super(modKind);
+		super(modKind, ClassFilterable.class);
 
 		this.classPattern = classPattern;
 	}

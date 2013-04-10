@@ -30,7 +30,7 @@ public class SourceNameMatchFilter extends Filter<SourceNameMatchFilterable> {
 	 *            begin or end with '*'; for example, "*.Foo" or "java.*".
 	 */
 	public SourceNameMatchFilter(String sourceNamePattern) {
-		super(ModKind.SOURCE_NAME_MATCH);
+		super(ModKind.SOURCE_NAME_MATCH, SourceNameMatchFilterable.class);
 		this.sourceNamePattern = sourceNamePattern;
 	}
 

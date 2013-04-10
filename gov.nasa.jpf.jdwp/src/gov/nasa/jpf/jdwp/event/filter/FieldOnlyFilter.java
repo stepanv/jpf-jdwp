@@ -33,7 +33,7 @@ public class FieldOnlyFilter extends Filter<FieldOnlyFilterable> {
 	 *            Required field
 	 */
 	public FieldOnlyFilter(ReferenceTypeId declaring, FieldId fieldId) {
-		super(ModKind.FIELD_ONLY);
+		super(ModKind.FIELD_ONLY, FieldOnlyFilterable.class);
 		this.declaring = declaring;
 		this.fieldId = fieldId;
 	}
