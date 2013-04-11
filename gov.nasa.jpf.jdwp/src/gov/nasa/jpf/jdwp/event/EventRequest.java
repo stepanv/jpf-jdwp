@@ -48,6 +48,7 @@ public class EventRequest<T extends Event> {
 
 	private static AtomicInteger requestIdCounter = new AtomicInteger(1);
 
+	@SuppressWarnings("unchecked")
 	public static <T extends Event> EventRequest<T> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 		EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
 		SuspendPolicy suspendPolicy = SuspendPolicy.ALL.convert(bytes.get());
@@ -56,14 +57,13 @@ public class EventRequest<T extends Event> {
 
 		int modifiers = bytes.getInt();
 		for (int i = 0; i < modifiers; ++i) {
-			Filter<T> filter = (Filter<T>) Filter.factory(bytes, contextProvider);
+			Filter<? extends Event> filter = Filter.factory(bytes, contextProvider);
 
 			if (!eventKind.isFilterableBy(filter)) {
-				throw new IllegalArgumentException(); // TODO add arguments to the constructor: 'filter' is not allowed for 'eventKind'
+				throw new IllegalArgumentException(String.format("According to the Jdwp Specification, Filter '%s' is not allowed for event request kind '%s'", filter, eventKind));
 			}
 
 			filters.add((Filter<T>) filter);
-			// TODO use this and throw illegal argument if class cast error
 		}
 
 		return new EventRequest<T>(eventKind, suspendPolicy, filters);
