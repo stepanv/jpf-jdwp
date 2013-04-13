@@ -2,10 +2,12 @@ package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -42,6 +44,22 @@ public class JdwpObjectManager {
 				throw new JdwpError(ErrorType.INVALID_OBJECT);
 			}
 			return (ObjectId) idObjectMap.get(id);
+		}
+		
+	}
+	public ThreadId readSafeThreadId(ByteBuffer bytes) throws JdwpError {
+		return (ThreadId)readSafeObjectId(bytes, ThreadInfo.class);
+	}
+	
+	public <T> ObjectId<T> readSafeObjectId(ByteBuffer bytes, Class<T> clazz) throws JdwpError {
+		long id = bytes.getLong();
+		
+		synchronized (idObjectMap) {
+			if (!idObjectMap.containsKey(id)) {
+				System.err.println("Invalid id: " + id);
+				throw new JdwpError(ErrorType.INVALID_OBJECT);
+			}
+			return (ObjectId<T>) idObjectMap.get(id);
 		}
 		
 	}

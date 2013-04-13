@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -37,7 +38,7 @@ public abstract class LocatableEvent extends EventBase implements Locatable {
 	}
 
 	@Override
-	public boolean matches(ClassOnlyFilter classOnlyFilter) {
+	public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidObject {
 		ClassInfo classInfo = location.getInstruction().getMethodInfo().getClassInfo();
 		return classOnlyFilter.matches(classInfo);
 	}

@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.variable.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -72,7 +73,7 @@ public class ClassPrepareEvent extends EventBase implements Threadable, ClassFil
 	}
 
 	@Override
-	public boolean matches(ClassOnlyFilter classOnlyFilter) {
+	public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidObject {
 		return classOnlyFilter.matches(classInfo);
 	}
 

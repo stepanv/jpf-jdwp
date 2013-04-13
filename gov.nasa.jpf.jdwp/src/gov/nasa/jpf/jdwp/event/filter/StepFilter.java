@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.StepFilterable;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -148,8 +149,9 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 	 * @param size
 	 *            Size of each step
 	 * @throws InvalidThreadException
+	 * @throws InvalidObject 
 	 */
-	public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException {
+	public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException, InvalidObject {
 		super(ModKind.STEP, StepFilterable.class);
 
 		if (threadId.get() == null) {
@@ -206,7 +208,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 	}
 
 	@Override
-	public boolean matches(StepFilterable event) {
+	public boolean matches(StepFilterable event) throws InvalidObject {
 		return matches(event.getLocation().getInstruction(), event.getThread().get());
 	}
 

@@ -2,10 +2,12 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
+import gov.nasa.jpf.jdwp.command.EventRequestCommand;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 import java.nio.ByteBuffer;
@@ -13,6 +15,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Event request class. <br/>
+ * Instances of this class are created as a result of a command
+ * {@link EventRequestCommand#SET}. Created {@link Event}s are matched against
+ * these requests. If suitable request is found event is sent to the debugger.
+ * 
+ * @author stepan
+ * 
+ * @param <T>
+ */
 public class EventRequest<T extends Event> {
 
 	public enum SuspendPolicy implements ConvertibleEnum<Byte, SuspendPolicy> {
@@ -60,7 +72,8 @@ public class EventRequest<T extends Event> {
 			Filter<? extends Event> filter = Filter.factory(bytes, contextProvider);
 
 			if (!eventKind.isFilterableBy(filter)) {
-				throw new IllegalArgumentException(String.format("According to the Jdwp Specification, Filter '%s' is not allowed for event request kind '%s'", filter, eventKind));
+				throw new IllegalArgumentException(String.format("According to the Jdwp Specification, Filter '%s' is not allowed for event request kind '%s'",
+						filter, eventKind));
 			}
 
 			filters.add((Filter<T>) filter);
@@ -106,7 +119,11 @@ public class EventRequest<T extends Event> {
 			return true;
 		}
 		for (Filter<T> filter : filters) {
-			if (!filter.matches(event)) {
+			try {
+				if (!filter.matches(event)) {
+					return false;
+				}
+			} catch (InvalidObject e) {
 				return false;
 			}
 		}

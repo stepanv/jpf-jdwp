@@ -4,6 +4,7 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
@@ -161,8 +162,9 @@ public abstract class Filter<T extends Event> {
 	 * @param event
 	 *            The event to be filtered.
 	 * @return True of false as a result of filtering.
+	 * @throws InvalidObject 
 	 */
-	public boolean matches(T event) {
+	public boolean matches(T event) throws InvalidObject {
 		return false;
 	}
 	
