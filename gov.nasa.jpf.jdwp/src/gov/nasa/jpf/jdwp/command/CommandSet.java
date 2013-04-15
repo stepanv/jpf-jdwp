@@ -47,9 +47,10 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 	}
 
 	public static void execute(byte commandSetId, byte commandId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		System.out.println("Running: SET: " + commandSetId + ", CMD: " + commandId);
+		
 		ConvertibleEnum<Byte, ? extends Command> commandConverterSample = map.get(commandSetId).commandConverterSample;
 		Command command = commandConverterSample.convert(commandId);
+		System.out.println("Running: SET: " + map.get(commandSetId) + " (" + commandSetId + "), CMD: " + command + " (" + commandId + ")");
 		try {
 			command.execute(bytes, os, contextProvider);
 		} finally {

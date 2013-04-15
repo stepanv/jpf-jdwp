@@ -81,9 +81,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-		    boolean collected = oid.get () == null; // TODO finish this
-		    os.writeBoolean(collected);
-
+		    os.writeBoolean(oid.isNull());
 		}
 	};
 	private byte commandId;

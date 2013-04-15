@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
+import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -30,6 +31,21 @@ public class ThreadId extends ObjectId<ThreadInfo> {
 		
 		public static ThreadStatus read(int val) throws JdwpError {
 			return ZOMBIE.convert(val);
+		}
+	}
+	
+	public enum SuspendStatus implements IdentifiableEnum<Integer> {
+		SUSPEND_STATUS_SUSPENDED(1);
+		
+		private int suspendStatusId;
+		
+		private SuspendStatus(int suspendStatusId) {
+			this.suspendStatusId = suspendStatusId;
+		}
+
+		@Override
+		public Integer identifier() {
+			return suspendStatusId;
 		}
 	}
 

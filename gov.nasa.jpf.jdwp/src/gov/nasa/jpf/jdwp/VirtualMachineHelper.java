@@ -1,11 +1,15 @@
 package gov.nasa.jpf.jdwp;
 
+import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 public class VirtualMachineHelper {
 
@@ -55,4 +59,20 @@ public class VirtualMachineHelper {
 		return frameCount;
 	}
 
+	 public static MethodInfo getClassMethod(ClassInfo clazz, long id)
+			    throws JdwpError {
+				  System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz + " JDWP ID: " + JdwpObjectManager.getInstance().getObjectId(clazz));
+				  for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
+					  if (id == methodInfo.getGlobalId()) {
+						  System.out.println("METHOD found: " + methodInfo);
+						  return methodInfo;
+					  }
+				  }
+				  // also try super types
+				  if (clazz.getSuperClass() != null) {
+					  return getClassMethod(clazz.getSuperClass(), id);
+				  }
+				  throw new InvalidMethodId(id);
+			  }
+	 
 }

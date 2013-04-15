@@ -17,7 +17,9 @@ public class Identifier<T> {
 		this.id = id;
 	}
 
-	protected T object;
+	public boolean isNull() {
+		return objectReference.get() == null;
+	}
 	
 	public T get() throws InvalidObject {
 		T object = objectReference.get();

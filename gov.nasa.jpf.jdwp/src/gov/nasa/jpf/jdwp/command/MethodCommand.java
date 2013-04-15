@@ -1,8 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.util.LineTable;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
@@ -21,12 +20,7 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 			    ClassInfo clazz = refId.get();
 
 			    MethodInfo method;
-				try {
-					method = VMVirtualMachine.getClassMethod(clazz, bytes.getLong());
-				} catch (JdwpException e) {
-					// TODO Auto-generated catch block
-					throw new JdwpError(ErrorType.INVALID_METHODID); // TODO this is not enough
-				}
+					method = VirtualMachineHelper.getClassMethod(clazz, bytes.getLong());
 			   LineTable lt = LineTable.factory(method); // TODO do this in a uniform way (see method bellow)
 			   
 //			    LineTable lt = method.getLineTable();
