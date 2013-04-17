@@ -3,10 +3,12 @@ package gov.nasa.jpf.jdwp;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.MethodId;
+import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.nio.ByteBuffer;
@@ -49,6 +51,10 @@ public class JdwpObjectManager {
 	}
 	public ThreadId readSafeThreadId(ByteBuffer bytes) throws JdwpError {
 		return (ThreadId)readSafeObjectId(bytes, ThreadInfo.class);
+	}
+
+	public ArrayId readArrayId(ByteBuffer bytes) throws JdwpError {
+		return (ArrayId)readSafeObjectId(bytes, ElementInfo.class);
 	}
 	
 	public <T> ObjectId<T> readSafeObjectId(ByteBuffer bytes, Class<T> clazz) throws JdwpError {
@@ -139,4 +145,5 @@ public class JdwpObjectManager {
 		
 		return objectId;
 	}
+
 }

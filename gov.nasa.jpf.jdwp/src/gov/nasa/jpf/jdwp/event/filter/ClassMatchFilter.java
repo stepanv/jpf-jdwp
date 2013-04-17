@@ -33,7 +33,7 @@ public class ClassMatchFilter extends ClassFilter {
 	}
 
 	@Override
-	public boolean accepts(String className) {
+	public boolean matches(String className) {
 		return compare(className);
 	}
 

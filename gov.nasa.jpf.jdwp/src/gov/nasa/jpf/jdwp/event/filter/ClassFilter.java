@@ -60,7 +60,7 @@ public abstract class ClassFilter extends Filter<ClassFilterable> {
 	 *            The class signature.
 	 * @return True or false as a result of filtering.
 	 */
-	public abstract boolean accepts(String className);
+	public abstract boolean matches(String className);
 
 	protected boolean compare(String className) {
 		if (classPattern.charAt(0) == ASTERISK) {

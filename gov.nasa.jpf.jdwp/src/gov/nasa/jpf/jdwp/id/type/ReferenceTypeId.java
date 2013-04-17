@@ -8,8 +8,6 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.vm.ClassInfo;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -35,24 +33,21 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 		CLASS(1) {
 			@Override
 			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				return null;
+				throw new RuntimeException("NOT IMPLEMENTED YET");
 			}
 		}  ,
 		/** ReferenceType is an interface. */
 		INTERFACE(2) {
 			@Override
 			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				return null;
+				throw new RuntimeException("NOT IMPLEMENTED YET");
 			}
 		},
 		/** ReferenceType is an array. */
 		ARRAY(3) {
 			@Override
 			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				return null;
+				throw new RuntimeException("NOT IMPLEMENTED YET");
 			}
 		};	
 		

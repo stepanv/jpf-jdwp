@@ -48,7 +48,7 @@ public class ObjectId<T> extends TaggableIdentifier<T> {
 	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.ClassLoader")) {
 	    	return new ClassLoaderId(id, (ElementInfo) object);
 	    } else {
-	    	return new ObjectId(Tag.OBJECT, id, object);
+	    	return new ObjectId<Object>(Tag.OBJECT, id, object);
 	    }
 		
 		//throw new RuntimeException("FACTORY NOT FULLY IMPLEMENTED YET. For object: " + object + " class: " + object.getClass());

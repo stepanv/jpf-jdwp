@@ -50,7 +50,7 @@ public class ClassUnloadEvent extends EventBase implements ClassFilterable {
 
 	@Override
 	public boolean matches(ClassFilter classMatchFilter) {
-		return classMatchFilter.accepts(signature);
+		return classMatchFilter.matches(signature);
 	}
 
 }

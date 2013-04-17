@@ -1,7 +1,6 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
-import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.FieldAccessEvent;
 import gov.nasa.jpf.jdwp.event.FieldModificationEvent;

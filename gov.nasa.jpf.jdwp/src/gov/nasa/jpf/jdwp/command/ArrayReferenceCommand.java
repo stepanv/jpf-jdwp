@@ -1,7 +1,14 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMVirtualMachine;
+import gnu.classpath.jdwp.value.StringValue;
+import gnu.classpath.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ArrayId;
+import gov.nasa.jpf.jdwp.variable.Value.Tag;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -10,19 +17,84 @@ import java.nio.ByteBuffer;
 public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, ArrayReferenceCommand> {
 	LENGTH(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			
+		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			os.writeInt(array.arrayLength());
 		}
 	}, GETVALUES(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			   int first = bytes.getInt();
+			    int length = bytes.getInt();
+
+			    // We need to write out the byte signifying the type of array first
+			    ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
+			    
+			    if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
+			    	os.writeByte(Tag.STRING.identifier());
+			    } else {
+			    	throw new RuntimeException("not implemented");
+			    }
+
+			    // write the number of values we send back
+			    os.writeInt(length);
+			    
+			    // Uugh, this is a little ugly but it's the only time we deal with
+			    // arrayregions
+//			    if (componentClassInfo == byte.class)
+//			      os.writeByte(JdwpConstants.Tag.BYTE);
+//			    else if (componentClassInfo == char.class)
+//			      os.writeByte(JdwpConstants.Tag.CHAR);
+//			    else if (componentClassInfo == float.class)
+//			      os.writeByte(JdwpConstants.Tag.FLOAT);
+//			    else if (componentClassInfo == double.class)
+//			      os.writeByte(JdwpConstants.Tag.DOUBLE);
+//			    else if (componentClassInfo == int.class)
+//			      os.writeByte(JdwpConstants.Tag.BYTE);
+//			    else if (componentClassInfo == long.class)
+//			      os.writeByte(JdwpConstants.Tag.LONG);
+//			    else if (componentClassInfo == short.class)
+//			      os.writeByte(JdwpConstants.Tag.SHORT);
+//			    else if (componentClassInfo == void.class)
+//			      os.writeByte(JdwpConstants.Tag.VOID);
+//			    else if (componentClassInfo == boolean.class)
+//			      os.writeByte(JdwpConstants.Tag.BOOLEAN);
+//			    else if (componentClassInfo.isArray())
+//			      os.writeByte(JdwpConstants.Tag.ARRAY);
+//			    else if (String.class.isAssignableFrom(componentClassInfo))
+//			      os.writeByte(JdwpConstants.Tag.STRING);
+//			    else if (Thread.class.isAssignableFrom(componentClassInfo))
+//			      os.writeByte(JdwpConstants.Tag.THREAD);
+//			    else if (ThreadGroup.class.isAssignableFrom(componentClassInfo))
+//			      os.writeByte(JdwpConstants.Tag.THREAD_GROUP);
+//			    else if (ClassLoader.class.isAssignableFrom(componentClassInfo))
+//			      os.writeByte(JdwpConstants.Tag.CLASS_LOADER);
+//			    else if (Class.class.isAssignableFrom(componentClassInfo))
+//			      os.writeByte(JdwpConstants.Tag.CLASS_OBJECT);
+//			    else
+//			      os.writeByte(JdwpConstants.Tag.OBJECT);
+
+			    // Write all the values, primitives should be untagged and Objects must be
+			    // tagged
+			    
+			    for (int i = first; i < first + length; i++)
+			      {
+			    	Value val = null;
+			    	if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
+			    		val = new StringValue(VMVirtualMachine.vm.getJpf().getVM().getHeap().get(array.getReferenceElement(i)));
+			    	} else {
+			        	throw new RuntimeException("not implemented");
+			        }
+			        //Value val = ValueFactory.createFromObject(Array.get(array, i), componentClassInfo.getClass());
+			        if (componentClassInfo.isPrimitive())
+			          val.writeUntagged(os);
+			        else
+			          val.writeTagged(os);
+			      }
 			
 		}
 	}, SETVALUES(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 			
 		}
@@ -46,6 +118,12 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 		return map.get(val);
 	}
 
+	public abstract void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		 ArrayId arrayId = contextProvider.getObjectManager().readArrayId(bytes);
+		    execute(arrayId.get(), bytes, os, contextProvider);
+		
+	}
 }

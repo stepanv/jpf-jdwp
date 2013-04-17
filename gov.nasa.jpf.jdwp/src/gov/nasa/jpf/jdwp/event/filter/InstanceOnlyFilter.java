@@ -26,8 +26,7 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
 	@Override
 	public boolean matches(InstanceOnlyFilterable event) {
-		// TODO Auto-generated method stub
-		return false;
+		throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + objectId);
 	}
 
 }

@@ -36,8 +36,7 @@ public class SourceNameMatchFilter extends Filter<SourceNameMatchFilterable> {
 
 	@Override
 	public boolean matches(SourceNameMatchFilterable event) {
-		// TODO not implemented yet!
-		throw new RuntimeException("Not implemented yet!");
+		throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + sourceNamePattern);
 	}
 
 }

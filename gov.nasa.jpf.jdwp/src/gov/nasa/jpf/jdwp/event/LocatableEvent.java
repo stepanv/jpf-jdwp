@@ -34,7 +34,7 @@ public abstract class LocatableEvent extends EventBase implements Locatable {
 	@Override
 	public boolean matches(ClassFilter classMatchFilter) {
 		String className = location.getInstruction().getMethodInfo().getClassName();
-		return classMatchFilter.accepts(className);
+		return classMatchFilter.matches(className);
 	}
 
 	@Override

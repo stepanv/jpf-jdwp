@@ -1,12 +1,14 @@
 package gov.nasa.jpf.jdwp.variable;
 
+import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Value {
-	public static enum Tag {
+	public static enum Tag implements IdentifiableEnum<Byte>{
 		ARRAY(91) ,
 		BYTE(66){
 			@Override
@@ -27,7 +29,7 @@ public abstract class Value {
 				return new FloatValue((Float)object);
 			}
 		},
-		DOUBLE((byte)68),
+		DOUBLE(68),
 		INT(73),
 		LONG(74),
 		SHORT(83),
@@ -57,6 +59,10 @@ public abstract class Value {
 		
 		public static Value taggedObjectToValue(byte tagByte, Object object) {
 			return IDTAGF_VALUE_MAP.get(tagByte).value(object);
+		}
+		@Override
+		public Byte identifier() {
+			return id;
 		}
 	}
 

@@ -69,7 +69,7 @@ public class ClassPrepareEvent extends EventBase implements Threadable, ClassFil
 
 	@Override
 	public boolean matches(ClassFilter classMatchFilter) {
-		return classMatchFilter.accepts(classInfo.getName());
+		return classMatchFilter.matches(classInfo.getName());
 	}
 
 	@Override
