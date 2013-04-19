@@ -12,7 +12,7 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jdwp.value.StringRaw;
 
 import java.nio.ByteBuffer;
 

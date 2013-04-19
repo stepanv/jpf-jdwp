@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 

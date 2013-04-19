@@ -2,7 +2,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.variable.Value;
+import gov.nasa.jpf.jdwp.value.Value;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

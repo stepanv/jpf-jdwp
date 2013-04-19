@@ -8,7 +8,7 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.SuspendStatus;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;

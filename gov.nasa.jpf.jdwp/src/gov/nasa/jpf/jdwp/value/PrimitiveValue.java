@@ -1,29 +1,14 @@
-package gov.nasa.jpf.jdwp.variable;
+package gov.nasa.jpf.jdwp.value;
 
+import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-/**
- * <p>
- * <h2>JDWP Specification</h2>
- * A value retrieved from the target VM. The first byte is a signature byte
- * which is used to identify the type. See {@link Tag} for the possible values
- * of this byte. It is followed immediately by the value itself. This value can
- * be an {@link ObjectId} (see Get ID Sizes (
- * {@link VirtualMachineCommand#IDSIZES})) or a primitive value (1 to 8 bytes).<br/>
- * More details about each value type can be found in the next table.
- * </p>
- * 
- * @author stepan
- * 
- */
-public abstract class Value {
+public abstract class PrimitiveValue implements Value {
 	public static enum Tag implements IdentifiableEnum<Byte> {
 		ARRAY(91), BYTE(66) {
 			@Override
@@ -52,7 +37,7 @@ public abstract class Value {
 		}
 
 		public Value value(Object object) {
-			throw new RuntimeException("NOT IMPLEMENTED YET!");
+			return JdwpObjectManager.getInstance().getObjectId(object);
 		}
 
 		private static final ReverseEnumMap<Byte, Tag> map = new ReverseEnumMap<Byte, Tag>(Tag.class);
@@ -70,7 +55,7 @@ public abstract class Value {
 
 	private Tag tag;
 
-	public Value(Tag tag) {
+	public PrimitiveValue(Tag tag) {
 		this.tag = tag;
 	}
 

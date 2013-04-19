@@ -4,10 +4,8 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.variable.ObjectValue;
-import gov.nasa.jpf.jdwp.variable.Value;
-import gov.nasa.jpf.jdwp.variable.Value.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.VM;
@@ -83,7 +81,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			    	Value val = null;
 			    	if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
 			    		ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
-			    		val = new ObjectValue<ObjectId<?>>(JdwpObjectManager.getInstance().getObjectId(ei));
+			    		val = JdwpObjectManager.getInstance().getObjectId(ei);
 			    	} else {
 			        	throw new RuntimeException("not implemented");
 			        }

@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
-import gov.nasa.jpf.jdwp.variable.StringRaw;
+import gov.nasa.jpf.jdwp.value.StringRaw;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

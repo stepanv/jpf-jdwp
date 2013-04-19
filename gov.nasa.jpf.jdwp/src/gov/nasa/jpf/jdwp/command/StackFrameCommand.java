@@ -3,7 +3,8 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.variable.Value;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -39,7 +40,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
 				}
 
-				Value value = Value.Tag.taggedObjectToValue(tag, object);
+				Value value = Tag.taggedObjectToValue(tag, object);
 				value.writeTagged(os);
 			}
 		}

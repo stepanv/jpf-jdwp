@@ -1,11 +1,12 @@
 package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
-import gov.nasa.jpf.jdwp.variable.Value.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
-public class ObjectId<T> extends TaggableIdentifier<T> {
+public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 	
 	private Tag tag;
 

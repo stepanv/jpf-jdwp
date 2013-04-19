@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.id.object.special;
 
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.variable.Value.Tag;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 
 /**
  * TODO Not implemented yet!
