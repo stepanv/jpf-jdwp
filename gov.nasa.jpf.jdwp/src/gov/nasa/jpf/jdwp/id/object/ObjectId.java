@@ -1,31 +1,11 @@
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
+import gov.nasa.jpf.jdwp.variable.Value.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ObjectId<T> extends TaggableIdentifier<T> {
-	public static enum Tag implements IdentifiableEnum<Byte>{
-		ARRAY(91) ,
-		OBJECT(76),
-		STRING(115),
-		THREAD(116),
-		THREAD_GROUP(103),
-		CLASS_LOADER(108),
-		CLASS_OBJECT(99);
-		
-		private byte tagId;
-
-		Tag(int id) {
-			this.tagId = (byte)id;
-		}
-
-		@Override
-		public Byte identifier() {
-			return tagId;
-		}
-	}
 	
 	private Tag tag;
 
@@ -55,7 +35,7 @@ public class ObjectId<T> extends TaggableIdentifier<T> {
 	}
 
 	@Override
-	public IdentifiableEnum<Byte> getIdentifier() {
+	public Tag getIdentifier() {
 		return tag;
 	}
 }

@@ -1,14 +1,16 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.value.StringValue;
-import gnu.classpath.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.variable.ObjectValue;
+import gov.nasa.jpf.jdwp.variable.Value;
 import gov.nasa.jpf.jdwp.variable.Value.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -80,13 +82,14 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			      {
 			    	Value val = null;
 			    	if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
-			    		val = new StringValue(VMVirtualMachine.vm.getJpf().getVM().getHeap().get(array.getReferenceElement(i)));
+			    		ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
+			    		val = new ObjectValue<ObjectId<?>>(JdwpObjectManager.getInstance().getObjectId(ei));
 			    	} else {
 			        	throw new RuntimeException("not implemented");
 			        }
 			        //Value val = ValueFactory.createFromObject(Array.get(array, i), componentClassInfo.getClass());
 			        if (componentClassInfo.isPrimitive())
-			          val.writeUntagged(os);
+			          val.write(os);
 			        else
 			          val.writeTagged(os);
 			      }
