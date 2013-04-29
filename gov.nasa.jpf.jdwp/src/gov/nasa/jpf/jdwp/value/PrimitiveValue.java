@@ -4,7 +4,9 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.vm.ByteFieldInfo;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -195,6 +197,13 @@ public abstract class PrimitiveValue implements Value {
 	public void writeTagged(DataOutputStream os) throws IOException {
 		os.writeByte(tag.tagId);
 		write(os);
+	}
+	
+	public void foo(FieldInfo asdlfkj) {
+		
+	}
+public void foo(ByteFieldInfo asdlfkj) {
+		
 	}
 
 }

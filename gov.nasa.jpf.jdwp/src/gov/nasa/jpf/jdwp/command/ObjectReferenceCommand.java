@@ -1,11 +1,20 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -16,9 +25,8 @@ import java.nio.ByteBuffer;
 public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, ObjectReferenceCommand> {
 	REFERENCETYPE(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-			    Object obj = oid.get();
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			    Object obj = objectId.get();
 			    
 			    ClassInfo clazz = null;
 			    if (obj instanceof ThreadInfo) {
@@ -37,51 +45,75 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	},
 	GETVALUES(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		    DynamicElementInfo obj = (DynamicElementInfo)objectId.get();
+
+		    int fields = bytes.getInt();
+
+		    os.writeInt(fields);
+
+		    for (int i = 0; i < fields; i++)
+		      {
+		    	FieldInfo field = (FieldInfo) contextProvider.getObjectManager().readObjectId(bytes).get();
+		        	System.out.println(field );
+		            //field.setAccessible(true); // Might be a private field
+		            Object object = field.getValueObject(obj.getFields());
+		            Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
+		            val.writeTagged(os);
+		      }
 
 		}
 	},
 	SETVALUES(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	MONITORINFO(5) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	INVOKEMETHOD(6) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+			ReferenceTypeId clazz = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+			MethodInfo methodInfo = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
+			int arguments = bytes.getInt();
+			Value[] values = new Value[arguments];
+			for (int i = 0; i < arguments; ++i) {
+				values[i] = Tag.bytesToValue(bytes);
+			}
+			int options = bytes.getInt();
+			
+			MethodResult methodResult = VirtualMachineHelper.invokeMethod(objectId.get(), methodInfo, values, threadId.get());
+			methodResult.write(os);
 		}
+
 	},
 	DISABLECOLLECTION(7) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			objectId.disableCollection();
 
 		}
 	},
 	ENABLECOLLECTION(8) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			objectId.enableCollection();
 
 		}
 	},
 	ISCOLLECTED(9) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-		    os.writeBoolean(oid.isNull());
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		    os.writeBoolean(objectId.isNull());
 		}
 	};
 	private byte commandId;
@@ -103,5 +135,11 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	}
 
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
+		execute(objectId, bytes, os, contextProvider);
+	}
+	
+	public abstract void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	
 }

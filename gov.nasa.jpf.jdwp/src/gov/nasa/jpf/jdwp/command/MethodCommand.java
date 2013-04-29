@@ -1,6 +1,8 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.util.LineTable;
+import gnu.classpath.jdwp.util.VariableTable;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -15,13 +17,9 @@ import java.nio.ByteBuffer;
 public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodCommand> {
 	LINETABLE(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-			    ClassInfo clazz = refId.get();
-
-			    MethodInfo method;
-					method = VirtualMachineHelper.getClassMethod(clazz, bytes.getLong());
-			   LineTable lt = LineTable.factory(method); // TODO do this in a uniform way (see method bellow)
+		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			
+			   LineTable lt = LineTable.factory(methodInfo); // TODO do this in a uniform way (see method bellow)
 			   
 //			    LineTable lt = method.getLineTable();
 			    lt.write(os);
@@ -30,28 +28,31 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 	},
 	VARIABLETABLE(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+
+			    VariableTable variableTable = VMMethod.variableTable(methodInfo); // TODO do this in a different uniform way
+//			    VariableTable vt = method.getVariableTable();
+			    variableTable.write(os);
 
 		}
 	},
 	BYTECODES(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	ISOBSOLETE(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
 	},
 	VARIABLETABLEWITHGENERIC(5) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
@@ -74,6 +75,13 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 		return map.get(val);
 	}
 
+	public abstract void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		 ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		    ClassInfo clazz = refId.get();
+
+		    execute(VirtualMachineHelper.getClassMethod(clazz, bytes.getLong()), bytes, os, contextProvider);
+	}
 }
