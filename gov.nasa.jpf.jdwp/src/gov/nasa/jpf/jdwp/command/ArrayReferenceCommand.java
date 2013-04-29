@@ -29,11 +29,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			    // We need to write out the byte signifying the type of array first
 			    ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
 			    
-			    if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
-			    	os.writeByte(Tag.STRING.identifier());
-			    } else {
-			    	throw new RuntimeException("not implemented");
-			    }
+			    os.writeByte(Tag.classInfoToTag(componentClassInfo).identifier());
 
 			    // write the number of values we send back
 			    os.writeInt(length);
@@ -78,25 +74,21 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			    
 			    for (int i = first; i < first + length; i++)
 			      {
-			    	Value val = null;
-			    	if ("Ljava/lang/String;".equals(componentClassInfo.getType())) {
+			    	Value value = null;
+			    	if (!componentClassInfo.isPrimitive()) {
 			    		ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
-			    		val = JdwpObjectManager.getInstance().getObjectId(ei);
+			    		value = JdwpObjectManager.getInstance().getObjectId(ei);
+			    		value.writeTagged(os);
 			    	} else {
 			        	throw new RuntimeException("not implemented");
 			        }
-			        //Value val = ValueFactory.createFromObject(Array.get(array, i), componentClassInfo.getClass());
-			        if (componentClassInfo.isPrimitive())
-			          val.write(os);
-			        else
-			          val.writeTagged(os);
 			      }
 			
 		}
 	}, SETVALUES(3) {
 		@Override
 		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+
 			
 		}
 	};

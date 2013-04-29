@@ -1,7 +1,10 @@
 package gov.nasa.jpf.jdwp.value;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,5 +27,7 @@ public interface Value {
 	public void write(DataOutputStream os) throws IOException;
 
 	public void writeTagged(DataOutputStream os) throws IOException;
+
+	public void push(StackFrame frame) throws InvalidObject;
 
 }

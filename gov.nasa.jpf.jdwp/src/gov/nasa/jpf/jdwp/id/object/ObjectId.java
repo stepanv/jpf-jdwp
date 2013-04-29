@@ -1,9 +1,11 @@
 package gov.nasa.jpf.jdwp.id.object;
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
@@ -38,5 +40,11 @@ public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 	@Override
 	public Tag getIdentifier() {
 		return tag;
+	}
+
+	@Override
+	public void push(StackFrame frame) throws InvalidObject {
+		int ref = ((ElementInfo)this.get()).getObjectRef();
+		frame.pushRef(ref);
 	}
 }

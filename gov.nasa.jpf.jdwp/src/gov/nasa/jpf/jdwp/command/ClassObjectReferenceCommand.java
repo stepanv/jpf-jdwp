@@ -1,7 +1,10 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,7 +14,22 @@ public enum ClassObjectReferenceCommand implements Command, ConvertibleEnum<Byte
 	REFLECTEDTYPE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ObjectId<?> oid = contextProvider.getObjectManager().readObjectId(bytes); 
+		    Object object = oid.get();
+		    
+		    ClassInfo ci = null;
+		    if (object instanceof ClassInfo) {
+		    	ci = (ClassInfo) object;
+		    } else if (object instanceof ElementInfo) {
+		    	ci = ((ElementInfo) object).getClassInfo();
+		    } else {
+		    	throw new RuntimeException("not implemented for object: " + object);
+		    }
+		    
+		    // The difference between a ClassObjectId and a ReferenceTypeId is one is
+		    // stored as an ObjectId and the other as a ReferenceTypeId.
+		    ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(ci);
+		    refId.writeTagged(os);
 
 		}
 	};

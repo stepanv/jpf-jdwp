@@ -1,11 +1,20 @@
 package gov.nasa.jpf.jdwp;
 
+import gnu.classpath.jdwp.util.MethodResult;
+import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DirectCallStackFrame;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.UncaughtException;
+import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
 import java.util.Iterator;

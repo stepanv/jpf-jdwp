@@ -3,8 +3,10 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ThreadId extends ObjectId<ThreadInfo> {
@@ -52,6 +54,12 @@ public class ThreadId extends ObjectId<ThreadInfo> {
 
 	public ThreadId(long id, ThreadInfo object) {
 		super(Tag.THREAD, id, object);
+	}
+	
+	@Override
+	public void push(StackFrame frame) throws InvalidObject {
+		int ref = (this.get()).getThreadObjectRef(); // TODO [jpf-core] unify the way how the references are obtained (ThreadInfo and InfoObject and ElementInfo)
+		frame.pushRef(ref);
 	}
 
 }

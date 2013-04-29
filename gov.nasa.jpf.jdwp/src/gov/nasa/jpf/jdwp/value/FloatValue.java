@@ -1,5 +1,7 @@
 package gov.nasa.jpf.jdwp.value;
 
+import gov.nasa.jpf.vm.StackFrame;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -15,6 +17,11 @@ public class FloatValue extends PrimitiveValue {
 	@Override
 	public void write(DataOutputStream os) throws IOException {
 		os.writeFloat(value);
+	}
+
+	@Override
+	public void push(StackFrame frame) {
+		frame.pushFloat(value);
 	}
 
 }
