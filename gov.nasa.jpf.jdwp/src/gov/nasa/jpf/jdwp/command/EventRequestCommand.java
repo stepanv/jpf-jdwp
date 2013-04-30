@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gnu.classpath.jdwp.event.EventManager;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -14,17 +15,25 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			EventRequest eventRequest = EventRequest.factory(bytes, contextProvider);
-			
+
 			EventManager.getDefault().requestEvent(eventRequest);
 			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
-			
+
 			os.writeInt(eventRequest.getId());
 		}
 	},
+	/**
+	 * Clear an event request. See {@link EventKind} for a complete list of events
+	 * that can be cleared. Only the event request matching the specified event
+	 * kind and requestID is cleared. If there isn't a matching event request
+	 * the command is a no-op and does not result in an error. Automatically
+	 * generated events do not have a corresponding event request and may not be
+	 * cleared using this command.
+	 */
 	CLEAR(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			 EventManager.getDefault().deleteRequest(bytes.get(), bytes.getInt());
 
 		}
 	},

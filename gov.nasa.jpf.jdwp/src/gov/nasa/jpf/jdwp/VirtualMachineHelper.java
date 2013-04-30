@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp;
 
+import gov.nasa.jpf.jdwp.exception.InvalidFrameId;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -24,9 +25,16 @@ import java.util.List;
 
 public class VirtualMachineHelper {
 
-	public static StackFrame getFrame(ThreadInfo thread, long frameID) {
-		// TODO Auto-generated method stub
-		return null;
+	public static StackFrame getFrame(ThreadInfo thread, long frameId) throws InvalidFrameId {
+		 for (Iterator<StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+				StackFrame stackFrame = stackIterator.next();
+				if (!stackFrame.isSynthetic()) {
+					if (stackFrame.getThis() == frameId) {
+						return stackFrame;
+					}
+				}
+			}
+		 throw new InvalidFrameId(frameId);
 	}
 
 	/**
@@ -43,10 +51,19 @@ public class VirtualMachineHelper {
 	public static List<StackFrame> getFrames(ThreadInfo thread, int start, int length) {
 
 		List<StackFrame> frames = new ArrayList<StackFrame>();
-		for (Iterator<StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
+		Iterator<StackFrame> stackIterator = thread.iterator();
+
+		for (int currentPosition = 0, currentLenght = 0; stackIterator.hasNext(); ++currentPosition) {
 			StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
-				frames.add(stackFrame);
+				if (start >= currentPosition) {
+					if (length == -1 || ++currentLenght <= length) {
+						frames.add(stackFrame);
+					} else {
+						return frames;
+					}
+				}
+
 			}
 		}
 		return frames;
@@ -159,8 +176,8 @@ public class VirtualMachineHelper {
 
 		ObjectId<?> objectId = JdwpObjectManager.getInstance().getObjectId(result);
 		return new MethodResult(objectId, exception); // TODO primitive
-															// values not done
-															// yet
+														// values not done
+														// yet
 		// return new MethodResult(objectId.factory(), null);
 
 	}

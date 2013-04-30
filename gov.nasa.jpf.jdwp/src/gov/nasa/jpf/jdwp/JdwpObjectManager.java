@@ -6,6 +6,7 @@ import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -23,6 +24,12 @@ public class JdwpObjectManager {
 	
 	public static JdwpObjectManager getInstance() {
 		return JdwpObjectManagerHolder.instance;
+	}
+	
+	private JdwpObjectManager() {
+		// An objectID of 0 represents a null object. 
+		idObjectMap.put((long) 0, NullObjectId.getInstance());
+		//objectIdMap.put(null, NullObjectId.getInstance());
 	}
 	
 	public ThreadId readThreadId(ByteBuffer bytes) throws JdwpError {

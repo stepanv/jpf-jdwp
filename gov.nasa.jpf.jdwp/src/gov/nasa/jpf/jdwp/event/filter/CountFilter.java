@@ -62,7 +62,7 @@ public class CountFilter extends Filter<Event> {
 			return false;
 		}
 		expired = true;
-		return --count == 0;
+		return count == 0;
 	}
 
 }

@@ -229,7 +229,7 @@ public class EventManager
   public void deleteRequest (byte kind, int id)
     throws JdwpError
   {
-    Hashtable<Integer, EventRequest> requests =  _requests.get (new Byte (kind));
+    Hashtable<Integer, EventRequest> requests =  _requests.get (EventKind.BREAKPOINT.convert(kind));
     if (requests == null)
       {
         // Did not get a valid event type

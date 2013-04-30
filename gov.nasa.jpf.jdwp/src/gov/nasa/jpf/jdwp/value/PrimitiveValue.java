@@ -4,10 +4,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.vm.ByteFieldInfo;
 import gov.nasa.jpf.vm.ClassInfo;
-import gov.nasa.jpf.vm.FieldInfo;
-import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +13,7 @@ import java.util.HashMap;
 
 public abstract class PrimitiveValue implements Value {
 	public static enum Tag implements ConvertibleEnum<Byte, Tag> {
-		ARRAY(91), BYTE(66) {
+		ARRAY(91, Object[].class), BYTE(66, byte.class) {
 			@Override
 			public Value value(Object object) {
 				return new ByteValue((Byte) object);
@@ -27,7 +24,7 @@ public abstract class PrimitiveValue implements Value {
 				return new ByteValue(bytes.get());
 			}
 		},
-		CHAR(67) {
+		CHAR(67, char.class) {
 			@Override
 			public Value value(Object object) {
 				return new CharValue((Character) object);
@@ -39,7 +36,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 		},
-		OBJECT(76), FLOAT(70) {
+		OBJECT(76, Object.class), FLOAT(70, float.class) {
 			@Override
 			public Value value(Object object) {
 				return new FloatValue((Float) object);
@@ -51,7 +48,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 		},
-		DOUBLE(68) {
+		DOUBLE(68, double.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -63,7 +60,7 @@ public abstract class PrimitiveValue implements Value {
 				return new DoubleValue(bytes.getDouble());
 			}
 		},
-		INT(73) {
+		INT(73, int.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -75,21 +72,19 @@ public abstract class PrimitiveValue implements Value {
 				return new IntegerValue(bytes.getInt());
 			}
 		},
-		LONG(74) {
+		LONG(74, long.class) {
 
 			@Override
 			public Value value(Object object) {
-				// TODO Auto-generated method stub
-				return super.value(object);
+				return new LongValue((Long)object);
 			}
 
 			@Override
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
-				// TODO Auto-generated method stub
-				return super.readValue(bytes);
+				return new LongValue(bytes.getLong());
 			}
 		},
-		SHORT(83) {
+		SHORT(83, short.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -101,7 +96,7 @@ public abstract class PrimitiveValue implements Value {
 				return new ShortValue(bytes.getShort());
 			}
 		},
-		VOID(86) {
+		VOID(86, void.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -113,7 +108,7 @@ public abstract class PrimitiveValue implements Value {
 				return new VoidValue();
 			}
 		},
-		BOOLEAN(90) {
+		BOOLEAN(90, boolean.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -153,12 +148,15 @@ public abstract class PrimitiveValue implements Value {
 
 		static {
 			for (Tag tag : values()) {
-				mapString.put(tag.clazz.getName(), tag);
+				if (tag.clazz != null) {
+					mapString.put(tag.clazz.getName(), tag);
+				}
 			}
 		}
 
 		public static Value bytesToValue(ByteBuffer bytes) throws JdwpError {
-			return ARRAY.convert(bytes.get()).readValue(bytes);
+			Tag tag = ARRAY.convert(bytes.get());
+			return tag.readValue(bytes);
 		}
 
 		public static Value taggedObjectToValue(byte tagByte, Object object) throws JdwpError {
@@ -199,11 +197,4 @@ public abstract class PrimitiveValue implements Value {
 		write(os);
 	}
 	
-	public void foo(FieldInfo asdlfkj) {
-		
-	}
-public void foo(ByteFieldInfo asdlfkj) {
-		
-	}
-
 }

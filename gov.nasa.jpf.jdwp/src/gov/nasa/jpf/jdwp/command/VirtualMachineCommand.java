@@ -1,15 +1,18 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -67,7 +70,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	ALLTHREADS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ThreadInfo[] threads = VMVirtualMachine.allThreads();
+			ThreadInfo[] threads = VM.getVM().getLiveThreads();
 			  os.writeInt(threads.length);
 			  for (ThreadInfo thread : threads) {
 				  
@@ -123,7 +126,16 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	CREATESTRING(11) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			  // is invoked when inspecting an array field for instance (TODO rewrite this method)
+		    String string = StringRaw.readString(bytes); 
+		    ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); // TODO [for PJA] which thread we should use?
+		    
+		    ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
+
+		    // Since this string isn't referenced anywhere we'll disable garbage
+		    // collection on it so it's still around when the debugger gets back to it.
+		    stringId.disableCollection();
+		    stringId.write(os);
 
 		}
 	},

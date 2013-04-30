@@ -3,6 +3,7 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -28,7 +29,15 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+//		    ClassInfo clazz = refId.getType();
+		    // TODO [for PJA] How does JPF work with classloaders? Seems that java.lang.Class#getClassLoader() returns the classloader of underlying VM
+		    // JPF doesn't care about classloaders?
+//		    ObjectId oid = new NullObjectId(); // returning null which stands for system classloader
+//		    throw new RuntimeException("not implemented");
+//		    ClassLoader loader = clazz.getcl getClassLoader();
+//		    ObjectId oid = idMan.getObjectId(loader);
+		    NullObjectId.getInstance().write(os); // returning null which stands for system classloader
+		    // TODO [for PJA] how is it with classloaders
 
 		}
 	},
@@ -36,7 +45,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			 os.writeInt(classInfo.getModifiers());
 
 		}
 	},
@@ -127,7 +136,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			ObjectId clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo);
+			ObjectId<?> clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo);
 			clazzObjectId.write(os);
 
 		}
