@@ -5,9 +5,16 @@ import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.vm.ArrayFields;
+import gov.nasa.jpf.vm.BooleanArrayFields;
+import gov.nasa.jpf.vm.ByteArrayFields;
 import gov.nasa.jpf.vm.CharArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DoubleArrayFields;
 import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.FloatArrayFields;
+import gov.nasa.jpf.vm.IntArrayFields;
+import gov.nasa.jpf.vm.LongArrayFields;
+import gov.nasa.jpf.vm.ShortArrayFields;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,7 +23,7 @@ import java.util.HashMap;
 
 public abstract class PrimitiveValue implements Value {
 	public static enum Tag implements ConvertibleEnum<Byte, Tag> {
-		ARRAY(91, Object[].class), BYTE(66, byte.class) {
+		ARRAY(91, Object[].class), BYTE(66, byte.class, ByteArrayFields.class) {
 			@Override
 			public Value value(Object object) {
 				return new ByteValue((Byte) object);
@@ -26,11 +33,16 @@ public abstract class PrimitiveValue implements Value {
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new ByteValue(bytes.get());
 			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new ByteValue(fields.getByteValue(index));
+			}
 		},
 		CHAR(67, char.class, CharArrayFields.class) {
 			@Override
-			protected Value value(Fields fields, int position) {
-				return new CharValue(fields.getCharValue(position));
+			protected Value value(Fields fields, int index) {
+				return new CharValue(fields.getCharValue(index));
 			}
 
 			@Override
@@ -44,7 +56,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 		},
-		OBJECT(76, Object.class), FLOAT(70, float.class) {
+		OBJECT(76, Object.class), FLOAT(70, float.class, FloatArrayFields.class) {
 			@Override
 			public Value value(Object object) {
 				return new FloatValue((Float) object);
@@ -56,7 +68,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 		},
-		DOUBLE(68, double.class) {
+		DOUBLE(68, double.class, DoubleArrayFields.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -67,8 +79,14 @@ public abstract class PrimitiveValue implements Value {
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new DoubleValue(bytes.getDouble());
 			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new DoubleValue(fields.getDoubleValue(index));
+			}
+			
 		},
-		INT(73, int.class) {
+		INT(73, int.class, IntArrayFields.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -79,8 +97,14 @@ public abstract class PrimitiveValue implements Value {
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new IntegerValue(bytes.getInt());
 			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new IntegerValue(fields.getIntValue(index));
+			}
+			
 		},
-		LONG(74, long.class) {
+		LONG(74, long.class, LongArrayFields.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -91,8 +115,13 @@ public abstract class PrimitiveValue implements Value {
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new LongValue(bytes.getLong());
 			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new LongValue(fields.getLongValue(index));
+			}
 		},
-		SHORT(83, short.class) {
+		SHORT(83, short.class, ShortArrayFields.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -102,6 +131,11 @@ public abstract class PrimitiveValue implements Value {
 			@Override
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new ShortValue(bytes.getShort());
+			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new ShortValue(fields.getShortValue(index));
 			}
 		},
 		VOID(86, void.class) {
@@ -116,7 +150,7 @@ public abstract class PrimitiveValue implements Value {
 				return new VoidValue();
 			}
 		},
-		BOOLEAN(90, boolean.class) {
+		BOOLEAN(90, boolean.class, BooleanArrayFields.class) {
 
 			@Override
 			public Value value(Object object) {
@@ -127,6 +161,12 @@ public abstract class PrimitiveValue implements Value {
 			public Value readValue(ByteBuffer bytes) throws JdwpError {
 				return new BooleanValue(bytes.get() != 0);
 			}
+
+			@Override
+			protected Value value(Fields fields, int index) {
+				return new BooleanValue(fields.getBooleanValue(index));
+			}
+			
 		},
 		STRING(115, String.class), THREAD(116, Thread.class), THREAD_GROUP(103, ThreadGroup.class), CLASS_LOADER(108, ClassLoader.class), CLASS_OBJECT(99,
 				Class.class);
@@ -177,7 +217,7 @@ public abstract class PrimitiveValue implements Value {
 			return map.get(tagByte).value(object);
 		}
 		
-		protected Value value(Fields fields, int position) {
+		protected Value value(Fields fields, int index) {
 			throw new RuntimeException("value get for Fields instance: " + fields + " is not by design implemented. This shouldn't happened!");
 		}
 		
