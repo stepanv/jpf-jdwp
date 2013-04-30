@@ -79,7 +79,8 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			    		value = JdwpObjectManager.getInstance().getObjectId(ei);
 			    		value.writeTagged(os);
 			    	} else {
-			        	throw new RuntimeException("not implemented");
+			    		value = Tag.arrayFieldToValue(array.getFields(), i);
+			    		value.write(os);
 			        }
 			      }
 			

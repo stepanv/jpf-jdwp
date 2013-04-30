@@ -4,7 +4,10 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.vm.ArrayFields;
+import gov.nasa.jpf.vm.CharArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.Fields;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,7 +27,12 @@ public abstract class PrimitiveValue implements Value {
 				return new ByteValue(bytes.get());
 			}
 		},
-		CHAR(67, char.class) {
+		CHAR(67, char.class, CharArrayFields.class) {
+			@Override
+			protected Value value(Fields fields, int position) {
+				return new CharValue(fields.getCharValue(position));
+			}
+
 			@Override
 			public Value value(Object object) {
 				return new CharValue((Character) object);
@@ -125,14 +133,16 @@ public abstract class PrimitiveValue implements Value {
 
 		private byte tagId;
 		private final Class<?> clazz;
-
-		Tag(int id) {
-			this(id, null);
-		}
+		protected Class<? extends ArrayFields> arrayClazz;
 
 		Tag(int id, Class<?> clazz) {
 			this.tagId = (byte) id;
 			this.clazz = clazz;
+		}
+		Tag(int id, Class<?> clazz, Class<? extends ArrayFields> arrayClazz) {
+			this.tagId = (byte) id;
+			this.clazz = clazz;
+			this.arrayClazz = arrayClazz;
 		}
 
 		public Value value(Object object) {
@@ -145,11 +155,15 @@ public abstract class PrimitiveValue implements Value {
 
 		private static final ReverseEnumMap<Byte, Tag> map = new ReverseEnumMap<Byte, Tag>(Tag.class);
 		private static final HashMap<String, Tag> mapString = new HashMap<String, Tag>();
+		private static final HashMap<Class<? extends Fields>, Tag> mapArrayClazz = new HashMap<Class<? extends Fields>, Tag>();
 
 		static {
 			for (Tag tag : values()) {
 				if (tag.clazz != null) {
 					mapString.put(tag.clazz.getName(), tag);
+				}
+				if (tag.arrayClazz != null) {
+					mapArrayClazz.put(tag.arrayClazz, tag);
 				}
 			}
 		}
@@ -162,7 +176,11 @@ public abstract class PrimitiveValue implements Value {
 		public static Value taggedObjectToValue(byte tagByte, Object object) throws JdwpError {
 			return map.get(tagByte).value(object);
 		}
-
+		
+		protected Value value(Fields fields, int position) {
+			throw new RuntimeException("value get for Fields instance: " + fields + " is not by design implemented. This shouldn't happened!");
+		}
+		
 		public static Tag classInfoToTag(ClassInfo classInfo) {
 			if (mapString.containsKey(classInfo.getName())) {
 				return mapString.get(classInfo.getName());
@@ -181,6 +199,9 @@ public abstract class PrimitiveValue implements Value {
 		@Override
 		public Tag convert(Byte val) throws JdwpError {
 			return map.get(val);
+		}
+		public static Value arrayFieldToValue(Fields fields, int position) {
+			return mapArrayClazz.get(fields.getClass()).value(fields, position);
 		}
 	}
 
