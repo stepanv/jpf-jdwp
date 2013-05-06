@@ -5,12 +5,19 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public enum ClassObjectReferenceCommand implements Command, ConvertibleEnum<Byte, ClassObjectReferenceCommand> {
+	/**
+	 * Returns the reference type reflected by this class object. 
+	 * <p>
+	 * For a reverse operation refer too {@link ReferenceTypeCommand#CLASSOBJECT}
+	 * </p>
+	 */
 	REFLECTEDTYPE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
@@ -19,9 +26,14 @@ public enum ClassObjectReferenceCommand implements Command, ConvertibleEnum<Byte
 		    
 		    ClassInfo ci = null;
 		    if (object instanceof ClassInfo) {
-		    	ci = (ClassInfo) object;
+		    	throw new RuntimeException("This shouldn't ever happened since we don't want to send classInfos accross JDWP!");
+		    	//ci = (ClassInfo) object;
 		    } else if (object instanceof ElementInfo) {
-		    	ci = ((ElementInfo) object).getClassInfo();
+				int parentref = ((ElementInfo)object).getReferenceField("name");
+			    ElementInfo parent = VM.getVM().getHeap().get(parentref);
+			    String reflectedTypeString = parent.asString();
+			    ci = ClassInfo.getInitializedClassInfo(reflectedTypeString, contextProvider.getJPF().getVM().getCurrentThread());
+			    
 		    } else {
 		    	throw new RuntimeException("not implemented for object: " + object);
 		    }

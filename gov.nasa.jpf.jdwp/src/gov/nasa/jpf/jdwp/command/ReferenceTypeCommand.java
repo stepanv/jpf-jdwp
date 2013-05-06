@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -7,8 +8,10 @@ import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -29,15 +32,19 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-//		    ClassInfo clazz = refId.getType();
-		    // TODO [for PJA] How does JPF work with classloaders? Seems that java.lang.Class#getClassLoader() returns the classloader of underlying VM
-		    // JPF doesn't care about classloaders?
-//		    ObjectId oid = new NullObjectId(); // returning null which stands for system classloader
-//		    throw new RuntimeException("not implemented");
-//		    ClassLoader loader = clazz.getcl getClassLoader();
-//		    ObjectId oid = idMan.getObjectId(loader);
-		    NullObjectId.getInstance().write(os); // returning null which stands for system classloader
-		    // TODO [for PJA] how is it with classloaders
+			// ClassInfo clazz = refId.getType();
+			// TODO [for PJA] How does JPF work with classloaders? Seems that
+			// java.lang.Class#getClassLoader() returns the classloader of
+			// underlying VM
+			// JPF doesn't care about classloaders?
+			// ObjectId oid = new NullObjectId(); // returning null which stands
+			// for system classloader
+			// throw new RuntimeException("not implemented");
+			// ClassLoader loader = clazz.getcl getClassLoader();
+			// ObjectId oid = idMan.getObjectId(loader);
+			NullObjectId.getInstance().write(os); // returning null which stands
+													// for system classloader
+			// TODO [for PJA] how is it with classloaders
 
 		}
 	},
@@ -45,7 +52,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			 os.writeInt(classInfo.getModifiers());
+			os.writeInt(classInfo.getModifiers());
 
 		}
 	},
@@ -80,6 +87,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
 				// method.writeId(os);
 				new StringRaw(method.getName()).write(os);
+
 				new StringRaw(method.getSignature()).write(os);
 				os.writeInt(method.getModifiers());
 			}
@@ -107,7 +115,6 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
 		}
 	},
 	STATUS(9) {
@@ -132,6 +139,14 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 
 		}
 	},
+	/**
+	 * Returns the class object corresponding to this type <br/>
+	 * This command is used when inspecting an array in Eclipse.<br/>
+	 * It is also used when invoking a method of an object instance.
+	 * <p>
+	 * For a reverse operation refer too {@link ClassObjectReferenceCommand#REFLECTEDTYPE}
+	 * </p>
+	 */
 	CLASSOBJECT(11) {
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
