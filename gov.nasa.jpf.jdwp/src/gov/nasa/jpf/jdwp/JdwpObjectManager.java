@@ -125,6 +125,9 @@ public class JdwpObjectManager {
 	}
 	
 	public ObjectId getObjectId(Object object) {
+		if (object == null) {
+			return NullObjectId.getInstance();
+		}
 		synchronized (objectIdMap) {
 			ObjectId objectId = objectIdMap.get(object);
 			
