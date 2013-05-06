@@ -1,5 +1,8 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.VMVirtualMachine;
+import gnu.classpath.jdwp.util.JdwpString;
+import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
@@ -19,6 +22,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, VirtualMachineCommand> {
@@ -64,7 +68,20 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	ALLCLASSES(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			Collection classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
+		    os.writeInt(classes.size ());
+
+		    Iterator iter = classes.iterator ();
+		    while (iter.hasNext())
+		      {
+		    	ClassInfo clazz = (ClassInfo) iter.next();
+		        ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+		        id.writeTagged(os);
+		        String sig = Signature.computeClassSignature(clazz);
+		        JdwpString.writeString(os, sig);
+		     // TODO [for PJA] do we have class statuses in JPF?
+				ClassStatus.VERIFIED.write(os);
+		      }
 		}
 	},
 	ALLTHREADS(4) {

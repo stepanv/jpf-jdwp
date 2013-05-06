@@ -125,6 +125,9 @@ public class JdwpObjectManager {
 	}
 	
 	public ObjectId getObjectId(Object object) {
+		// classInfos cannot be sent accross jdwp
+		assert object instanceof ClassInfo;
+		
 		if (object == null) {
 			return NullObjectId.getInstance();
 		}

@@ -6,6 +6,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
@@ -14,6 +15,7 @@ import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.UncaughtException;
 import gov.nasa.jpf.vm.VM;
 
@@ -160,25 +162,11 @@ public class VirtualMachineHelper {
 			// return -1;
 		}
 
-		// get the return value from the (already popped) frame
-		int res = frame.peek();
-		ElementInfo result = VM.getVM().getHeap().get(res); // TODO
-															// implicitly
-															// assuming
-															// returned
-															// value is a
-															// reference
-		if (result == null) {
-			// TODO is probably primitive
-			throw new RuntimeException("Not implemented");
-		}
-		System.out.println("# exit nativeHiddenRoundtrip: " + result);
-
-		ObjectId<?> objectId = JdwpObjectManager.getInstance().getObjectId(result);
-		return new MethodResult(objectId, exception); // TODO primitive
-														// values not done
-														// yet
-		// return new MethodResult(objectId.factory(), null);
+		ClassInfo returnPrimitiveCi = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
+		Value returnValue = Tag.classInfoToTag(returnPrimitiveCi).peekValue(frame);
+		
+		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);
+		return new MethodResult(returnValue, exception);
 
 	}
 

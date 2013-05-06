@@ -26,41 +26,49 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	REFERENCETYPE(1) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			    Object obj = objectId.get();
-			    
-			    ClassInfo clazz = null;
-			    if (obj instanceof ThreadInfo) {
-			    	clazz = ((ThreadInfo)obj).getClassInfo();
-			    } else if (obj instanceof StackFrame) {
-			    	clazz = ((StackFrame)obj).getClassInfo();
-			    } else if (obj instanceof ElementInfo) {
-			    	clazz = ((ElementInfo)obj).getClassInfo();
-			    } else {
-			    	throw new RuntimeException("object: ." + obj + "'(class: " + obj.getClass() + ") needs an reference type implementation"); //TODO complete the implementation
-			    }
-			    //throw new RuntimeException("not implemented");
-			    ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(clazz);
-			    refId.writeTagged(os);
+			Object obj = objectId.get();
+
+			ClassInfo clazz = null;
+			if (obj instanceof ThreadInfo) {
+				clazz = ((ThreadInfo) obj).getClassInfo();
+			} else if (obj instanceof StackFrame) {
+				clazz = ((StackFrame) obj).getClassInfo();
+			} else if (obj instanceof ElementInfo) {
+				clazz = ((ElementInfo) obj).getClassInfo();
+			} else {
+				throw new RuntimeException("object: ." + obj + "'(class: " + obj.getClass() + ") needs an reference type implementation"); // TODO
+																																			// complete
+																																			// the
+																																			// implementation
+			}
+			// throw new RuntimeException("not implemented");
+			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+			refId.writeTagged(os);
 		}
 	},
+	/**
+	 * Returns the value of one or more instance fields. Each field must be
+	 * member of the object's type or one of its superclasses, superinterfaces,
+	 * or implemented interfaces. Access control is not enforced; for example,
+	 * the values of private fields can be obtained.
+	 */
 	GETVALUES(2) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		    DynamicElementInfo obj = (DynamicElementInfo)objectId.get();
+			DynamicElementInfo obj = (DynamicElementInfo) objectId.get();
 
-		    int fields = bytes.getInt();
+			int fields = bytes.getInt();
 
-		    os.writeInt(fields);
+			os.writeInt(fields);
 
-		    for (int i = 0; i < fields; i++)
-		      {
-		    	FieldInfo field = (FieldInfo) contextProvider.getObjectManager().readObjectId(bytes).get();
-		        	System.out.println(field );
-		            //field.setAccessible(true); // Might be a private field
-		            Object object = field.getValueObject(obj.getFields());
-		            Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
-		            val.writeTagged(os);
-		      }
+			for (int i = 0; i < fields; i++) {
+				FieldInfo field = (FieldInfo) contextProvider.getObjectManager().readObjectId(bytes).get();
+				System.out.println(field);
+				// field.setAccessible(true); // Might be a private field
+				Object object = field.getValueObject(obj.getFields());
+				Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
+				val.writeTagged(os);
+			}
 
 		}
 	},
@@ -90,7 +98,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				values[i] = Tag.bytesToValue(bytes);
 			}
 			int options = bytes.getInt();
-			
+
 			MethodResult methodResult = VirtualMachineHelper.invokeMethod(objectId.get(), methodInfo, values, threadId.get());
 			methodResult.write(os);
 		}
@@ -113,7 +121,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	ISCOLLECTED(9) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		    os.writeBoolean(objectId.isNull());
+			os.writeBoolean(objectId.isNull());
 		}
 	};
 	private byte commandId;
@@ -139,7 +147,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
 		execute(objectId, bytes, os, contextProvider);
 	}
-	
-	public abstract void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
-	
+
+	public abstract void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+			JdwpError;
+
 }
