@@ -136,7 +136,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			ObjectId<?> clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo);
+			ObjectId<?> clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo.getClassObject());
 			clazzObjectId.write(os);
 
 		}
