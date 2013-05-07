@@ -72,6 +72,16 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 
 		}
 	},
+
+	/**
+	 * Sets the value of one or more instance fields. Each field must be member
+	 * of the object's type or one of its superclasses, superinterfaces, or
+	 * implemented interfaces. Access control is not enforced; for example, the
+	 * values of private fields can be set. For primitive values, the value's
+	 * type must match the field's type exactly. For object values, there must
+	 * be a widening reference conversion from the value's type to the field's
+	 * type and the field's type must be loaded.
+	 */
 	SETVALUES(3) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {

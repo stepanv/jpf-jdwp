@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.value;
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
 
@@ -28,6 +29,11 @@ public class IntegerValue extends PrimitiveValue {
 	@Override
 	public void modify(Fields fields, int index) {
 		fields.setIntValue(index, value);
+	}
+
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLocalVariable(slotIndex, value, false);
 	}
 
 

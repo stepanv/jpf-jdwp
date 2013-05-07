@@ -50,6 +50,13 @@ public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 	}
 
 	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		int ref = ((ElementInfo)this.get()).getObjectRef();
+		stackFrame.setLocalVariable(slotIndex, ref, true);
+		
+	}
+
+	@Override
 	public void modify(Fields fields, int index) throws InvalidObject {
 		int ref = ((ElementInfo)this.get()).getObjectRef();
 		fields.setReferenceValue(index, ref);

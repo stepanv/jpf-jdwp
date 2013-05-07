@@ -29,5 +29,10 @@ public class ByteValue extends PrimitiveValue {
 	public void modify(Fields fields, int index) throws InvalidObject {
 		fields.setByteValue(index, value);
 	}
+	
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLocalVariable(slotIndex, value, false);
+	}
 
 }

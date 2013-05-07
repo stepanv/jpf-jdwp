@@ -31,4 +31,12 @@ public class DoubleValue extends PrimitiveValue {
 		fields.setDoubleValue(index, value);
 	}
 
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLongLocalVariable(slotIndex, Double.doubleToLongBits(value));
+		
+	}
+	
+	
+
 }

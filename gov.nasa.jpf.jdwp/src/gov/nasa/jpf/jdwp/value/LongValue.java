@@ -31,4 +31,9 @@ public class LongValue extends PrimitiveValue {
 		fields.setLongValue(index, value);
 	}
 	
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLongLocalVariable(slotIndex, value);
+	}
+	
 }

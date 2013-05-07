@@ -171,7 +171,6 @@ public class VirtualMachineHelper {
 
 		    // pushes the object stub onto the stack so that it can be filled by the constructor
 		    frame.pushRef( objRef);
-			//frame.dup();
 		}
 
 		// push this on a stack

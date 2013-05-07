@@ -30,5 +30,10 @@ public class FloatValue extends PrimitiveValue {
 	public void modify(Fields fields, int index) throws InvalidObject {
 		fields.setFloatValue(index, value);
 	}
+	
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLocalVariable(slotIndex, Float.floatToIntBits(value), false);
+	}
 
 }

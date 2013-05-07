@@ -26,4 +26,8 @@ public class VoidValue extends PrimitiveValue {
 	public void modify(Fields fields, int index) throws InvalidObject {
 	}
 
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+	}
+
 }

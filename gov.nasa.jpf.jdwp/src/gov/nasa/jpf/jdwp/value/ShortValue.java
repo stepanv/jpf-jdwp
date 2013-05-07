@@ -31,4 +31,9 @@ public class ShortValue extends PrimitiveValue {
 		fields.setShortValue(index, value);
 	}
 
+	@Override
+	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+		stackFrame.setLocalVariable(slotIndex, value, false);
+	}
+
 }
