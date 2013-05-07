@@ -26,6 +26,12 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public abstract class PrimitiveValue implements Value {
+	@Override
+	public void modify(Fields fields, int index) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public static enum Tag implements ConvertibleEnum<Byte, Tag> {
 		ARRAY(91, Object[].class), BYTE(66, byte.class, ByteArrayFields.class) {
 			@Override

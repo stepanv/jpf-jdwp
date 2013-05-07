@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -46,5 +47,12 @@ public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 	public void push(StackFrame frame) throws InvalidObject {
 		int ref = ((ElementInfo)this.get()).getObjectRef();
 		frame.pushRef(ref);
+	}
+
+	@Override
+	public void modify(Fields fields, int index) throws InvalidObject {
+		int ref = ((ElementInfo)this.get()).getObjectRef();
+		fields.setReferenceValue(index, ref);
+		
 	}
 }

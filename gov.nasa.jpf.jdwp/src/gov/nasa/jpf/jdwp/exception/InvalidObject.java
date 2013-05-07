@@ -11,4 +11,16 @@ public class InvalidObject extends JdwpError {
 		super(ErrorType.INVALID_OBJECT);
 	}
 
+	public InvalidObject(String message, Throwable cause) {
+		super(ErrorType.INVALID_OBJECT, message, cause);
+	}
+
+	public InvalidObject(String message) {
+		super(ErrorType.INVALID_OBJECT, message);
+	}
+
+	public InvalidObject(Throwable cause) {
+		super(ErrorType.INVALID_OBJECT, cause);
+	}
+
 }

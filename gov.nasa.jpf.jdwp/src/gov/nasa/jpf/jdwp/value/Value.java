@@ -4,6 +4,7 @@ import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -29,5 +30,7 @@ public interface Value {
 	public void writeTagged(DataOutputStream os) throws IOException;
 
 	public void push(StackFrame frame) throws InvalidObject;
+
+	public void modify(Fields fields, int index) throws InvalidObject;
 
 }

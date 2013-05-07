@@ -14,82 +14,73 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, ArrayReferenceCommand> {
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns the number of components in a given array.
+	 * </p>
+	 */
 	LENGTH(1) {
 		@Override
 		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			os.writeInt(array.arrayLength());
 		}
-	}, GETVALUES(2) {
+	},
+	
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns a range of array components. The specified range must be within the bounds of the array. 
+	 * </p>
+	 * <p>
+	 * Known use-cases:
+	 * <ul>
+	 * <li>inspecting an array</li>
+	 * </ul>
+	 * </p>
+	 */
+	GETVALUES(2) {
 		@Override
 		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			   int first = bytes.getInt();
-			    int length = bytes.getInt();
+			int first = bytes.getInt();
+			int length = bytes.getInt();
 
-			    // We need to write out the byte signifying the type of array first
-			    ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
-			    
-			    os.writeByte(Tag.classInfoToTag(componentClassInfo).identifier());
+			// get the component type first
+			ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
 
-			    // write the number of values we send back
-			    os.writeInt(length);
-			    
-			    // Uugh, this is a little ugly but it's the only time we deal with
-			    // arrayregions
-//			    if (componentClassInfo == byte.class)
-//			      os.writeByte(JdwpConstants.Tag.BYTE);
-//			    else if (componentClassInfo == char.class)
-//			      os.writeByte(JdwpConstants.Tag.CHAR);
-//			    else if (componentClassInfo == float.class)
-//			      os.writeByte(JdwpConstants.Tag.FLOAT);
-//			    else if (componentClassInfo == double.class)
-//			      os.writeByte(JdwpConstants.Tag.DOUBLE);
-//			    else if (componentClassInfo == int.class)
-//			      os.writeByte(JdwpConstants.Tag.BYTE);
-//			    else if (componentClassInfo == long.class)
-//			      os.writeByte(JdwpConstants.Tag.LONG);
-//			    else if (componentClassInfo == short.class)
-//			      os.writeByte(JdwpConstants.Tag.SHORT);
-//			    else if (componentClassInfo == void.class)
-//			      os.writeByte(JdwpConstants.Tag.VOID);
-//			    else if (componentClassInfo == boolean.class)
-//			      os.writeByte(JdwpConstants.Tag.BOOLEAN);
-//			    else if (componentClassInfo.isArray())
-//			      os.writeByte(JdwpConstants.Tag.ARRAY);
-//			    else if (String.class.isAssignableFrom(componentClassInfo))
-//			      os.writeByte(JdwpConstants.Tag.STRING);
-//			    else if (Thread.class.isAssignableFrom(componentClassInfo))
-//			      os.writeByte(JdwpConstants.Tag.THREAD);
-//			    else if (ThreadGroup.class.isAssignableFrom(componentClassInfo))
-//			      os.writeByte(JdwpConstants.Tag.THREAD_GROUP);
-//			    else if (ClassLoader.class.isAssignableFrom(componentClassInfo))
-//			      os.writeByte(JdwpConstants.Tag.CLASS_LOADER);
-//			    else if (Class.class.isAssignableFrom(componentClassInfo))
-//			      os.writeByte(JdwpConstants.Tag.CLASS_OBJECT);
-//			    else
-//			      os.writeByte(JdwpConstants.Tag.OBJECT);
+			os.writeByte(Tag.classInfoToTag(componentClassInfo).identifier());
+			os.writeInt(length);
 
-			    // Write all the values, primitives should be untagged and Objects must be
-			    // tagged
-			    
-			    for (int i = first; i < first + length; i++)
-			      {
-			    	Value value = null;
-			    	if (!componentClassInfo.isPrimitive()) {
-			    		ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
-			    		value = JdwpObjectManager.getInstance().getObjectId(ei);
-			    		value.writeTagged(os);
-			    	} else {
-			    		value = Tag.arrayFieldToValue(array.getFields(), i);
-			    		value.write(os);
-			        }
-			      }
-			
+			for (int i = first; i < first + length; i++) {
+				Value value = null;
+				if (componentClassInfo.isPrimitive()) {
+					value = Tag.arrayFieldToValue(array.getFields(), i);
+					value.write(os);
+				} else {
+					ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
+					value = JdwpObjectManager.getInstance().getObjectId(ei);
+					value.writeTagged(os);
+				}
+			}
+
 		}
-	}, SETVALUES(3) {
+	},
+	SETVALUES(3) {
 		@Override
 		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-
+			int first = bytes.getInt();
+			int values = bytes.getInt();
 			
+			ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
+			Tag tag = Tag.classInfoToTag(componentClassInfo);
+			
+			for (int i = first; i < first + values; ++i) {
+				Value valueUntagged = tag.readValue(bytes);
+				
+				valueUntagged.modify(array.getFields(), i);
+				
+			}
 		}
 	};
 
@@ -111,12 +102,13 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 		return map.get(val);
 	}
 
-	public abstract void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
-	
+	public abstract void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+			JdwpError;
+
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		 ArrayId arrayId = contextProvider.getObjectManager().readArrayId(bytes);
-		    execute(arrayId.get(), bytes, os, contextProvider);
-		
+		ArrayId arrayId = contextProvider.getObjectManager().readArrayId(bytes);
+		execute(arrayId.get(), bytes, os, contextProvider);
+
 	}
 }
