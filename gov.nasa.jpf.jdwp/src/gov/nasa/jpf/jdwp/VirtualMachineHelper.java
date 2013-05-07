@@ -146,16 +146,7 @@ public class VirtualMachineHelper {
 		if (isConstructor) {
 			
 			Heap heap = thread.getHeap();
-		    ClassInfo ci;
-
-		    // resolve the referenced class
-		    ClassInfo cls = thread.getTopFrameMethodInfo().getClassInfo();
-		    try {
-		      ci = cls.resolveReferencedClass("java.lang.String");
-		    } catch(LoadOnJPFRequired lre) {
-		    	throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
-		      //return thread.getPC(); // TODO throw exception probably
-		    }
+		    ClassInfo ci = method.getClassInfo();
 
 		    if (!ci.isRegistered()){
 		      ci.registerClass(thread);
@@ -178,14 +169,14 @@ public class VirtualMachineHelper {
 		    constructedElementInfo = heap.newObject(ci, thread);
 		    int objRef = constructedElementInfo.getObjectRef();
 
-		    // pushes the return value onto the stack
+		    // pushes the object stub onto the stack so that it can be filled by the constructor
 		    frame.pushRef( objRef);
 			//frame.dup();
 		}
 
 		// push this on a stack
 		if (object != null) { // when obj == null then method is static (and we
-								// don't need to push this on stack)
+								// don't need to push this on a stack)
 			frame.pushRef(((ElementInfo) object).getObjectRef());
 		}
 
@@ -212,11 +203,12 @@ public class VirtualMachineHelper {
 			// return -1;
 		}
 
-		ClassInfo returnPrimitiveCi = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
-		Value returnValue = Tag.classInfoToTag(returnPrimitiveCi).peekValue(frame);
-		
+		Value returnValue;
 		if (isConstructor) {
 			returnValue = JdwpObjectManager.getInstance().getObjectId(constructedElementInfo);
+		} else {
+			ClassInfo returnedClassInfo = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
+			returnValue = Tag.classInfoToTag(returnedClassInfo).peekValue(frame);
 		}
 		
 		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);
