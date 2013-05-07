@@ -118,10 +118,80 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
 		}
 	},
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification:</h2>
+	 * Creates a new object of this type, invoking the specified constructor.
+	 * The constructor method ID must be a member of the class type.
+	 * </p>
+	 * <p>
+	 * Instance creation will occur in the specified thread. Instance creation
+	 * can occur only if the specified thread has been suspended by an event.
+	 * Method invocation is not supported when the target VM has been suspended
+	 * by the front-end.
+	 * </p>
+	 * <p>
+	 * The specified constructor is invoked with the arguments in the specified
+	 * argument list. The constructor invocation is synchronous; the reply
+	 * packet is not sent until the invoked method returns in the target VM. The
+	 * return value (possibly the void value) is included in the reply packet.
+	 * If the constructor throws an exception, the exception object ID is set in
+	 * the reply packet; otherwise, the exception object ID is null.
+	 * </p>
+	 * <p>
+	 * For primitive arguments, the argument value's type must match the
+	 * argument's type exactly. For object arguments, there must exist a
+	 * widening reference conversion from the argument value's type to the
+	 * argument's type and the argument's type must be loaded.
+	 * </p>
+	 * <p>
+	 * By default, all threads in the target VM are resumed while the method is
+	 * being invoked if they were previously suspended by an event or by
+	 * command. This is done to prevent the deadlocks that will occur if any of
+	 * the threads own monitors that will be needed by the invoked method. It is
+	 * possible that breakpoints or other events might occur during the
+	 * invocation. Note, however, that this implicit resume acts exactly like
+	 * the ThreadReference resume command, so if the thread's suspend count is
+	 * greater than 1, it will remain in a suspended state during the
+	 * invocation. By default, when the invocation completes, all threads in the
+	 * target VM are suspended, regardless their state before the invocation.
+	 * </p>
+	 * <p>
+	 * The resumption of other threads during the invoke can be prevented by
+	 * specifying the INVOKE_SINGLE_THREADED bit flag in the options field;
+	 * however, there is no protection against or recovery from the deadlocks
+	 * described above, so this option should be used with great caution. Only
+	 * the specified thread will be resumed (as described for all threads
+	 * above). Upon completion of a single threaded invoke, the invoking thread
+	 * will be suspended once again. Note that any threads started during the
+	 * single threaded invocation will not be suspended when the invocation
+	 * completes.
+	 * </p>
+	 * <p>
+	 * If the target VM is disconnected during the invoke (for example, through
+	 * the VirtualMachine dispose command) the method invocation continues.
+	 * </p>
+	 */
 	NEWINSTANCE(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ReferenceTypeId clazz = JdwpObjectManager.getInstance().readReferenceTypeId(bytes);
+			ThreadId threadId = JdwpObjectManager.getInstance().readThreadId(bytes);
+			MethodInfo method = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
+
+			int arguments = bytes.getInt();
+			Value[] values = new Value[arguments];
+
+			for (int i = 0; i < arguments; i++) {
+				values[i] = Tag.bytesToValue(bytes);
+			}
+
+			int options = bytes.getInt();
+
+			MethodResult methodResult = VirtualMachineHelper.invokeMethod(null, method, values, threadId.get(), true);
+
+			methodResult.write(os);
 
 		}
 	};

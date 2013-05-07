@@ -8,10 +8,15 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jvm.bytecode.DUP;
+import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.NEW;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.Heap;
+import gov.nasa.jpf.vm.LoadOnJPFRequired;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -121,6 +126,9 @@ public class VirtualMachineHelper {
 	}
 
 	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread) throws InvalidObject {
+		return invokeMethod(object, method, values, thread, false);
+	}
+	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, boolean isConstructor) throws InvalidObject {
 
 		// TODO [for PJA] What is the best way to execute a method
 		// it's typical, we want to execute obj.toString() when generating a
@@ -132,6 +140,48 @@ public class VirtualMachineHelper {
 								// through this
 
 		DirectCallStackFrame frame = new DirectCallStackFrame(stub);
+		
+		ElementInfo constructedElementInfo = null;
+		
+		if (isConstructor) {
+			
+			Heap heap = thread.getHeap();
+		    ClassInfo ci;
+
+		    // resolve the referenced class
+		    ClassInfo cls = thread.getTopFrameMethodInfo().getClassInfo();
+		    try {
+		      ci = cls.resolveReferencedClass("java.lang.String");
+		    } catch(LoadOnJPFRequired lre) {
+		    	throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
+		      //return thread.getPC(); // TODO throw exception probably
+		    }
+
+		    if (!ci.isRegistered()){
+		      ci.registerClass(thread);
+		    }
+
+		    // since this is a NEW, we also have to pushClinit
+		    if (!ci.isInitialized()) {
+		      if (ci.initializeClass(thread)) {
+		    	  throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
+		        //TODO return thread.getPC();  // reexecute this instruction once we return from the clinits
+		      }
+		    }
+
+		    if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
+		    	throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
+		      //TODO return ti.createAndThrowException("java.lang.OutOfMemoryError",
+		      //                                  "trying to allocate new " + cname);
+		    }
+
+		    constructedElementInfo = heap.newObject(ci, thread);
+		    int objRef = constructedElementInfo.getObjectRef();
+
+		    // pushes the return value onto the stack
+		    frame.pushRef( objRef);
+			//frame.dup();
+		}
 
 		// push this on a stack
 		if (object != null) { // when obj == null then method is static (and we
@@ -164,6 +214,10 @@ public class VirtualMachineHelper {
 
 		ClassInfo returnPrimitiveCi = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
 		Value returnValue = Tag.classInfoToTag(returnPrimitiveCi).peekValue(frame);
+		
+		if (isConstructor) {
+			returnValue = JdwpObjectManager.getInstance().getObjectId(constructedElementInfo);
+		}
 		
 		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);
 		return new MethodResult(returnValue, exception);

@@ -15,6 +15,7 @@ import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -84,8 +85,12 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			dispatchEvent(breakpointEvent);
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
+			if (instructionToExecute instanceof InvokeInstruction) {
+				System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
+			} else {
+				System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
+			}
 			
-			//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());
 			//virtualMachine.conditionallyTriggerStepEvent(vm);
 			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(singleStepEvent);
