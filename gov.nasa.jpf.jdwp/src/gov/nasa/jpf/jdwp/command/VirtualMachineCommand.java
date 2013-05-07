@@ -5,6 +5,8 @@ import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
+import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -69,31 +71,30 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			Collection classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
-		    os.writeInt(classes.size ());
+			os.writeInt(classes.size());
 
-		    Iterator iter = classes.iterator ();
-		    while (iter.hasNext())
-		      {
-		    	ClassInfo clazz = (ClassInfo) iter.next();
-		        ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
-		        id.writeTagged(os);
-		        String sig = Signature.computeClassSignature(clazz);
-		        JdwpString.writeString(os, sig);
-		     // TODO [for PJA] do we have class statuses in JPF?
+			Iterator iter = classes.iterator();
+			while (iter.hasNext()) {
+				ClassInfo clazz = (ClassInfo) iter.next();
+				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+				id.writeTagged(os);
+				String sig = Signature.computeClassSignature(clazz);
+				JdwpString.writeString(os, sig);
+				// TODO [for PJA] do we have class statuses in JPF?
 				ClassStatus.VERIFIED.write(os);
-		      }
+			}
 		}
 	},
 	ALLTHREADS(4) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ThreadInfo[] threads = VM.getVM().getLiveThreads();
-			  os.writeInt(threads.length);
-			  for (ThreadInfo thread : threads) {
-				  
-				  contextProvider.getObjectManager().getObjectId(thread).write(os);
-			  }
-			
+			os.writeInt(threads.length);
+			for (ThreadInfo thread : threads) {
+
+				contextProvider.getObjectManager().getObjectId(thread).write(os);
+			}
+
 		}
 	},
 	TOPLEVELTHREADGROUPS(5) {
@@ -113,11 +114,11 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	IDSIZES(7) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			os.writeInt(TaggableIdentifier.SIZE); 
-			os.writeInt(TaggableIdentifier.SIZE); 
-			os.writeInt(TaggableIdentifier.SIZE); 
-			os.writeInt(TaggableIdentifier.SIZE); 
-			os.writeInt(TaggableIdentifier.SIZE); 
+			os.writeInt(TaggableIdentifier.SIZE);
+			os.writeInt(TaggableIdentifier.SIZE);
+			os.writeInt(TaggableIdentifier.SIZE);
+			os.writeInt(TaggableIdentifier.SIZE);
+			os.writeInt(TaggableIdentifier.SIZE);
 		}
 	},
 	SUSPEND(8) {
@@ -143,25 +144,38 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	CREATESTRING(11) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			  // is invoked when inspecting an array field for instance (TODO rewrite this method)
-		    String string = StringRaw.readString(bytes); 
-		    ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); // TODO [for PJA] which thread we should use?
-		    
-		    ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
+			// is invoked when inspecting an array field for instance (TODO
+			// rewrite this method)
+			String string = StringRaw.readString(bytes);
+			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); // TODO
+																													// [for
+																													// PJA]
+																													// which
+																													// thread
+																													// we
+																													// should
+																													// use?
 
-		    // Since this string isn't referenced anywhere we'll disable garbage
-		    // collection on it so it's still around when the debugger gets back to it.
-		    stringId.disableCollection();
-		    stringId.write(os);
+			ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
+
+			// Since this string isn't referenced anywhere we'll disable garbage
+			// collection on it so it's still around when the debugger gets back
+			// to it.
+			stringId.disableCollection();
+			stringId.write(os);
 
 		}
 	},
 	CAPABILITIES(12) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			for (int i = 0; i < 7; ++i) {
-				os.writeBoolean(false); // we're the most stupid vm ever TODO
-			}
+			os.writeBoolean(Capabilities.CAN_WATCH_FIELD_MODIFICATION);
+			os.writeBoolean(Capabilities.CAN_WATCH_FIELD_ACCESS);
+			os.writeBoolean(Capabilities.CAN_GET_BYTECODES);
+			os.writeBoolean(Capabilities.CAN_GET_SYNTHETIC_ATTRIBUTE);
+			os.writeBoolean(Capabilities.CAN_GET_OWNED_MONITOR_INFO);
+			os.writeBoolean(Capabilities.CAN_GET_CURRENT_CONTENDED_MONITOR);
+			os.writeBoolean(Capabilities.CAN_GET_MONITOR_INFO);
 		}
 	},
 	CLASSPATHS(13) {
@@ -196,9 +210,23 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			CAPABILITIES.execute(bytes, os, contextProvider);
-			
-			for (int i = 7; i < 32; ++i) {
-				os.writeBoolean(false); // TODO check which capabilities we're able to provide
+			os.writeBoolean(CapabilitiesNew.CAN_REDEFINE_CLASSES);
+			os.writeBoolean(CapabilitiesNew.CAN_ADD_METHOD);
+			os.writeBoolean(CapabilitiesNew.CAN_UNRESTRICTEDLY_REDEFINE_CLASSES);
+			os.writeBoolean(CapabilitiesNew.CAN_POP_FRAMES);
+			os.writeBoolean(CapabilitiesNew.CAN_USE_INSTANCE_FILTERS);
+			os.writeBoolean(CapabilitiesNew.CAN_GET_SOURCE_DEBUG_EXTENSION);
+			os.writeBoolean(CapabilitiesNew.CAN_REQUEST_V_M_DEATH_EVENT);
+			os.writeBoolean(CapabilitiesNew.CAN_SET_DEFAULT_STRATUM);
+			os.writeBoolean(CapabilitiesNew.CAN_GET_INSTANCE_INFO);
+			os.writeBoolean(CapabilitiesNew.CAN_REQUEST_MONITOR_EVENTS);
+			os.writeBoolean(CapabilitiesNew.CAN_GET_MONITOR_FRAME_INFO);
+			os.writeBoolean(CapabilitiesNew.CAN_USE_SOURCE_NAME_FILTERS);
+			os.writeBoolean(CapabilitiesNew.CAN_GET_CONSTANT_POOL);
+			os.writeBoolean(CapabilitiesNew.CAN_FORCE_EARLY_RETURN);
+
+			for (int i = 22; i <= 32; ++i) {
+				os.writeBoolean(false);
 			}
 		}
 	},
