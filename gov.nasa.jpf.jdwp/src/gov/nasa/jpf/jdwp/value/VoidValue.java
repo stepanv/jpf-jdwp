@@ -1,5 +1,7 @@
 package gov.nasa.jpf.jdwp.value;
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -18,6 +20,10 @@ public class VoidValue extends PrimitiveValue {
 	@Override
 	public void push(StackFrame frame) {
 		// push nothing since we're void
+	}
+	
+	@Override
+	public void modify(Fields fields, int index) throws InvalidObject {
 	}
 
 }

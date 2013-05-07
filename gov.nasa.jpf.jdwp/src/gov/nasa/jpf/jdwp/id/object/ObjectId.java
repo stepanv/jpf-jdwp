@@ -53,6 +53,5 @@ public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 	public void modify(Fields fields, int index) throws InvalidObject {
 		int ref = ((ElementInfo)this.get()).getObjectRef();
 		fields.setReferenceValue(index, ref);
-		
 	}
 }
