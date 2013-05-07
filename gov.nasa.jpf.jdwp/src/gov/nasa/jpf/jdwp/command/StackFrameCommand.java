@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -41,16 +42,40 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				byte tag = bytes.get();
 
 				Object object = null;
+
+				// There might be different variable with the same slot index
 				for (LocalVarInfo localVarInfo : stackFrame.getMethodInfo().getLocalVars()) {
 					if (localVarInfo.getSlotIndex() == slot) {
+						// TODO [for PJA] looks like StackFrame#getLocalValueObject doesn't work properly
+						// seems like 'slots' are managed incorrectly
 						object = stackFrame.getLocalValueObject(localVarInfo);
 						break;
 					}
 
 				}
 
-				Value value = Tag.taggedObjectToValue(tag, object);
-				value.writeTagged(os);
+				if (object == null) {
+					throw new InvalidObject();
+				}
+				try {
+					Value value = Tag.taggedObjectToValue(tag, object);
+					value.writeTagged(os);
+					// TODO [for PJA] we have a problem here - respectively there, above
+				} catch (ClassCastException e) {
+					// TODO this problem is related to code of debugged application bellow
+					throw new InvalidObject("Local value request cannot be fulfilled", e);
+				}
+				// for (String string : anArray) {
+				// System.out.println("Array string: " + string);
+				// }
+				// for (int string : anIntArray) {
+				// System.out.println("int: " + string); /* TODO [jpf-core] BUG resolving this
+				// variable causes an error - probably bug in JPF */
+				// }
+				// for (Object string : anObjectArray) {
+				// System.out.println("object: " + string);
+				// }
+
 			}
 		}
 	},
