@@ -41,6 +41,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 																																			// the
 																																			// implementation
 			}
+			System.out.println(clazz);
 			// throw new RuntimeException("not implemented");
 			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(clazz);
 			refId.writeTagged(os);
@@ -55,7 +56,13 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	GETVALUES(2) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			DynamicElementInfo obj = (DynamicElementInfo) objectId.get();
+			ElementInfo obj;
+			if (objectId.get() instanceof ThreadInfo) {
+			obj = ((ThreadInfo)objectId.get()).getThreadObject(); // TODO ASAP This is SO BAD !!! ... send ELementInfos only or convert ThreadInfo to ElementInfo on the fly
+			} else {
+			
+			obj = (DynamicElementInfo) objectId.get();
+			}
 
 			int fields = bytes.getInt();
 
@@ -85,7 +92,26 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	SETVALUES(3) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			ElementInfo obj;
+			if (objectId.get() instanceof ThreadInfo) {
+			obj = ((ThreadInfo)objectId.get()).getThreadObject(); // TODO ASAP This is SO BAD !!! ... send ELementInfos only or convert ThreadInfo to ElementInfo on the fly
+			} else {
+			
+			obj = (DynamicElementInfo) objectId.get();
+			}
+			
+			int values = bytes.getInt();
+			
+			for (int i = 0; i < values; ++i) {
+				ObjectId<?> fieldId = contextProvider.getObjectManager().readObjectId(bytes);
+				FieldInfo fieldInfo = (FieldInfo)fieldId.get();
+				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
+				Tag tag = Tag.classInfoToTag(fieldClassInfo);
+				Value valueUntagged = tag.readValue(bytes);
+				
+				valueUntagged.modify(obj.getFields(), fieldInfo.getFieldIndex());
+				
+			}
 
 		}
 	},

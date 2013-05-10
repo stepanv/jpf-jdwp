@@ -60,14 +60,15 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-
+System.out.println("Fields for: " + classInfo);
 			FieldInfo[] fields = classInfo.getInstanceFields();
 			os.writeInt(fields.length);
 			for (int i = 0; i < fields.length; i++) {
 				FieldInfo field = fields[i];
 				contextProvider.getObjectManager().getObjectId(field).write(os);
 				new StringRaw(field.getName()).write(os);
-				new StringRaw(field.getClassInfo().getSignature()).write(os);
+				new StringRaw(field.getSignature()).write(os);
+				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature());
 				os.writeInt(field.getModifiers());
 			}
 
