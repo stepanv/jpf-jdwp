@@ -2,12 +2,16 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.MethodInfo;
 
 import java.io.DataOutputStream;
@@ -54,12 +58,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		}
 	},
 	FIELDS(4) {
-		@Override
-		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
-				JdwpError {
-System.out.println("Fields for: " + classInfo);
-			FieldInfo[] fields = classInfo.getInstanceFields();
-			os.writeInt(fields.length);
+		private void writeFields(FieldInfo[] fields, DataOutputStream os, CommandContextProvider contextProvider) throws IOException {
 			for (int i = 0; i < fields.length; i++) {
 				FieldInfo field = fields[i];
 				contextProvider.getObjectManager().getFieldId(field).write(os);
@@ -68,6 +67,20 @@ System.out.println("Fields for: " + classInfo);
 				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature());
 				os.writeInt(field.getModifiers());
 			}
+		}
+
+		@Override
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			System.out.println("Fields for: " + classInfo);
+			FieldInfo[] instanceFields = classInfo.getDeclaredInstanceFields();
+			FieldInfo[] staticFields = classInfo.getDeclaredStaticFields();
+			os.writeInt(instanceFields.length + staticFields.length);
+
+			// TODO Specification says, it is supposed to be in the same order
+			// as in the source file
+			writeFields(instanceFields, os, contextProvider);
+			writeFields(staticFields, os, contextProvider);
 
 		}
 	},
@@ -92,12 +105,33 @@ System.out.println("Fields for: " + classInfo);
 
 		}
 	},
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns the value of one or more static fields of the reference type.
+	 * Each field must be member of the reference type or one of its
+	 * superclasses, superinterfaces, or implemented interfaces. Access control
+	 * is not enforced; for example, the values of private fields can be
+	 * obtained.
+	 * </p>
+	 */
 	GETVALUES(6) {
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			int fields = bytes.getInt();
+			os.writeInt(fields);
+			
+			for (int i = 0; i < fields; ++i) {
+				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
+				FieldInfo fieldInfo = fieldId.get();
+				
+				Fields fieldss = classInfo.getStaticElementInfo().getFields();
+				Object object = fieldInfo.getValueObject(fieldss);
+				Value val = Tag.classInfoToTag(fieldInfo.getTypeClassInfo()).value(object);
+				val.writeTagged(os);
+			}
 		}
 	},
 	SOURCEFILE(7) {
@@ -142,14 +176,15 @@ System.out.println("Fields for: " + classInfo);
 	 * This command is used when inspecting an array in Eclipse.<br/>
 	 * It is also used when invoking a method of an object instance.
 	 * <p>
-	 * For a reverse operation refer too {@link ClassObjectReferenceCommand#REFLECTEDTYPE}
+	 * For a reverse operation refer too
+	 * {@link ClassObjectReferenceCommand#REFLECTEDTYPE}
 	 * </p>
 	 */
 	CLASSOBJECT(11) {
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			
+
 			ClassObjectId clazzObjectId = contextProvider.getObjectManager().getClassObjectId(classInfo);
 			clazzObjectId.write(os);
 

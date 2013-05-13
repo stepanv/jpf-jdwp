@@ -4,12 +4,15 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 
 import java.io.DataOutputStream;
@@ -19,25 +22,46 @@ import java.nio.ByteBuffer;
 public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassTypeCommand> {
 	SUPERCLASS(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-			ClassInfo clazz = refId.get();
-			ClassInfo superClazz = clazz.getSuperClass();
+		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			ClassInfo superClassInfo = classInfo.getSuperClass();
 
-			if (superClazz == null) {
-				os.writeLong(0L);
+			if (superClassInfo == null) {
+				NullObjectId.getInstance().write(os);
 			} else {
-				ReferenceTypeId clazzId = contextProvider.getObjectManager().getReferenceTypeId(superClazz);
-				clazzId.write(os);
+				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(superClassInfo);
+				referenceTypeId.write(os);
 			}
 
 		}
 	},
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Sets the value of one or more static fields. Each field must be member of
+	 * the class type or one of its superclasses, superinterfaces, or
+	 * implemented interfaces. Access control is not enforced; for example, the
+	 * values of private fields can be set. Final fields cannot be set.For
+	 * primitive values, the value's type must match the field's type exactly.
+	 * For object values, there must exist a widening reference conversion from
+	 * the value's type to the field's type and the field's type must be loaded.
+	 * </p>
+	 */
 	SETVALUES(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			int values = bytes.getInt();
+			
+			ElementInfo staticElementInfo = classInfo.getStaticElementInfo();
+			
+			for (int i = 0; i < values; ++i) {
+				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
+				FieldInfo fieldInfo = fieldId.get();
+				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
+				Tag tag = Tag.classInfoToTag(fieldClassInfo);
+				Value valueUntagged = tag.readValue(bytes);
+				
+				valueUntagged.modify(staticElementInfo.getFields(), fieldInfo.getFieldIndex());
+			}
 		}
 	},
 	/**
@@ -98,10 +122,9 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 	 */
 	INVOKEMETHOD(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ReferenceTypeId clazz = JdwpObjectManager.getInstance().readReferenceTypeId(bytes);
+		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ThreadId threadId = JdwpObjectManager.getInstance().readThreadId(bytes);
-			MethodInfo method = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
+			MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
 
 			int arguments = bytes.getInt();
 			Value[] values = new Value[arguments];
@@ -175,10 +198,9 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 	 */
 	NEWINSTANCE(4) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ReferenceTypeId clazz = JdwpObjectManager.getInstance().readReferenceTypeId(bytes);
+		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ThreadId threadId = JdwpObjectManager.getInstance().readThreadId(bytes);
-			MethodInfo method = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
+			MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
 
 			int arguments = bytes.getInt();
 			Value[] values = new Value[arguments];
@@ -214,33 +236,11 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 	}
 
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		execute(referenceTypeId.get(), bytes, os, contextProvider);
+	}
 
-	// private MethodResult invokeMethod(ByteBuffer bytes)
-	// throws JdwpError, IOException
-	// {
-	// ReferenceTypeId refId =
-	// JdwpObjectManager.getInstance().readReferenceTypeId(bytes);
-	// ClassInfo clazz = refId.get();
-	//
-	// ThreadId tId = JdwpObjectManager.getInstance().readThreadId(bytes);
-	// ThreadInfo thread = tId.get();
-	//
-	// MethodInfo method = VirtualMachineHelper.getClassMethod(clazz,
-	// bytes.getLong());
-	//
-	// int args = bytes.getInt();
-	// Value[] values = new Value[args];
-	//
-	// for (int i = 0; i < args; i++) {
-	// values[i] = Tag.bytesToValue(bytes);
-	// }
-	//
-	// int invokeOpts = bytes.getInt();
-	// //throw new RuntimeException("not implemented");
-	// MethodResult mr = VMVirtualMachine.executeMethod(null, thread,
-	// clazz, method,
-	// values, invokeOpts);
-	// return mr;
-	// }
+	public abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	
 }
