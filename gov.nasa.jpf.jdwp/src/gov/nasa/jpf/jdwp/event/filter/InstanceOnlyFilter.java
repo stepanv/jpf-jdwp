@@ -17,9 +17,9 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
  */
 public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
-	private ObjectId<?> objectId;
+	private ObjectId objectId;
 
-	public InstanceOnlyFilter(ObjectId<?> objectId) {
+	public InstanceOnlyFilter(ObjectId objectId) {
 		super(ModKind.INSTANCE_ONLY, InstanceOnlyFilterable.class);
 		this.objectId = objectId;
 	}

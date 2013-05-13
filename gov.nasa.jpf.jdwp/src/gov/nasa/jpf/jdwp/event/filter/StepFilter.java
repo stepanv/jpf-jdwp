@@ -161,7 +161,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 		this.thread = threadId;
 		this.size = size;
 
-		Iterator<StackFrame> stackFrameIterator = threadId.get().iterator();
+		Iterator<StackFrame> stackFrameIterator = threadId.getInfoObject().iterator();
 
 		while (stackFrameIterator.hasNext()) {
 			StackFrame frame = stackFrameIterator.next();
@@ -209,13 +209,13 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 
 	@Override
 	public boolean matches(StepFilterable event) throws InvalidObject {
-		return matches(event.getLocation().getInstruction(), event.getThread().get());
+		return matches(event.getLocation().getInstruction(), event.getThread().getInfoObject());
 	}
 
 	private boolean matches(Instruction currentInstruction, ThreadInfo currentThread) {
 
 		/* Are we in the right thread? */
-		if (JdwpObjectManager.getInstance().getObjectId(currentThread) != thread) {
+		if (JdwpObjectManager.getInstance().getThreadId(currentThread) != thread) {
 			return false;
 		}
 

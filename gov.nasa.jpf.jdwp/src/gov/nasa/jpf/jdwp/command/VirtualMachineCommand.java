@@ -1,13 +1,11 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
 import gnu.classpath.jdwp.util.JdwpString;
 import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
-import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
@@ -92,7 +90,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			os.writeInt(threads.length);
 			for (ThreadInfo thread : threads) {
 
-				contextProvider.getObjectManager().getObjectId(thread).write(os);
+				contextProvider.getObjectManager().getThreadId(thread).write(os);
 			}
 
 		}

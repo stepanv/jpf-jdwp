@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
+import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
@@ -60,14 +61,14 @@ public class JdwpObjectManager {
 		
 	}
 	public ThreadId readSafeThreadId(ByteBuffer bytes) throws JdwpError {
-		return (ThreadId)readSafeObjectId(bytes, ThreadInfo.class);
+		return (ThreadId)readSafeObjectId(bytes);
 	}
 
 	public ArrayId readArrayId(ByteBuffer bytes) throws JdwpError {
-		return (ArrayId)readSafeObjectId(bytes, ElementInfo.class);
+		return (ArrayId)readSafeObjectId(bytes);
 	}
 	
-	public <T> ObjectId<T> readSafeObjectId(ByteBuffer bytes, Class<T> clazz) throws JdwpError {
+	public ObjectId readSafeObjectId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
 		
 		synchronized (idObjectMap) {
@@ -75,7 +76,7 @@ public class JdwpObjectManager {
 				System.err.println("Invalid id: " + id);
 				throw new JdwpError(ErrorType.INVALID_OBJECT);
 			}
-			return (ObjectId<T>) idObjectMap.get(id);
+			return (ObjectId) idObjectMap.get(id);
 		}
 		
 	}
@@ -148,14 +149,7 @@ public class JdwpObjectManager {
 //		}
 //	}
 	
-	public ObjectId getObjectId(Object object) {
-		// classInfos cannot be sent accross jdwp
-		assert object instanceof ClassInfo;
-		assert object instanceof ThreadInfo;
-		
-//		if (object instanceof ClassInfo || object instanceof ThreadInfo) {
-//			throw new RuntimeException("Illegal object: " + object);
-//		}
+	public ObjectId getObjectId(ElementInfo object) {
 		
 		if (object == null) {
 			return NullObjectId.getInstance();
@@ -172,18 +166,21 @@ public class JdwpObjectManager {
 			return objectId;
 		}
 	}
-
-	private ObjectId createObjectId(Object object) {
-		long id;
+	
+	private long generateId() {
 		synchronized (objectIdGenerator) {
-			id = objectIdGenerator++;
+			return objectIdGenerator++;
 		}
+	}
+
+	
+	private ObjectId createObjectId(ElementInfo elementInfo) {
+		long id = generateId();
 		
-		System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass());
-		
-		ObjectId objectId = ObjectId.factory(id, object);
+		ObjectId objectId = ObjectId.factory(id, elementInfo);
 		idObjectMap.put(id, objectId);
-		System.out.println(idObjectMap + " id: " + id + " objectIdGenerator: " + objectIdGenerator + " this: " + this);
+		
+		System.out.println("CREATED OBJECT id: " + id + " object:" + elementInfo + " class:" + elementInfo.getClass());
 		
 		return objectId;
 	}
@@ -214,6 +211,48 @@ public class JdwpObjectManager {
 	public FieldId readFieldId(ByteBuffer bytes) {
 		synchronized (idField) {
 			return idField.get(bytes.getLong());
+		}
+	}
+
+	public ClassObjectId readClassObjectId(ByteBuffer bytes) throws JdwpError {
+		return (ClassObjectId)readSafeObjectId(bytes);
+	}
+
+	public ClassObjectId getClassObjectId(ClassInfo classInfo) {
+		if (classInfo == null) {
+			throw new RuntimeException("Null is not allowed here!");
+		}
+		synchronized (objectIdMap) {
+			ClassObjectId classObjectId = (ClassObjectId) objectIdMap.get(classInfo.getClassObject());
+			
+			if (classObjectId != null) {
+				return classObjectId;
+			}
+			
+			long id = generateId();
+			classObjectId = new ClassObjectId(id, classInfo);
+			idObjectMap.put(id, classObjectId);
+			objectIdMap.put(classInfo.getClassObject(), classObjectId);
+			return classObjectId;
+		}
+	}
+
+	public ThreadId getThreadId(ThreadInfo threadInfo) {
+		if (threadInfo == null) {
+			throw new RuntimeException("Null is not allowed here!");
+		}
+		synchronized (objectIdMap) {
+			ThreadId threadId = (ThreadId) objectIdMap.get(threadInfo.getThreadObject());
+			
+			if (threadId != null) {
+				return threadId;
+			}
+			
+			long id = generateId();
+			threadId = new ThreadId(id, threadInfo);
+			idObjectMap.put(id, threadId);
+			objectIdMap.put(threadInfo.getThreadObject(), threadId);
+			return threadId;
 		}
 	}
 

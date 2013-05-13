@@ -1,13 +1,13 @@
 package gov.nasa.jpf.jdwp.event;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ExceptionInfo;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * <p>
@@ -25,7 +25,7 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilterable, LocationOnlyFilterable {
 
-	private ClassInfo exception;
+	private ExceptionInfo exception;
 	private Location catchLocation;
 
 	/**
@@ -68,7 +68,7 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	 *            be considered caught even though it appears to be uncaught
 	 *            from examination of the source code.
 	 */
-	public ExceptionEvent(ThreadId threadId, Location location, ClassInfo exception, Location catchLocation) {
+	public ExceptionEvent(ThreadId threadId, Location location, ExceptionInfo exception, Location catchLocation) {
 		super(EventKind.EXCEPTION, threadId, location);
 
 		this.exception = exception;
@@ -77,7 +77,7 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		JdwpObjectManager.getInstance().getObjectId(exception).writeTagged(os);
+		JdwpObjectManager.getInstance().getObjectId(exception.getException()).writeTagged(os);
 		catchLocation.write(os);
 	}
 

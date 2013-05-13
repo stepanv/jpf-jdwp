@@ -3,13 +3,14 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
-public class ThreadId extends ObjectId<ThreadInfo> {
+public class ThreadId extends InfoObjectId<ThreadInfo> {
 
 	public static enum ThreadStatus implements ConvertibleEnum<Integer, ThreadStatus> {
 		ZOMBIE(0), RUNNING(1), SLEEPING(2), MONITOR(3), WAIT(4);
@@ -51,15 +52,23 @@ public class ThreadId extends ObjectId<ThreadInfo> {
 			return suspendStatusId;
 		}
 	}
+	
+	public ThreadId(long id, ThreadInfo threadInfo) {
+		super(Tag.THREAD, id, threadInfo.getThreadObject(), threadInfo);
+	}
 
-	public ThreadId(long id, ThreadInfo object) {
-		super(Tag.THREAD, id, object);
+	public ThreadId(long id, ElementInfo elementInfo) {
+		this(id, getThreadInfo(elementInfo));
 	}
 	
-	@Override
-	public void push(StackFrame frame) throws InvalidObject {
-		int ref = (this.get()).getThreadObjectRef(); // TODO [jpf-core] unify the way how the references are obtained (ThreadInfo and InfoObject and ElementInfo)
-		frame.pushRef(ref);
+	private static ThreadInfo getThreadInfo(ElementInfo elementInfo) {
+		int typeNameRef = elementInfo.getReferenceField("name");
+		
+	    ElementInfo typeName = VM.getVM().getHeap().get(typeNameRef);
+	    String reflectedTypeString = typeName.asString();
+	    ClassInfo ci = ClassInfo.getInitializedClassInfo(reflectedTypeString, VM.getVM().getCurrentThread());
+	    throw new RuntimeException("NOT IMPELEMNTED YET!");
+	    //return ci;
 	}
-
+	
 }

@@ -10,19 +10,17 @@ import gov.nasa.jpf.vm.StackFrame;
  * @author stepan
  *
  */
-public class NullObjectId extends ObjectId<Object> {
-
-	private static final Object NULL_OBJECT = new Object();
+public class NullObjectId extends ObjectId {
 	
 	private NullObjectId() {
-		super(Tag.OBJECT, 0, NULL_OBJECT);
+		super(Tag.OBJECT, 0, null);
 	}
-	
-	private static final NullObjectId instance = new NullObjectId();
 	
 	public static NullObjectId getInstance() {
 		return instance;
 	}
+	
+	private static final NullObjectId instance = new NullObjectId();
 	
 	@Override
 	public void push(StackFrame frame) throws InvalidObject {

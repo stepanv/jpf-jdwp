@@ -27,7 +27,7 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
 
 	private ClassInfo fieldType;
 	private FieldId fieldId;
-	private ObjectId<?> object;
+	private ObjectId object;
 
 	/**
 	 * 
@@ -42,7 +42,7 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
 	 * @param objectOrNull
 	 *            Object being accessed (null=0 for statics)
 	 */
-	public FieldAccessEvent(ThreadId threadId, Location location, ClassInfo fieldType, FieldId fieldId, ObjectId<?> objectOrNull) {
+	public FieldAccessEvent(ThreadId threadId, Location location, ClassInfo fieldType, FieldId fieldId, ObjectId objectOrNull) {
 		super(EventKind.FIELD_ACCESS, threadId, location);
 		this.fieldType = fieldType;
 		this.fieldId = fieldId;

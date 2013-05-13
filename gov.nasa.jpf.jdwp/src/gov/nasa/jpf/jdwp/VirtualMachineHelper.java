@@ -8,21 +8,16 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
-import gov.nasa.jpf.jvm.bytecode.DUP;
-import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.NEW;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.Heap;
-import gov.nasa.jpf.vm.LoadOnJPFRequired;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.UncaughtException;
-import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -95,7 +90,7 @@ public class VirtualMachineHelper {
 	}
 
 	public static MethodInfo getClassMethod(ClassInfo clazz, long id) throws JdwpError {
-		System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz + " JDWP ID: " + JdwpObjectManager.getInstance().getObjectId(clazz));
+		System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz);
 		for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
 			if (id == methodInfo.getGlobalId()) {
 				System.out.println("METHOD found: " + methodInfo);
@@ -110,10 +105,10 @@ public class VirtualMachineHelper {
 	}
 
 	public static class MethodResult {
-		private ObjectId<?> exception;
+		private ObjectId exception;
 		private Value value;
 
-		public MethodResult(Value value, ObjectId<?> exception) {
+		public MethodResult(Value value, ObjectId exception) {
 			this.value = value;
 			this.exception = exception != null ? exception : NullObjectId.getInstance();
 		}
@@ -125,10 +120,13 @@ public class VirtualMachineHelper {
 
 	}
 
-	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread) throws InvalidObject {
-		return invokeMethod(object, method, values, thread, false);
+	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
+		return invokeMethod(object, method, values, thread, options, false);
 	}
-	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, boolean isConstructor) throws InvalidObject {
+	public static MethodResult invokeConstructor(MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
+		return invokeMethod(null, method, values, thread, options, true);
+	}
+	private static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor) throws InvalidObject {
 
 		// TODO [for PJA] What is the best way to execute a method
 		// it's typical, we want to execute obj.toString() when generating a
@@ -185,7 +183,7 @@ public class VirtualMachineHelper {
 			value.push(frame);
 		}
 
-		ObjectId<?> exception = null;
+		ObjectId exception = null;
 		try {
 			thread.executeMethodHidden(frame);
 			// ti.advancePC();
@@ -194,7 +192,7 @@ public class VirtualMachineHelper {
 			System.out.println("# hidden method execution failed, leaving nativeHiddenRoundtrip: " + ux);
 			thread.clearPendingException();
 			ExceptionInfo exceptionInfo = thread.getPendingException();
-			exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo);
+			exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo.getException());
 			throw new RuntimeException("exceptions not yet implemented");
 			// methodResult = new MethodResult(null, exceptionInfo);
 			// thread.popFrame(); // this is still the DirectCallStackFrame,

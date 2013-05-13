@@ -1,17 +1,14 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;
-import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -79,7 +76,7 @@ System.out.println("Fields for: " + classInfo);
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 
-			System.out.println("METHODS FOR CLASS: " + classInfo + " JDWP ID: " + contextProvider.getObjectManager().getObjectId(classInfo));
+			System.out.println("METHODS FOR CLASS: " + classInfo);
 			MethodInfo[] methods = classInfo.getDeclaredMethodInfos();
 			os.writeInt(methods.length);
 			for (int i = 0; i < methods.length; i++) {
@@ -152,7 +149,8 @@ System.out.println("Fields for: " + classInfo);
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			ObjectId<?> clazzObjectId = contextProvider.getObjectManager().getObjectId(classInfo.getClassObject());
+			
+			ClassObjectId clazzObjectId = contextProvider.getObjectManager().getClassObjectId(classInfo);
 			clazzObjectId.write(os);
 
 		}

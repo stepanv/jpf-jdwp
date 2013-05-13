@@ -28,7 +28,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
 	private ClassInfo fieldType;
 	private FieldId fieldId;
-	private ObjectId<?> object;
+	private ObjectId object;
 	private Value value;
 
 	/**
@@ -47,7 +47,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 	 * @param valueToBe
 	 *            Value to be assigned
 	 */
-	public FieldModificationEvent(ThreadId threadId, Location location, ClassInfo fieldType, FieldId fieldId, ObjectId<?> objectOrNull, Value valueToBe) {
+	public FieldModificationEvent(ThreadId threadId, Location location, ClassInfo fieldType, FieldId fieldId, ObjectId objectOrNull, Value valueToBe) {
 		super(EventKind.FIELD_MODIFICATION, threadId, location);
 		this.fieldType = fieldType;
 		this.fieldId = fieldId;

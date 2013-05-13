@@ -53,7 +53,7 @@ public class ClassPrepareEvent extends EventBase implements Threadable, ClassFil
 	 *            Status of type. See {@link ClassStatus}.
 	 */
 	public ClassPrepareEvent(ThreadInfo currentThread, ClassInfo classInfo, int status) {
-		super(EventKind.CLASS_PREPARE, (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread));
+		super(EventKind.CLASS_PREPARE, (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread));
 
 		this.classInfo = classInfo;
 		this.status = status;

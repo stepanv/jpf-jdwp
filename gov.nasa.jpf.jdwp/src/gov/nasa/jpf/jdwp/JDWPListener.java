@@ -37,7 +37,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		
 		Instruction instruction = enteredMethod.getInstruction(0);
 		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
-			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread);
+			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread);
 			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(threadId, Location.factory(instruction));
 			dispatchEvent(methodEntryEvent);
 		}
@@ -80,7 +80,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
-			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getObjectId(vm.getCurrentThread());
+			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
 			

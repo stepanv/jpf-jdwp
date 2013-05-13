@@ -111,7 +111,7 @@ public abstract class Filter<T extends Event> {
 		INSTANCE_ONLY(11) {
 			@Override
 			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
+				ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
 				return new InstanceOnlyFilter(objectId);
 			}
 		},

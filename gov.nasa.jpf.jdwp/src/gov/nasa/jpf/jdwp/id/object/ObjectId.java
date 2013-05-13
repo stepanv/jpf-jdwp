@@ -4,38 +4,37 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.ThreadInfo;
 
-public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
+public class ObjectId extends TaggableIdentifier<ElementInfo> implements Value {
 	
 	private Tag tag;
 
-	public ObjectId(Tag tag, long id, T object) {
+	public ObjectId(Tag tag, long id, ElementInfo object) {
 		super(id, object);
 		this.tag = tag;
 	}
 
-	public static ObjectId<?> factory(long id, Object object) {
-		if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isArray()) {
-	        return new ArrayId(id, (ElementInfo) object);
-	    } else if (object.getClass().getName().equals("gov.nasa.jpf.vm.ThreadInfo")) { // TODO don't use string comparison - it's slow
-	    	return new ThreadId(id, (ThreadInfo) object);
-	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().isStringClassInfo()) {
-	    	return new StringId(id, (ElementInfo) object);
-	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.Class")) {
-	    	return new ClassObjectId(id, (ElementInfo) object);
-	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.ThreadGroup")) {
-	    	return new ThreadGroupId(id, (ElementInfo) object);
-	    } else if (object instanceof ElementInfo && ((ElementInfo)object).getClassInfo().getName().equals("java.lang.ClassLoader")) {
-	    	return new ClassLoaderId(id, (ElementInfo) object);
+	public static ObjectId factory(long id, ElementInfo object) {
+		ClassInfo classInfo = object.getClassInfo();
+		if (classInfo.isArray()) {
+	        return new ArrayId(id, object);
+	    } else if ("java.lang.Thread".equals(classInfo.getName())) {
+	    	return new ThreadId(id, object);
+	    } else if (classInfo.isStringClassInfo()) {
+	    	return new StringId(id, object);
+	    } else if ("java.lang.Class".equals(classInfo.getName())) {
+	    	return new ClassObjectId(id,object);
+	    } else if ("java.lang.ThreadGroup".equals(classInfo.getName())) {
+	    	return new ThreadGroupId(id, object);
+	    } else if ("java.lang.ClassLoader".equals(classInfo.getName())) {
+	    	return new ClassLoaderId(id, object);
 	    } else {
-	    	return new ObjectId<Object>(Tag.OBJECT, id, object);
+	    	return new ObjectId(Tag.OBJECT, id, object);
 	    }
-		
-		//throw new RuntimeException("FACTORY NOT FULLY IMPLEMENTED YET. For object: " + object + " class: " + object.getClass());
 	}
 
 	@Override
@@ -58,7 +57,7 @@ public class ObjectId<T> extends TaggableIdentifier<T> implements Value {
 
 	@Override
 	public void modify(Fields fields, int index) throws InvalidObject {
-		int ref = ((ElementInfo)this.get()).getObjectRef();
+		int ref = get().getObjectRef();
 		fields.setReferenceValue(index, ref);
 	}
 }

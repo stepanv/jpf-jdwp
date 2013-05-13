@@ -29,7 +29,7 @@ public class VmStartEvent extends EventBase implements Threadable {
 	 *            The initial thread of the VM.
 	 */
 	public VmStartEvent(ThreadInfo currentThread) {
-		super(EventKind.VM_START, (ThreadId) JdwpObjectManager.getInstance().getObjectId(currentThread));
+		super(EventKind.VM_START, (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread));
 	}
 
 	@Override

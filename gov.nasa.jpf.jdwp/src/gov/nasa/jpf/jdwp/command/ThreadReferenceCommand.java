@@ -163,7 +163,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		ThreadId tid = contextProvider.getObjectManager().readThreadId(bytes);
-	    execute(tid.get(), bytes, os, contextProvider);
+		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+	    execute(threadId.getInfoObject(), bytes, os, contextProvider);
 	}
 }

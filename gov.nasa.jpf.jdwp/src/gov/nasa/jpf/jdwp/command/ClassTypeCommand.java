@@ -112,7 +112,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
 			int options = bytes.getInt();
 
-			MethodResult methodResult = VirtualMachineHelper.invokeMethod(null, method, values, threadId.get());
+			MethodResult methodResult = VirtualMachineHelper.invokeMethod(null, method, values, threadId.getInfoObject(), options);
 
 			methodResult.write(os);
 
@@ -189,7 +189,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
 			int options = bytes.getInt();
 
-			MethodResult methodResult = VirtualMachineHelper.invokeMethod(null, method, values, threadId.get(), true);
+			MethodResult methodResult = VirtualMachineHelper.invokeConstructor(method, values, threadId.getInfoObject(), options);
 
 			methodResult.write(os);
 

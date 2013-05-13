@@ -126,7 +126,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				// TODO this is possibly completely wrong
 				throw new IllegalArgumentException("Not sure whether we're allowed to return static elements");
 			}
-			ObjectId<?> thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);
+			ObjectId thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);
 			thisObjectId.writeTagged(os);
 		}
 	},
@@ -174,9 +174,9 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpError, IOException {
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
-		StackFrame stackFrame = VirtualMachineHelper.getFrame(threadId.get(), bytes.getLong());
+		StackFrame stackFrame = VirtualMachineHelper.getFrame(threadId.getInfoObject(), bytes.getLong());
 
-		execute(threadId.get(), stackFrame, bytes, os, contextProvider);
+		execute(threadId.getInfoObject(), stackFrame, bytes, os, contextProvider);
 	}
 
 	public abstract void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)

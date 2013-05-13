@@ -39,7 +39,7 @@ public class ThreadStartEvent extends EventBase implements Threadable {
 	 *            Started thread
 	 */
 	public ThreadStartEvent(ThreadInfo thread) {
-		super(EventKind.THREAD_START, (ThreadId) JdwpObjectManager.getInstance().getObjectId(thread));
+		super(EventKind.THREAD_START, (ThreadId) JdwpObjectManager.getInstance().getThreadId(thread));
 	}
 
 	@Override

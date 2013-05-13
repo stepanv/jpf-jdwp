@@ -7,7 +7,6 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -57,14 +56,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	GETVALUES(2) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ElementInfo obj;
-			if (objectId.get() instanceof ThreadInfo) {
-			obj = ((ThreadInfo)objectId.get()).getThreadObject(); // TODO ASAP This is SO BAD !!! ... send ELementInfos only or convert ThreadInfo to ElementInfo on the fly
-			} else {
-			
-			obj = (DynamicElementInfo) objectId.get();
-			}
-
+			ElementInfo obj = (DynamicElementInfo) objectId.get();
 			int fields = bytes.getInt();
 
 			os.writeInt(fields);
@@ -93,14 +85,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	SETVALUES(3) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ElementInfo obj;
-			if (objectId.get() instanceof ThreadInfo) {
-			obj = ((ThreadInfo)objectId.get()).getThreadObject(); // TODO ASAP This is SO BAD !!! ... send ELementInfos only or convert ThreadInfo to ElementInfo on the fly
-			} else {
-			
-			obj = (DynamicElementInfo) objectId.get();
-			}
-			
+			ElementInfo obj = (DynamicElementInfo) objectId.get();
 			int values = bytes.getInt();
 			
 			for (int i = 0; i < values; ++i) {
@@ -136,7 +121,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 			}
 			int options = bytes.getInt();
 
-			MethodResult methodResult = VirtualMachineHelper.invokeMethod(objectId.get(), methodInfo, values, threadId.get());
+			MethodResult methodResult = VirtualMachineHelper.invokeMethod(objectId.get(), methodInfo, values, threadId.getInfoObject(), options);
 			methodResult.write(os);
 		}
 
@@ -181,7 +166,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		ObjectId<?> objectId = contextProvider.getObjectManager().readObjectId(bytes);
+		ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
 		execute(objectId, bytes, os, contextProvider);
 	}
 
