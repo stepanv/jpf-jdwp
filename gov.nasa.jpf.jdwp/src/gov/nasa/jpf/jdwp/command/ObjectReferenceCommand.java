@@ -4,6 +4,7 @@ import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
@@ -69,7 +70,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 			os.writeInt(fields);
 
 			for (int i = 0; i < fields; i++) {
-				FieldInfo field = (FieldInfo) contextProvider.getObjectManager().readObjectId(bytes).get();
+				FieldInfo field = contextProvider.getObjectManager().readFieldId(bytes).get();
 				System.out.println(field);
 				// field.setAccessible(true); // Might be a private field
 				Object object = field.getValueObject(obj.getFields());
@@ -103,8 +104,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 			int values = bytes.getInt();
 			
 			for (int i = 0; i < values; ++i) {
-				ObjectId<?> fieldId = contextProvider.getObjectManager().readObjectId(bytes);
-				FieldInfo fieldInfo = (FieldInfo)fieldId.get();
+				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
+				FieldInfo fieldInfo = fieldId.get();
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);

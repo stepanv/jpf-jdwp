@@ -65,7 +65,7 @@ System.out.println("Fields for: " + classInfo);
 			os.writeInt(fields.length);
 			for (int i = 0; i < fields.length; i++) {
 				FieldInfo field = fields[i];
-				contextProvider.getObjectManager().getObjectId(field).write(os);
+				contextProvider.getObjectManager().getFieldId(field).write(os);
 				new StringRaw(field.getName()).write(os);
 				new StringRaw(field.getSignature()).write(os);
 				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature());

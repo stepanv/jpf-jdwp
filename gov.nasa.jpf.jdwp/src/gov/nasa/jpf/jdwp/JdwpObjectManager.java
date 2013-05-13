@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -10,10 +11,12 @@ import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JdwpObjectManager {
@@ -124,6 +127,27 @@ public class JdwpObjectManager {
 		}
 	}
 	
+//	private <T> ObjectId<T> getObjectIdSafe(Object object, Class<T> clazz) {
+//		// classInfos cannot be sent accross jdwp
+//		assert object instanceof ClassInfo;
+//		assert object instanceof ThreadInfo;
+//		
+//		if (object == null) {
+//			return (ObjectId<T>) NullObjectId.getInstance();
+//		}
+//		synchronized (objectIdMap) {
+//			ObjectId<T> objectId = objectIdMap.get(object);
+//			
+//			if (objectId != null) {
+//				return objectId;
+//			}
+//			
+//			objectId = createObjectId(object);
+//			objectIdMap.put(object, objectId);
+//			return objectId;
+//		}
+//	}
+	
 	public ObjectId getObjectId(Object object) {
 		// classInfos cannot be sent accross jdwp
 		assert object instanceof ClassInfo;
@@ -158,6 +182,35 @@ public class JdwpObjectManager {
 		System.out.println(idObjectMap + " id: " + id + " objectIdGenerator: " + objectIdGenerator + " this: " + this);
 		
 		return objectId;
+	}
+	
+	
+	
+	
+	Map<Long, FieldId> idField = new WeakHashMap<Long, FieldId>();
+	Map<FieldInfo, FieldId> fieldInfoFieldId = new WeakHashMap<FieldInfo, FieldId>();
+	Long fieldIdGenerator = (long) 1;
+
+	public FieldId getFieldId(FieldInfo field) {
+		synchronized (fieldInfoFieldId) {
+			if (fieldInfoFieldId.containsKey(field)) {
+				return fieldInfoFieldId.get(field);
+			} else {
+				long id = fieldIdGenerator++;
+				FieldId fieldId = new FieldId(id, field);
+				fieldInfoFieldId.put(field, fieldId);
+				synchronized (idField) {
+					idField.put(id, fieldId);
+				}
+				return fieldId;
+			}
+		}
+	}
+	
+	public FieldId readFieldId(ByteBuffer bytes) {
+		synchronized (idField) {
+			return idField.get(bytes.getLong());
+		}
 	}
 
 }
