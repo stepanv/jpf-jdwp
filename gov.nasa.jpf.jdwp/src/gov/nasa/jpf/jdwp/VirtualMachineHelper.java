@@ -60,17 +60,17 @@ public class VirtualMachineHelper {
 		List<StackFrame> frames = new ArrayList<StackFrame>();
 		Iterator<StackFrame> stackIterator = thread.iterator();
 
-		for (int currentPosition = 0, currentLenght = 0; stackIterator.hasNext(); ++currentPosition) {
+		for (int currentPosition = 0, currentLenght = 0; stackIterator.hasNext();) {
 			StackFrame stackFrame = stackIterator.next();
 			if (!stackFrame.isSynthetic()) {
-				if (start >= currentPosition) {
+				if (start <= currentPosition) {
 					if (length == -1 || ++currentLenght <= length) {
 						frames.add(stackFrame);
 					} else {
 						return frames;
 					}
 				}
-
+				++currentPosition;
 			}
 		}
 		return frames;

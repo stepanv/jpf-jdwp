@@ -153,6 +153,10 @@ public class JdwpObjectManager {
 		assert object instanceof ClassInfo;
 		assert object instanceof ThreadInfo;
 		
+//		if (object instanceof ClassInfo || object instanceof ThreadInfo) {
+//			throw new RuntimeException("Illegal object: " + object);
+//		}
+		
 		if (object == null) {
 			return NullObjectId.getInstance();
 		}
