@@ -9,6 +9,7 @@ import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
+import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -33,7 +34,6 @@ public class JdwpObjectManager {
 	private JdwpObjectManager() {
 		// An objectID of 0 represents a null object. 
 		idObjectMap.put((long) 0, NullObjectId.getInstance());
-		//objectIdMap.put(null, NullObjectId.getInstance());
 	}
 	
 	public ThreadId readThreadId(ByteBuffer bytes) throws JdwpError {
@@ -79,6 +79,10 @@ public class JdwpObjectManager {
 			return (ObjectId) idObjectMap.get(id);
 		}
 		
+	}
+	
+	public ArrayTypeReferenceId readArrayTypeReferenceId(ByteBuffer bytes) throws JdwpError {
+		return (ArrayTypeReferenceId)readReferenceTypeId(bytes);
 	}
 	
 	public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
@@ -127,27 +131,6 @@ public class JdwpObjectManager {
 			return referenceTypeId;
 		}
 	}
-	
-//	private <T> ObjectId<T> getObjectIdSafe(Object object, Class<T> clazz) {
-//		// classInfos cannot be sent accross jdwp
-//		assert object instanceof ClassInfo;
-//		assert object instanceof ThreadInfo;
-//		
-//		if (object == null) {
-//			return (ObjectId<T>) NullObjectId.getInstance();
-//		}
-//		synchronized (objectIdMap) {
-//			ObjectId<T> objectId = objectIdMap.get(object);
-//			
-//			if (objectId != null) {
-//				return objectId;
-//			}
-//			
-//			objectId = createObjectId(object);
-//			objectIdMap.put(object, objectId);
-//			return objectId;
-//		}
-//	}
 	
 	public ObjectId getObjectId(ElementInfo object) {
 		

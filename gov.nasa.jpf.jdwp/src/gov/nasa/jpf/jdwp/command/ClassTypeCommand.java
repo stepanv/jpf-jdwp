@@ -20,11 +20,20 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassTypeCommand> {
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns the immediate superclass of a class.
+	 * </p>
+	 */
 	SUPERCLASS(1) {
 		@Override
 		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ClassInfo superClassInfo = classInfo.getSuperClass();
 
+			// The superclass (null if the class ID for java.lang.Object is
+			// specified).
 			if (superClassInfo == null) {
 				NullObjectId.getInstance().write(os);
 			} else {
@@ -34,6 +43,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
 		}
 	},
+
 	/**
 	 * <p>
 	 * <h2>JDWP Specification</h2>
@@ -50,20 +60,21 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 		@Override
 		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			int values = bytes.getInt();
-			
+
 			ElementInfo staticElementInfo = classInfo.getStaticElementInfo();
-			
+
 			for (int i = 0; i < values; ++i) {
 				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
 				FieldInfo fieldInfo = fieldId.get();
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);
-				
+
 				valueUntagged.modify(staticElementInfo.getFields(), fieldInfo.getFieldIndex());
 			}
 		}
 	},
+
 	/**
 	 * <p>
 	 * <h2>JDWP Specification</h2>
@@ -217,6 +228,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
 		}
 	};
+
 	private byte commandId;
 
 	private ClassTypeCommand(int commandId) {
@@ -241,6 +253,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 		execute(referenceTypeId.get(), bytes, os, contextProvider);
 	}
 
-	public abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
-	
+	public abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+			JdwpError;
+
 }
