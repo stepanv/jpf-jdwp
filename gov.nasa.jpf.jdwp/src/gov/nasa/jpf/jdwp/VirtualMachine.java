@@ -133,13 +133,13 @@ public class VirtualMachine {
 		 * Can the VM watch field modification, and therefore can it send the
 		 * Modification Watchpoint Event?
 		 */
-		public static final boolean CAN_WATCH_FIELD_MODIFICATION = false;
+		public static final boolean CAN_WATCH_FIELD_MODIFICATION = true;
 
 		/**
 		 * Can the VM watch field access, and therefore can it send the Access
 		 * Watchpoint Event?
 		 */
-		public static final boolean CAN_WATCH_FIELD_ACCESS = false;
+		public static final boolean CAN_WATCH_FIELD_ACCESS = true; 
 
 		/** Can the VM get the bytecodes of a given method? */
 		public static final boolean CAN_GET_BYTECODES = false;

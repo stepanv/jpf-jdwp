@@ -145,14 +145,9 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			// is invoked when inspecting an array field for instance (TODO
 			// rewrite this method)
 			String string = StringRaw.readString(bytes);
-			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); // TODO
-																													// [for
-																													// PJA]
-																													// which
-																													// thread
-																													// we
-																													// should
-																													// use?
+			
+			// TODO [for PJA] which thread we should use?
+			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); 
 
 			ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
 

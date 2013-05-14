@@ -13,6 +13,7 @@ import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class Location {
 
@@ -35,6 +36,13 @@ public class Location {
 
 	public static Location factory(Instruction instruction) {
 		return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
+	}
+	
+	public static Location factorySafe(Instruction instruction, ThreadInfo threadInfo) {
+		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+			instruction = instruction.getNext(threadInfo);
+		}
+		return factory(instruction);
 	}
 	
 	private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {

@@ -73,12 +73,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		    	StackFrame frame = (StackFrame) frames.get(i);
 		        os.writeLong(frame.getThis());
 		        
-		        Instruction instruction = frame.getPC();
-				
-				while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
-					instruction = instruction.getNext(threadInfo);
-				}
-		        Location location = Location.factory(instruction);
+		        Location location = Location.factorySafe(frame.getPC(), threadInfo);
 		        location.write(os);
 		      }
 

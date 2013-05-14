@@ -10,6 +10,9 @@ import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.EventBase;
+import gov.nasa.jpf.jdwp.event.ExceptionEvent;
+import gov.nasa.jpf.jdwp.event.FieldAccessEvent;
+import gov.nasa.jpf.jdwp.event.FieldModificationEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
@@ -17,6 +20,9 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -80,7 +86,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
-			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
+			ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
 			
@@ -91,6 +97,16 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 				//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
 			}
 			
+			ClassInfo classInfo = instructionToExecute.getMethodInfo().getClassInfo();
+			for (FieldInfo fieldInfo : classInfo.getInstanceFields()) {
+				int fieldIndex = fieldInfo.getFieldIndex();
+				//classInfo.get
+			}
+			
+			//new FieldAccessEvent(threadId, location, fieldType, fieldId, objectOrNull)
+			
+			//new FieldModificationEvent(threadId, location, fieldType, fieldId, objectOrNull, valueToBe)
+			
 			//virtualMachine.conditionallyTriggerStepEvent(vm);
 			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(singleStepEvent);
@@ -98,6 +114,28 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		lastInstruction = instructionToExecute;
 	}
 	
+	@Override
+	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
+		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
+		Instruction instruction = vm.getInstruction();
+		if (instruction != null) {
+			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException, null);
+			dispatchEvent(exceptionEvent);
+		}
+	}
+
+	@Override
+	public void exceptionBailout(VM vm, ThreadInfo currentThread) {
+		// TODO Auto-generated method stub
+		super.exceptionBailout(vm, currentThread);
+	}
+
+	@Override
+	public void exceptionHandled(VM vm, ThreadInfo currentThread) {
+		// TODO Auto-generated method stub
+		super.exceptionHandled(vm, currentThread);
+	}
+
 	private void dispatchEvent(EventBase event) {
 //		for (EventRequest request : requests) {
 //			if (request.matches(event)) {

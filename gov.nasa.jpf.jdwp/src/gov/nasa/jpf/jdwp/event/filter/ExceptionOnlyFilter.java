@@ -1,8 +1,12 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
+import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
 
 /**
  * <p>
@@ -51,7 +55,26 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 
 	@Override
 	public boolean matches(ExceptionOnlyFilterable event) {
+		if (exceptionOrNull.isNull()) {
+			return true;
+		}
 		return event.visit(this);
+	}
+	
+	public boolean matches(ExceptionEvent event) {
+		
+		ElementInfo exception = event.getException();
+		
+		// TODO do something with caught and uncaught too!
+		
+		ClassInfo exceptionClassInfo = exception.getClassInfo();
+		
+		try {
+			return exceptionClassInfo.equals(exceptionOrNull.get());
+		} catch (InvalidObject e) {
+			return false;
+			// TODO we don't want to throw errors?
+		}
 	}
 
 }

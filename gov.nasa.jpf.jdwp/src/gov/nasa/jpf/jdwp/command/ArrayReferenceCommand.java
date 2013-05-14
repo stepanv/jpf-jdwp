@@ -27,11 +27,12 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			os.writeInt(array.arrayLength());
 		}
 	},
-	
+
 	/**
 	 * <p>
 	 * <h2>JDWP Specification</h2>
-	 * Returns a range of array components. The specified range must be within the bounds of the array. 
+	 * Returns a range of array components. The specified range must be within
+	 * the bounds of the array.
 	 * </p>
 	 * <p>
 	 * Known use-cases:
@@ -66,20 +67,30 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 
 		}
 	},
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Sets a range of array components. The specified range must be within the
+	 * bounds of the array. For primitive values, each value's type must match
+	 * the array component type exactly. For object values, there must be a
+	 * widening reference conversion from the value's type to the array
+	 * component type and the array component type must be loaded.
+	 * </p>
+	 */
 	SETVALUES(3) {
 		@Override
 		public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			int first = bytes.getInt();
 			int values = bytes.getInt();
-			
+
 			ClassInfo componentClassInfo = array.getClassInfo().getComponentClassInfo();
 			Tag tag = Tag.classInfoToTag(componentClassInfo);
-			
+
 			for (int i = first; i < first + values; ++i) {
 				Value valueUntagged = tag.readValue(bytes);
-				
+
 				valueUntagged.modify(array.getFields(), i);
-				
 			}
 		}
 	};

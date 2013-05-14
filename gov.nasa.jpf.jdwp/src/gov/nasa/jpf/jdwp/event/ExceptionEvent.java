@@ -4,6 +4,7 @@ import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
 
 import java.io.DataOutputStream;
@@ -25,7 +26,7 @@ import java.io.IOException;
  */
 public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilterable, LocationOnlyFilterable {
 
-	private ExceptionInfo exception;
+	private ElementInfo exception;
 	private Location catchLocation;
 
 	/**
@@ -68,7 +69,7 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	 *            be considered caught even though it appears to be uncaught
 	 *            from examination of the source code.
 	 */
-	public ExceptionEvent(ThreadId threadId, Location location, ExceptionInfo exception, Location catchLocation) {
+	public ExceptionEvent(ThreadId threadId, Location location, ElementInfo exception, Location catchLocation) {
 		super(EventKind.EXCEPTION, threadId, location);
 
 		this.exception = exception;
@@ -77,13 +78,23 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		JdwpObjectManager.getInstance().getObjectId(exception.getException()).writeTagged(os);
-		catchLocation.write(os);
+		JdwpObjectManager.getInstance().getObjectId(exception).writeTagged(os);
+		if (catchLocation == null) {
+			// TODO how to write '0' here? (According to the spec?)
+			os.writeLong(0);
+			os.writeLong(0);
+		} else {
+			catchLocation.write(os);
+		}
 	}
 
 	@Override
 	public boolean visit(ExceptionOnlyFilter exceptionOnlyFilter) {
-		throw new RuntimeException("NOT IMPLEMENTED YET");
+		return exceptionOnlyFilter.matches(this);
+	}
+	
+	public ElementInfo getException() {
+		return exception;
 	}
 
 }
