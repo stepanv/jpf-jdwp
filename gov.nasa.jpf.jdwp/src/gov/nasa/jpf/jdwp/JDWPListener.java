@@ -21,10 +21,12 @@ import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ExceptionHandler;
 import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
@@ -114,12 +116,28 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		lastInstruction = instructionToExecute;
 	}
 	
+	
 	@Override
-	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
+	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
 		Instruction instruction = vm.getInstruction();
 		if (instruction != null) {
 			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException, null);
+			dispatchEvent(exceptionEvent);
+		}
+	}
+
+	@Override
+	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
+		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
+		Instruction instruction = vm.getInstruction();
+		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
+		int handlerInstructionIndex = matchingHandler.getHandler();
+		
+		Instruction catchInstruction = handlerMethodInfo.getInstruction(handlerInstructionIndex);
+		
+		if (instruction != null) {
+			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException, Location.factorySafe(catchInstruction, currentThread));
 			dispatchEvent(exceptionEvent);
 		}
 	}
