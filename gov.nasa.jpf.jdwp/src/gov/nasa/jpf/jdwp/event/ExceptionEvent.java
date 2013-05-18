@@ -31,6 +31,8 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
 	/**
 	 * Creates Exception event.
+	 * It's interesting that catchLocation is not used by JDT debugger (Eclipse) at all.
+	 * It could be interesting to check how other debuggers use catchLocation attribute.
 	 * 
 	 * @param threadId
 	 *            Thread with exception
@@ -80,7 +82,8 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
 		JdwpObjectManager.getInstance().getObjectId(exception).writeTagged(os);
 		if (catchLocation == null) {
-			// TODO how to write '0' here? (According to the spec?)
+			// TODO when location is null, we need to send twice null long ... do it a better way?
+			// I checked the Eclipse debugger and because of that I know what is it about
 			os.writeLong(0);
 			os.writeLong(0);
 		} else {

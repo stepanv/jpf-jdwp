@@ -220,6 +220,10 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 		}
 
 		StackFrame currentStackFrame = currentThread.getLastNonSyntheticStackFrame();
+		if (currentStackFrame == null) {
+			/* There is no way to go */
+			return false;
+		}
 		int currentStackFrameSize = stackSize(currentStackFrame);
 
 		/* If we're in a synthetic method, return immediately */

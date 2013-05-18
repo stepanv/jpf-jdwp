@@ -134,24 +134,14 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
 		int handlerInstructionIndex = matchingHandler.getHandler();
 		
-		Instruction catchInstruction = handlerMethodInfo.getInstruction(handlerInstructionIndex);
+		Instruction catchInstruction = handlerMethodInfo.getInstructionAt(handlerInstructionIndex);
 		
-		if (instruction != null) {
+		if (instruction != null && catchInstruction != null) {
 			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException, Location.factorySafe(catchInstruction, currentThread));
 			dispatchEvent(exceptionEvent);
+		} else {
+			// TODO what if we get an exception without possibility to get a position?
 		}
-	}
-
-	@Override
-	public void exceptionBailout(VM vm, ThreadInfo currentThread) {
-		// TODO Auto-generated method stub
-		super.exceptionBailout(vm, currentThread);
-	}
-
-	@Override
-	public void exceptionHandled(VM vm, ThreadInfo currentThread) {
-		// TODO Auto-generated method stub
-		super.exceptionHandled(vm, currentThread);
 	}
 
 	private void dispatchEvent(EventBase event) {

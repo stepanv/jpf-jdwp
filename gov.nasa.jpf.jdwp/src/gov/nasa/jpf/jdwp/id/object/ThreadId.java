@@ -68,6 +68,7 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 	    String reflectedTypeString = typeName.asString();
 	    ClassInfo ci = ClassInfo.getInitializedClassInfo(reflectedTypeString, VM.getVM().getCurrentThread());
 	    throw new RuntimeException("NOT IMPELEMNTED YET!");
+	    // TODO implement ElementInfo to ThreadInfo mapping!
 	    //return ci;
 	}
 	
