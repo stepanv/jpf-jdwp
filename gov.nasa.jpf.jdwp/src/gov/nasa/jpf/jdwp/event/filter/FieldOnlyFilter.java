@@ -40,8 +40,7 @@ public class FieldOnlyFilter extends Filter<FieldOnlyFilterable> {
 
 	@Override
 	public boolean matches(FieldOnlyFilterable event) {
-		// TODO Auto-generated method stub
-		return false;
+		return fieldId == event.getFieldId();
 	}
 
 }

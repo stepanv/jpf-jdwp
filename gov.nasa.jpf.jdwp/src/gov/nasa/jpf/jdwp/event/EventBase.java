@@ -83,12 +83,14 @@ public abstract class EventBase implements Event {
 		return threadId;
 	}
 
+	@Override
 	public EventKind getEventKind() {
 		return eventKind;
 	}
 
 	protected abstract void writeSpecific(DataOutputStream os) throws IOException;
 
+	@Override
 	public void write(DataOutputStream os, int requestId) throws IOException {
 		os.writeInt(requestId);
 		threadId.write(os);

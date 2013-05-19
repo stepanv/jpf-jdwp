@@ -2,10 +2,12 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ClassInfo;
 
@@ -51,9 +53,22 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		JdwpObjectManager.getInstance().getReferenceTypeId(fieldType).writeTagged(os);
+		ClassInfo fieldObjectClassInfo;
+		try {
+			fieldObjectClassInfo = fieldId.get().getClassInfo();
+			// TODO this is not according the spec!
+		} catch (InvalidObject e) {
+			throw new IOException(e);
+		}
+		ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
+		referenceTypeId.writeTagged(os);
 		fieldId.write(os);
 		object.writeTagged(os);
+	}
+
+	@Override
+	public FieldId getFieldId() {
+		return fieldId;
 	}
 
 }

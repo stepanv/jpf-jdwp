@@ -22,23 +22,23 @@ import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class JdwpObjectManager {
-	
+
 	private static class JdwpObjectManagerHolder {
 		private static final JdwpObjectManager instance = new JdwpObjectManager();
 	}
-	
+
 	public static JdwpObjectManager getInstance() {
 		return JdwpObjectManagerHolder.instance;
 	}
-	
+
 	private JdwpObjectManager() {
-		// An objectID of 0 represents a null object. 
+		// An objectID of 0 represents a null object.
 		idObjectMap.put((long) 0, NullObjectId.getInstance());
 	}
-	
+
 	public ThreadId readThreadId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
-		
+
 		synchronized (idObjectMap) {
 			if (!idObjectMap.containsKey(id)) {
 				System.err.println("Invalid id: " + id);
@@ -46,11 +46,12 @@ public class JdwpObjectManager {
 			}
 			return (ThreadId) idObjectMap.get(id);
 		}
-		
+
 	}
+
 	public ObjectId readObjectId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
-		
+
 		synchronized (idObjectMap) {
 			if (!idObjectMap.containsKey(id)) {
 				System.err.println("Invalid id: " + id);
@@ -58,19 +59,20 @@ public class JdwpObjectManager {
 			}
 			return (ObjectId) idObjectMap.get(id);
 		}
-		
+
 	}
+
 	public ThreadId readSafeThreadId(ByteBuffer bytes) throws JdwpError {
-		return (ThreadId)readSafeObjectId(bytes);
+		return (ThreadId) readSafeObjectId(bytes);
 	}
 
 	public ArrayId readArrayId(ByteBuffer bytes) throws JdwpError {
-		return (ArrayId)readSafeObjectId(bytes);
+		return (ArrayId) readSafeObjectId(bytes);
 	}
-	
+
 	public ObjectId readSafeObjectId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
-		
+
 		synchronized (idObjectMap) {
 			if (!idObjectMap.containsKey(id)) {
 				System.err.println("Invalid id: " + id);
@@ -78,16 +80,16 @@ public class JdwpObjectManager {
 			}
 			return (ObjectId) idObjectMap.get(id);
 		}
-		
+
 	}
-	
+
 	public ArrayTypeReferenceId readArrayTypeReferenceId(ByteBuffer bytes) throws JdwpError {
-		return (ArrayTypeReferenceId)readReferenceTypeId(bytes);
+		return (ArrayTypeReferenceId) readReferenceTypeId(bytes);
 	}
-	
+
 	public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
 		long id = bytes.getLong();
-		
+
 		synchronized (idReferenceTypeMap) {
 			if (!idReferenceTypeMap.containsKey(id)) {
 				System.err.println("Invalid id: " + id);
@@ -95,12 +97,12 @@ public class JdwpObjectManager {
 			}
 			return idReferenceTypeMap.get(id);
 		}
-		
+
 	}
 
 	private Long referenceIdGenerator = (long) 1;
 	private Long objectIdGenerator = (long) 1;
-	
+
 	private ReferenceTypeId createReferenceTypeId(ClassInfo classInfo) {
 		long id;
 		synchronized (referenceIdGenerator) {
@@ -111,66 +113,62 @@ public class JdwpObjectManager {
 		idReferenceTypeMap.put(id, referenceTypeId);
 		return referenceTypeId;
 	}
-	
+
 	Map<ClassInfo, ReferenceTypeId> referenceTypeIdMap = new ConcurrentHashMap<ClassInfo, ReferenceTypeId>();
 	Map<Long, ReferenceTypeId> idReferenceTypeMap = new ConcurrentHashMap<Long, ReferenceTypeId>();
-	
+
 	Map<Object, ObjectId> objectIdMap = new ConcurrentHashMap<Object, ObjectId>();
 	Map<Long, ObjectId> idObjectMap = new ConcurrentHashMap<Long, ObjectId>();
-	
+
 	public ReferenceTypeId getReferenceTypeId(ClassInfo classInfo) {
 		synchronized (referenceTypeIdMap) {
 			ReferenceTypeId referenceTypeId = referenceTypeIdMap.get(classInfo);
-			
+
 			if (referenceTypeId != null) {
 				return referenceTypeId;
 			}
-			
+
 			referenceTypeId = createReferenceTypeId(classInfo);
 			referenceTypeIdMap.put(classInfo, referenceTypeId);
 			return referenceTypeId;
 		}
 	}
-	
+
 	public ObjectId getObjectId(ElementInfo object) {
-		
+
 		if (object == null) {
 			return NullObjectId.getInstance();
 		}
 		synchronized (objectIdMap) {
 			ObjectId objectId = objectIdMap.get(object);
-			
+
 			if (objectId != null) {
 				return objectId;
 			}
-			
+
 			objectId = createObjectId(object);
 			objectIdMap.put(object, objectId);
 			return objectId;
 		}
 	}
-	
+
 	private long generateId() {
 		synchronized (objectIdGenerator) {
 			return objectIdGenerator++;
 		}
 	}
 
-	
 	private ObjectId createObjectId(ElementInfo elementInfo) {
 		long id = generateId();
-		
+
 		ObjectId objectId = ObjectId.factory(id, elementInfo);
 		idObjectMap.put(id, objectId);
-		
+
 		System.out.println("CREATED OBJECT id: " + id + " object:" + elementInfo + " class:" + elementInfo.getClass());
-		
+
 		return objectId;
 	}
-	
-	
-	
-	
+
 	Map<Long, FieldId> idField = new WeakHashMap<Long, FieldId>();
 	Map<FieldInfo, FieldId> fieldInfoFieldId = new WeakHashMap<FieldInfo, FieldId>();
 	Long fieldIdGenerator = (long) 1;
@@ -190,7 +188,7 @@ public class JdwpObjectManager {
 			}
 		}
 	}
-	
+
 	public FieldId readFieldId(ByteBuffer bytes) {
 		synchronized (idField) {
 			return idField.get(bytes.getLong());
@@ -198,7 +196,7 @@ public class JdwpObjectManager {
 	}
 
 	public ClassObjectId readClassObjectId(ByteBuffer bytes) throws JdwpError {
-		return (ClassObjectId)readSafeObjectId(bytes);
+		return (ClassObjectId) readSafeObjectId(bytes);
 	}
 
 	public ClassObjectId getClassObjectId(ClassInfo classInfo) {
@@ -207,11 +205,11 @@ public class JdwpObjectManager {
 		}
 		synchronized (objectIdMap) {
 			ClassObjectId classObjectId = (ClassObjectId) objectIdMap.get(classInfo.getClassObject());
-			
+
 			if (classObjectId != null) {
 				return classObjectId;
 			}
-			
+
 			long id = generateId();
 			classObjectId = new ClassObjectId(id, classInfo);
 			idObjectMap.put(id, classObjectId);
@@ -226,11 +224,11 @@ public class JdwpObjectManager {
 		}
 		synchronized (objectIdMap) {
 			ThreadId threadId = (ThreadId) objectIdMap.get(threadInfo.getThreadObject());
-			
+
 			if (threadId != null) {
 				return threadId;
 			}
-			
+
 			long id = generateId();
 			threadId = new ThreadId(id, threadInfo);
 			idObjectMap.put(id, threadId);

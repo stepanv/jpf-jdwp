@@ -1,28 +1,31 @@
 package gov.nasa.jpf.jdwp;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
-import gov.nasa.jpf.jdwp.event.EventBase;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.FieldAccessEvent;
-import gov.nasa.jpf.jdwp.event.FieldModificationEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
+import gov.nasa.jpf.jvm.bytecode.GETFIELD;
+import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
+import gov.nasa.jpf.jvm.bytecode.InstructionVisitorAdapter;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
+import gov.nasa.jpf.jvm.bytecode.PUTFIELD;
+import gov.nasa.jpf.jvm.bytecode.PUTSTATIC;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
-import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -31,12 +34,66 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JDWPListener extends ListenerAdapter implements VMListener {
+	
+	private class FieldVisitor extends InstructionVisitorAdapter {
+
+
+		private ThreadId threadId;
+		private JdwpObjectManager objectManager;
+
+		private void fieldAccess(FieldInstruction fieldInstruction) {
+			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
+			
+			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+			Event event;
+			try {
+				event = new FieldAccessEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull);
+				dispatchEvent(event);
+			} catch (InvalidObject e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		@Override
+		public void visit(GETFIELD ins) {
+			fieldAccess(ins);
+		}
+
+		@Override
+		public void visit(PUTFIELD ins) {
+			// TODO Auto-generated method stub
+			super.visit(ins);
+		}
+
+		@Override
+		public void visit(GETSTATIC ins) {
+			fieldAccess(ins);
+		}
+
+		@Override
+		public void visit(PUTSTATIC ins) {
+			// TODO Auto-generated method stub
+			super.visit(ins);
+		}
+
+		public void initalize(ThreadInfo currentThread) {
+			this.objectManager = JdwpObjectManager.getInstance();
+			this.threadId = objectManager.getThreadId(currentThread);
+		}
+		
+	}
 
 	private VirtualMachine virtualMachine;
+	private FieldVisitor fieldVisitor;
 	
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
 		this.virtualMachine = virtualMachine;
+		this.fieldVisitor = new FieldVisitor();
 	}
 	
 	@Override
@@ -92,6 +149,11 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
 			
+			if (instructionToExecute instanceof FieldInstruction) {
+				fieldVisitor.initalize(currentThread);
+				((FieldInstruction)instructionToExecute).accept(fieldVisitor);
+			}
+			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
 				//System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
@@ -127,6 +189,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
+	
 	@Override
 	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
@@ -144,7 +207,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
-	private void dispatchEvent(EventBase event) {
+	private void dispatchEvent(Event event) {
 //		for (EventRequest request : requests) {
 //			if (request.matches(event)) {
 //				try {

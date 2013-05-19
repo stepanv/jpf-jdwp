@@ -61,10 +61,11 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		private void writeFields(FieldInfo[] fields, DataOutputStream os, CommandContextProvider contextProvider) throws IOException {
 			for (int i = 0; i < fields.length; i++) {
 				FieldInfo field = fields[i];
-				contextProvider.getObjectManager().getFieldId(field).write(os);
+				FieldId fieldId = contextProvider.getObjectManager().getFieldId(field);
+				fieldId.write(os);
 				new StringRaw(field.getName()).write(os);
 				new StringRaw(field.getSignature()).write(os);
-				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature());
+				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature() + ", fieldId: " + fieldId);
 				os.writeInt(field.getModifiers());
 			}
 		}

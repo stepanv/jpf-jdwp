@@ -51,4 +51,12 @@ public class Identifier<T> {
 	public void write(DataOutputStream os) throws IOException {
 		os.writeLong(id);
 	}
+	
+	public String toString() {
+		try {
+			return "" + get() + ", id: " + id;
+		} catch (InvalidObject e) {
+			return "invalid reference, id: " + id;
+		}
+	}
 }

@@ -63,4 +63,9 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 		value.write(os);
 	}
 
+	@Override
+	public FieldId getFieldId() {
+		return fieldId;
+	}
+
 }

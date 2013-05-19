@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.event;
 
 import gnu.classpath.jdwp.Jdwp;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
@@ -162,7 +163,7 @@ public class EventManager
    *         or <code>null</code> if none (and event should not be sent)
    * @throws IllegalArgumentException for invalid event kind
    */
-  public EventRequest[] getEventRequests(EventBase event)
+  public EventRequest[] getEventRequests(Event event)
   {
     List<EventRequest> interestedEvents = new CopyOnWriteArrayList<EventRequest>();
     Hashtable<Integer, EventRequest> requests = _requests.get(event.getEventKind());
