@@ -9,6 +9,7 @@ import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.FieldAccessEvent;
+import gov.nasa.jpf.jdwp.event.FieldModificationEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
@@ -16,6 +17,8 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.GETFIELD;
 import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
@@ -56,6 +59,34 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			} catch (InvalidObject e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				return;
+			}
+		}
+		
+		private void fieldModification(FieldInstruction fieldInstruction) {
+			ThreadInfo threadInfo;
+			try {
+				threadInfo = threadId.getInfoObject();
+			} catch (InvalidObject e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
+			
+			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+			Tag tag = Tag.classInfoToTag(fieldClassInfo);
+			Value valueToBe = tag.peekValue(topStackFrame);
+			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
+//			
+//			
+			Event event;
+			try {
+				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
+				dispatchEvent(event);
+			} catch (InvalidObject e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		
@@ -66,8 +97,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 		@Override
 		public void visit(PUTFIELD ins) {
-			// TODO Auto-generated method stub
-			super.visit(ins);
+			fieldModification(ins);
 		}
 
 		@Override
@@ -77,8 +107,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 		@Override
 		public void visit(PUTSTATIC ins) {
-			// TODO Auto-generated method stub
-			super.visit(ins);
+			fieldModification(ins);
 		}
 
 		public void initalize(ThreadInfo currentThread) {
@@ -156,9 +185,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
-				//System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
+				System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
 			} else {
-				//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
+				System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
 			}
 			
 			ClassInfo classInfo = instructionToExecute.getMethodInfo().getClassInfo();
