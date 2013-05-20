@@ -3,8 +3,8 @@ package gov.nasa.jpf.jdwp;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
-import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
+import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -12,9 +12,11 @@ import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -199,6 +201,31 @@ public class JdwpObjectManager {
 		return (ClassObjectId) readSafeObjectId(bytes);
 	}
 
+	public ClassLoaderId readClassLoaderId(ByteBuffer bytes) throws JdwpError {
+		return (ClassLoaderId) readSafeObjectId(bytes);
+	}
+	
+	public ClassLoaderId getClassLoaderObjectId(ClassLoaderInfo classLoaderInfo) {
+		if (classLoaderInfo == null) {
+			throw new RuntimeException("Null is not allowed here!");
+			// TODO null is a system classloader fix this!
+		}
+		synchronized (objectIdMap) {
+			ElementInfo classLoaderObject = VM.getVM().getHeap().get(classLoaderInfo.getClassLoaderObjectRef());
+			ClassLoaderId classLoaderId = (ClassLoaderId) objectIdMap.get(classLoaderObject);
+
+			if (classLoaderId != null) {
+				return classLoaderId;
+			}
+
+			long id = generateId();
+			classLoaderId = new ClassLoaderId(id, classLoaderInfo);
+			idObjectMap.put(id, classLoaderId);
+			objectIdMap.put(classLoaderObject, classLoaderId);
+			return classLoaderId;
+		}
+	}
+	
 	public ClassObjectId getClassObjectId(ClassInfo classInfo) {
 		if (classInfo == null) {
 			throw new RuntimeException("Null is not allowed here!");

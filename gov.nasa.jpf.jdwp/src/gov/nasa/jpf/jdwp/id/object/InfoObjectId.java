@@ -3,11 +3,10 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.InfoObject;
 
 import java.lang.ref.WeakReference;
 
-public abstract class InfoObjectId<T extends InfoObject> extends ObjectId {
+public abstract class InfoObjectId<T> extends ObjectId {
 
 	public InfoObjectId(Tag tag, long id, ElementInfo object, T infoObject) {
 		super(tag, id, object);

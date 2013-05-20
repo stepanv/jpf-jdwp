@@ -4,12 +4,14 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -33,6 +35,17 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
+			
+			ClassLoaderInfo classLoaderInfo = classInfo.getClassLoaderInfo();
+			
+			if (classLoaderInfo == null) {
+				// TODO do this in a uniform way - object manager should return nullObjectId by itself...
+				// system classloader
+				NullObjectId.getInstance().write(os);
+			} else {
+				ObjectId objectId = contextProvider.getObjectManager().getClassLoaderObjectId(classLoaderInfo);
+				objectId.write(os);
+			}
 			// ClassInfo clazz = refId.getType();
 			// TODO [for PJA] How does JPF work with classloaders? Seems that
 			// java.lang.Class#getClassLoader() returns the classloader of
@@ -43,7 +56,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			// throw new RuntimeException("not implemented");
 			// ClassLoader loader = clazz.getcl getClassLoader();
 			// ObjectId oid = idMan.getObjectId(loader);
-			NullObjectId.getInstance().write(os); // returning null which stands
+			 // returning null which stands
 													// for system classloader
 			// TODO [for PJA] how is it with classloaders
 
