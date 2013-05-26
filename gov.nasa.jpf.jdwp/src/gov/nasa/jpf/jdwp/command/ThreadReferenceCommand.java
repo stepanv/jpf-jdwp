@@ -98,7 +98,6 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 			for (int i = 0; i < frames.size(); i++) {
 				StackFrame frame = (StackFrame) frames.get(i);
 
-				// TODO URGENT !! frames cannot be identified by thisobject!!!
 				FrameId frameId = contextProvider.getObjectManager().getFrameId(frame);
 				frameId.write(os);
 

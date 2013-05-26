@@ -29,6 +29,20 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		}
 
 	}
+	
+	@Override
+	public synchronized ObjectId getIdentifierId(ElementInfo object) {
+		defaultIdFactory.initialize(null);
+		return super.getIdentifierId(object);
+		
+	}
+	
+	MorfableIdFactory<?> defaultIdFactory = new MorfableIdFactory<ElementInfo>() {
+		@Override
+		public ObjectId create(long id, ElementInfo object) {
+			return ObjectId.factory(id, object);
+		}
+	};
 
 	MorfableIdFactory<ClassLoaderInfo> classLoaderIdFactory = new MorfableIdFactory<ClassLoaderInfo>() {
 		@Override

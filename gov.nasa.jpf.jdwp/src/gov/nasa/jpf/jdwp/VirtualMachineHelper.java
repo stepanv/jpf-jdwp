@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp;
 
-import gov.nasa.jpf.jdwp.exception.InvalidFrameId;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -26,18 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 public class VirtualMachineHelper {
-
-	public static StackFrame getFrame(ThreadInfo thread, long frameId) throws InvalidFrameId {
-		 for (Iterator<StackFrame> stackIterator = thread.iterator(); stackIterator.hasNext();) {
-				StackFrame stackFrame = stackIterator.next();
-				if (!stackFrame.isSynthetic()) {
-					if (stackFrame.getThis() == frameId) {
-						return stackFrame;
-					}
-				}
-			}
-		 throw new InvalidFrameId(frameId);
-	}
 
 	/**
 	 * Returns the thread's call stack

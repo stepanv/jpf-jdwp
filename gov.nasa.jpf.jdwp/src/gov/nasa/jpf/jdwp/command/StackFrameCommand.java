@@ -1,12 +1,12 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -174,9 +174,10 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpError, IOException {
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
-		StackFrame stackFrame = VirtualMachineHelper.getFrame(threadId.getInfoObject(), bytes.getLong());
+		FrameId frameId = contextProvider.getObjectManager().readFrameId(bytes);
 
-		execute(threadId.getInfoObject(), stackFrame, bytes, os, contextProvider);
+		// TODO frameId.get() should return InvalidFrame instead of InvalidObject
+		execute(threadId.getInfoObject(), frameId.get(), bytes, os, contextProvider);
 	}
 
 	public abstract void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
