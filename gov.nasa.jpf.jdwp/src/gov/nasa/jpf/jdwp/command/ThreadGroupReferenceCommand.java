@@ -15,7 +15,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 	NAME(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ObjectId oid = contextProvider.getObjectManager().readSafeObjectId(bytes);
+			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
 		    ElementInfo group = oid.get();
 		    int nameref = group.getReferenceField("name");
 		    ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
@@ -25,7 +25,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 	PARENT(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			  ObjectId oid = contextProvider.getObjectManager().readSafeObjectId(bytes);
+			  ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
 			    ElementInfo group = oid.get();
 			    int parentref = group.getReferenceField("parent");
 			    ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);

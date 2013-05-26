@@ -4,8 +4,8 @@ import gov.nasa.jpf.vm.StackFrame;
 
 public class FrameId extends Identifier<StackFrame>{
 
-	public FrameId(StackFrame object) {
-		super(0, object);
+	public FrameId(long id, StackFrame object) {
+		super(id, object);
 		throw new RuntimeException("NOT IMPLEMENTED YET: " + object);
 	}
 
