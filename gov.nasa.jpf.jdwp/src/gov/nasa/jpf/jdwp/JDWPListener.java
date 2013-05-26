@@ -82,6 +82,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 //			
 			Event event;
 			try {
+				System.out.println("Creating field modification event for: " + fieldInstruction);
 				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
 				dispatchEvent(event);
 			} catch (InvalidObject e) {
@@ -178,16 +179,16 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
 			
-			if (instructionToExecute instanceof FieldInstruction) {
-				fieldVisitor.initalize(currentThread);
-				((FieldInstruction)instructionToExecute).accept(fieldVisitor);
-			}
-			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
 				System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
 			} else {
 				System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
+			}
+			
+			if (instructionToExecute instanceof FieldInstruction) {
+				fieldVisitor.initalize(currentThread);
+				((FieldInstruction)instructionToExecute).accept(fieldVisitor);
 			}
 			
 			ClassInfo classInfo = instructionToExecute.getMethodInfo().getClassInfo();

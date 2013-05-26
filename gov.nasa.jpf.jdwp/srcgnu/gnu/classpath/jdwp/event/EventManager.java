@@ -255,15 +255,10 @@ public class EventManager
    * @throws IllegalArgumentException for invalid event kind
    * @throws JdwpException for error clearing events
    */
-  public void clearRequests (byte kind)
+  public void clearRequests (EventKind eventKind)
     throws JdwpError
   {
-    Hashtable<Integer, EventRequest> requests = _requests.get (new Byte (kind));
-    if (requests == null)
-      {
-        // Did not get a valid event type
-        throw new IllegalArgumentException ("invalid event kind: " + kind);
-      }
+    Hashtable<Integer, EventRequest> requests = _requests.get (eventKind);
 
    //VMVirtualMachine.clearEvents (kind);
     requests.clear ();
@@ -278,14 +273,9 @@ public class EventManager
    *          (or <code>null</code> if not found)
    * @throws IllegalArgumentException for invalid event kind
    */
-  public EventRequest getRequest (byte kind, int id)
+  public EventRequest getRequest (EventKind eventKind, int id)
   {
-    Hashtable<Integer, EventRequest> requests = _requests.get (new Byte (kind));
-    if (requests == null)
-      {
-        // Did not get a valid event type
-        throw new IllegalArgumentException ("invalid event kind: " + kind);
-      }
+    Hashtable<Integer, EventRequest> requests = _requests.get (eventKind);
 
     return (EventRequest) requests.get (new Integer (id));
   }
@@ -297,14 +287,9 @@ public class EventManager
    * @returns a <code>Collection</code> of all the registered requests
    * @throws IllegalArgumentException for invalid event kind
    */
-  public Collection getRequests (byte kind)
+  public Collection getRequests (EventKind eventKind)
   {
-    Hashtable<Integer, EventRequest> requests = _requests.get (new Byte (kind));
-    if (requests == null)
-      {
-        // Did not get a valid event type
-        throw new IllegalArgumentException ("invalid event kind: " + kind);
-      }
+    Hashtable<Integer, EventRequest> requests = _requests.get (eventKind);
 
     return requests.values ();
   }

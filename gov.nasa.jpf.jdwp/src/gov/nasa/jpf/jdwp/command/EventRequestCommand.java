@@ -14,7 +14,7 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	SET(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			EventRequest eventRequest = EventRequest.factory(bytes, contextProvider);
+			EventRequest<?> eventRequest = EventRequest.factory(bytes, contextProvider);
 
 			EventManager.getDefault().requestEvent(eventRequest);
 			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
@@ -40,8 +40,7 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	CLEARALLBREAKPOINTS(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			EventManager.getDefault().clearRequests(EventKind.BREAKPOINT);
 		}
 	};
 	private byte commandId;
