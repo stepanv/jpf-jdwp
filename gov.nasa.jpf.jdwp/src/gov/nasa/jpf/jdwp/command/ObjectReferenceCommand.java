@@ -67,6 +67,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				// field.setAccessible(true); // Might be a private field
 				Object object = field.getValueObject(obj.getFields());
 				Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
+				
+				// TODO write tagged by default (see TODO.txt)
 				val.writeTagged(os);
 			}
 

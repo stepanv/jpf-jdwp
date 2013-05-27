@@ -59,6 +59,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				}
 				try {
 					Value value = Tag.taggedObjectToValue(tag, object);
+					// TODO write tagged by default (see TODO.txt)
 					value.writeTagged(os);
 					// TODO [for PJA] we have a problem here - respectively there, above
 				} catch (ClassCastException e) {

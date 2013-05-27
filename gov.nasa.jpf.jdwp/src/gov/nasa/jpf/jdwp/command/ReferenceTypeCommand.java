@@ -144,6 +144,8 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				Fields fieldss = classInfo.getStaticElementInfo().getFields();
 				Object object = fieldInfo.getValueObject(fieldss);
 				Value val = Tag.classInfoToTag(fieldInfo.getTypeClassInfo()).value(object);
+				
+				// TODO change value to write tagged by default (see TODO.txt)
 				val.writeTagged(os);
 			}
 		}
@@ -262,6 +264,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+		System.out.println("ReferenceType: " + refId.get());
 		execute(refId.get(), bytes, os, contextProvider);
 	}
 

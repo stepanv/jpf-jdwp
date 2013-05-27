@@ -62,8 +62,17 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 			ThreadStatus threadStatus = threadStatus(threadInfo);
 
 			os.writeInt(threadStatus.identifier());
-			// There's only one possible SuspendStatus...
-			os.writeInt(SuspendStatus.SUSPEND_STATUS_SUSPENDED.identifier());
+			
+			// This is how it is implemented in Harmony and OpenJDK (0 if not suspended)
+			// Although the JDWP specification isn't clear about this
+			int suspendStatus = 0;
+			if (contextProvider.getVirtualMachine().isAllThreadsSuspended()) {
+				// There's only one possible SuspendStatus...
+				suspendStatus = SuspendStatus.SUSPEND_STATUS_SUSPENDED.identifier();
+			}
+			
+			os.writeInt(suspendStatus);
+			System.out.println("status: " + threadStatus + ", suspend status: " + suspendStatus);
 
 		}
 	},
@@ -101,6 +110,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 
 				Location location = Location.factorySafe(frame.getPC(), threadInfo);
 				location.write(os);
+				
+				System.out.println("Frame: " + frameId + ", StackFrame" + frame + ", Location: " + location);
 			}
 
 		}
@@ -111,6 +122,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 				JdwpError {
 			int frameCount = VirtualMachineHelper.getFrameCount(threadInfo);
 			os.writeInt(frameCount);
+			
+			System.out.println("writing frame count: " + frameCount);
 
 		}
 	},
