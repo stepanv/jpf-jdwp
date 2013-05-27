@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -43,7 +44,7 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
 			}
 			
 			ElementInfo elementInfoArray = heap.newArray(type, length, threadInfo);
-			Value arrayId = contextProvider.getObjectManager().getArrayId(elementInfoArray);
+			ArrayId arrayId = contextProvider.getObjectManager().getArrayId(elementInfoArray);
 			arrayId.writeTagged(os);
 			
 		}

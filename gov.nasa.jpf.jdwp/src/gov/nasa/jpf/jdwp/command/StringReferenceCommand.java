@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.StringId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ElementInfo;
 
@@ -13,10 +14,9 @@ public enum StringReferenceCommand implements Command, ConvertibleEnum<Byte, Str
 	VALUE(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-		    ElementInfo elementInfo = (ElementInfo) oid.get();
-		   new StringRaw(elementInfo.asString()).write(os);
-
+			StringId stringId = contextProvider.getObjectManager().readStringId(bytes);
+			ElementInfo elementInfo = stringId.get();
+			new StringRaw(elementInfo.asString()).write(os);
 		}
 	};
 	private byte commandId;

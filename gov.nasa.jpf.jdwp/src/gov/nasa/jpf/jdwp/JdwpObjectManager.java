@@ -141,8 +141,8 @@ public class JdwpObjectManager {
 		return objectIdManager.getIdentifierId(elementThreadGroup, ThreadGroupId.class);
 	}
 
-	public ObjectId readStringId(ByteBuffer bytes) {
-		return (ObjectId) objectIdManager.readIdentifier(bytes, StringId.class);
+	public StringId readStringId(ByteBuffer bytes) {
+		return objectIdManager.readIdentifier(bytes, StringId.class);
 	}
 
 }
