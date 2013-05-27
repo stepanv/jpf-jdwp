@@ -96,5 +96,11 @@ public abstract class EventBase implements Event {
 		threadId.write(os);
 		writeSpecific(os);
 	}
+	
+
+	@Override
+	public String toString() {
+		return "Event: " + super.toString() + ", kind: " + eventKind + ", thread: " + threadId;
+	}
 
 }

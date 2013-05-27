@@ -173,7 +173,7 @@ public abstract class Event
                                gov.nasa.jpf.jdwp.event.EventRequest requests)
     throws IOException
   {
-	  System.out.println(" >>>>>>>>> Sending event: " + events.getEventKind());
+	  System.out.println(" >>>>>>>>> Sending event: " + events);
     dos.writeByte (events.getEventKind().identifier());
     events.write(dos, requests.getId ());
   }

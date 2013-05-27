@@ -95,4 +95,9 @@ public class Location {
 
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation();
+	}
+
 }

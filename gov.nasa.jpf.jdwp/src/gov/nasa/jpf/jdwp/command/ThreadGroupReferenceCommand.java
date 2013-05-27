@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ElementInfo;
 
@@ -44,8 +45,12 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 			ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
 			System.out.println("Thread group parent: " + parent);
 
-			ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
-			parentGroup.write(os);
+			if (parent == null) {
+				NullObjectId.getInstance().write(os);
+			} else {
+				ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
+				parentGroup.write(os);
+			}
 		}
 	},
 	CHILDREN(3) {

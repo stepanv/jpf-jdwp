@@ -71,34 +71,24 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
-		ObjectId objectId = super.getIdentifierId(object);
-
-		try {
-			// we don't want to slow down in the good case
+	private <I extends ObjectId> I checkObjectId(ObjectId objectId, Class<I> returnClazz) {
+		if (returnClazz.isInstance(objectId)) {
 			return (I) objectId;
-		} catch (ClassCastException e) {
-			// TODO solve this in a standard JDWP way
-			throw new RuntimeException("Got an incompatible object identifier", e);
 		}
+		
+		// TODO solve this in a standard JDWP way
+		throw new RuntimeException("Got an incompatible object identifier. Object ID '" + objectId + "' is not '" + returnClazz + "'");
 	}
 	
+	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
+		return checkObjectId(super.getIdentifierId(object), returnClazz);
+	}
+	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
+		return checkObjectId(readIdentifier(bytes), returnClazz);
+	}
 	public <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
 		defaultIdFactory.initialize(null);
 		return fetchIdentifierId(object, returnClazz);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
-		ObjectId objectId = readIdentifier(bytes);
-		try {
-			// we don't want to slow down in the good case
-			return (I) objectId;
-		} catch (ClassCastException e) {
-			// TODO solve this in a standard JDWP way
-			throw new RuntimeException("Got an incompatible object identifier", e);
-		}
-		
 	}
 
 	public ClassLoaderId getClassLoaderId(ClassLoaderInfo classLoaderInfo) {

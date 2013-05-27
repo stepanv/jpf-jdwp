@@ -21,6 +21,11 @@ import java.io.IOException;
  * Notification of a field modification in the target VM. Requires
  * canWatchFieldModification capability
  * </p>
+ * <p>
+ * <h2>Remarks</h2>
+ * The specification is not really clear about field modification events.
+ * FieldType is actually ThisObjectType.
+ * 
  * 
  * @see VirtualMachineCommand#CAPABILITIESNEW
  * @author stepan
@@ -70,12 +75,21 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 		referenceTypeId.writeTagged(os);
 		fieldId.write(os);
 		object.writeTagged(os);
-		value.write(os);
+		
+		// TODO JDWP Specification doesn't tell the value has to be tagged
+		// Eclipse expects a tagged value!
+		// Value is tagged by default - see TODO.txt
+		value.writeTagged(os);
 	}
 
 	@Override
 	public FieldId getFieldId() {
 		return fieldId;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + ", field: " + fieldId + " valueToBe: " + value;
 	}
 
 }

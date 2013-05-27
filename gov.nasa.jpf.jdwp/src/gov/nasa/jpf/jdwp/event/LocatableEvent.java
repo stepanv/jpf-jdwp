@@ -45,4 +45,9 @@ public abstract class LocatableEvent extends EventBase implements Locatable {
 
 	protected abstract void writeLocatableSpecific(DataOutputStream os)throws IOException;
 
+	@Override
+	public String toString() {
+		return super.toString() + ", location: " + location;
+	}
+
 }

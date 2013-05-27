@@ -127,6 +127,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				throw new IllegalArgumentException("Not sure whether we're allowed to return static elements");
 			}
 			ObjectId thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);
+			System.out.println("Found this object id: " + thisObjectId + ", object itself: " + thisObject);
 			thisObjectId.writeTagged(os);
 		}
 	},
