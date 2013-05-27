@@ -63,11 +63,15 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		}
 	};
 
-	@SuppressWarnings("unchecked")
 	public synchronized <O, I extends InfoObjectId<O>> I getIdentifierId(ElementInfo object, O infoObject, MorfableIdFactory<O> morfableIdFactory,
 			Class<I> returnClazz) {
 		morfableIdFactory.initialize(infoObject);
-
+		
+		return fetchIdentifierId(object, returnClazz);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
 		ObjectId objectId = super.getIdentifierId(object);
 
 		try {
@@ -79,8 +83,13 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		}
 	}
 	
+	public <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
+		defaultIdFactory.initialize(null);
+		return fetchIdentifierId(object, returnClazz);
+	}
+	
 	@SuppressWarnings("unchecked")
-	public <I> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
+	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
 		ObjectId objectId = readIdentifier(bytes);
 		try {
 			// we don't want to slow down in the good case

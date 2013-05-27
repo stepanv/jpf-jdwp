@@ -26,6 +26,7 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
 	@Override
 	public boolean matches(InstanceOnlyFilterable event) {
+		// TODO not implemented yet
 		throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + objectId);
 	}
 

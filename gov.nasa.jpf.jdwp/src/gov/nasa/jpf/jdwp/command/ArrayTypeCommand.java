@@ -43,7 +43,7 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
 			}
 			
 			ElementInfo elementInfoArray = heap.newArray(type, length, threadInfo);
-			Value arrayId = contextProvider.getObjectManager().getObjectId(elementInfoArray);
+			Value arrayId = contextProvider.getObjectManager().getArrayId(elementInfoArray);
 			arrayId.writeTagged(os);
 			
 		}

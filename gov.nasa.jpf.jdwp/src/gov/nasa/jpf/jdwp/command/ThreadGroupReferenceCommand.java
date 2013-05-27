@@ -4,6 +4,7 @@ import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ElementInfo;
 
@@ -12,32 +13,45 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadGroupReferenceCommand> {
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns the thread group name.
+	 * </p>
+	 */
 	NAME(1) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-		    ElementInfo group = oid.get();
-		    int nameref = group.getReferenceField("name");
-		    ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
-		    new StringRaw(name.asString()).write(os);
+		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+				throws IOException, JdwpError {
+			int nameref = threadGroupElementInfo.getReferenceField("name");
+			ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
+			new StringRaw(name.asString()).write(os);
 		}
 	},
+
+	/**
+	 * <p>
+	 * <h2>JDWP Specification</h2>
+	 * Returns the thread group, if any, which contains a given thread group.
+	 * </p>
+	 */
 	PARENT(2) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			  ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-			    ElementInfo group = oid.get();
-			    int parentref = group.getReferenceField("parent");
-			    ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
-			    System.out.println("Thread group parent: " + parent);
-			    
-			    os.writeLong(0L); //TODO this is not finished
+		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+				throws IOException, JdwpError {
+			int parentref = threadGroupElementInfo.getReferenceField("parent");
+			ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
+			System.out.println("Thread group parent: " + parent);
 
+			ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
+			parentGroup.write(os);
 		}
 	},
 	CHILDREN(3) {
 		@Override
-		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+				throws IOException, JdwpError {
 			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
 		}
@@ -62,5 +76,11 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 	}
 
 	@Override
-	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+		ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+		execute(oid.get(), bytes, os, contextProvider);
+	}
+
+	public abstract void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+			throws IOException, JdwpError;
 }

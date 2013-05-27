@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.SuspendStatus;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
@@ -75,7 +76,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 				JdwpError {
 			int group = threadInfo.getThreadGroupRef();
 			ElementInfo ei = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
-			ObjectId groupId = contextProvider.getObjectManager().getObjectId(ei);
+			ThreadGroupId groupId = contextProvider.getObjectManager().getThreadGroupId(ei);
 			groupId.write(os);
 		}
 	},

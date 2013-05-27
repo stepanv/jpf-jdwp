@@ -8,6 +8,8 @@ import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.StringId;
+import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
@@ -33,6 +35,27 @@ public class JdwpObjectManager {
 	
 	ObjectIdManager objectIdManager = new ObjectIdManager();
 
+	private IdManager<ReferenceTypeId, ClassInfo> referenceIdManager = new IdManager<ReferenceTypeId, ClassInfo>(new IdFactory<ReferenceTypeId, ClassInfo>() {
+
+		@Override
+		public ReferenceTypeId create(long id, ClassInfo classInfo) {
+			// TODO we probably already know what we want thus we should maybe force and wrap as with objectIdManager
+			return ReferenceTypeId.factory(id, classInfo);
+		}
+	});
+
+	IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
+		@Override
+		public FieldId create(long id, FieldInfo fieldInfo) {
+			return new FieldId(id, fieldInfo);
+		}
+	});
+	IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
+		@Override
+		public FrameId create(long id, StackFrame stackFrame) {
+			return new FrameId(id, stackFrame);
+		}
+	});
 	private JdwpObjectManager() {
 	}
 
@@ -49,14 +72,6 @@ public class JdwpObjectManager {
 		return referenceIdManager.readIdentifier(bytes);
 	}
 
-	private IdManager<ReferenceTypeId, ClassInfo> referenceIdManager = new IdManager<ReferenceTypeId, ClassInfo>(new IdFactory<ReferenceTypeId, ClassInfo>() {
-
-		@Override
-		public ReferenceTypeId create(long id, ClassInfo classInfo) {
-			// TODO we probably already know what we want thus we should maybe force and wrap as with objectIdManager
-			return ReferenceTypeId.factory(id, classInfo);
-		}
-	});
 
 	public ReferenceTypeId getReferenceTypeId(ClassInfo classInfo) {
 		return referenceIdManager.getIdentifierId(classInfo);
@@ -68,19 +83,6 @@ public class JdwpObjectManager {
 		}
 		return objectIdManager.getIdentifierId(object);
 	}
-
-	IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
-		@Override
-		public FieldId create(long id, FieldInfo fieldInfo) {
-			return new FieldId(id, fieldInfo);
-		}
-	});
-	IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
-		@Override
-		public FrameId create(long id, StackFrame stackFrame) {
-			return new FrameId(id, stackFrame);
-		}
-	});
 
 	public FieldId getFieldId(FieldInfo fieldInfo) {
 		return fieldIdManager.getIdentifierId(fieldInfo);
@@ -129,6 +131,18 @@ public class JdwpObjectManager {
 
 	public ThreadId getThreadId(ThreadInfo threadInfo) {
 		return objectIdManager.getThreadId(threadInfo);
+	}
+
+	public ArrayId getArrayId(ElementInfo elementInfoArray) {
+		return objectIdManager.getIdentifierId(elementInfoArray, ArrayId.class);
+	}
+
+	public ThreadGroupId getThreadGroupId(ElementInfo elementThreadGroup) {
+		return objectIdManager.getIdentifierId(elementThreadGroup, ThreadGroupId.class);
+	}
+
+	public ObjectId readStringId(ByteBuffer bytes) {
+		return (ObjectId) objectIdManager.readIdentifier(bytes, StringId.class);
 	}
 
 }
