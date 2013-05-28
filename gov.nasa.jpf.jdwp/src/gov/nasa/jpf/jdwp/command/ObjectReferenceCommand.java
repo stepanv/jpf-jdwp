@@ -139,7 +139,6 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			objectId.enableCollection();
-
 		}
 	},
 	ISCOLLECTED(9) {
