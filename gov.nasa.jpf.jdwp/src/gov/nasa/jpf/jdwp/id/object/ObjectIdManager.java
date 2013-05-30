@@ -1,10 +1,6 @@
-package gov.nasa.jpf.jdwp;
+package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
-import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
-import gov.nasa.jpf.jdwp.id.object.InfoObjectId;
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.IdManager;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -29,18 +25,18 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		}
 
 	}
-	
+
 	@Override
 	public synchronized ObjectId getIdentifierId(ElementInfo object) {
 		defaultIdFactory.initialize(null);
 		return super.getIdentifierId(object);
-		
+
 	}
-	
+
 	MorfableIdFactory<?> defaultIdFactory = new MorfableIdFactory<ElementInfo>() {
 		@Override
 		public ObjectId create(long id, ElementInfo object) {
-			return ObjectId.factory(id, object);
+			return ObjectId.objectIdFactory(id, object);
 		}
 	};
 
@@ -66,26 +62,28 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 	public synchronized <O, I extends InfoObjectId<O>> I getIdentifierId(ElementInfo object, O infoObject, MorfableIdFactory<O> morfableIdFactory,
 			Class<I> returnClazz) {
 		morfableIdFactory.initialize(infoObject);
-		
+
 		return fetchIdentifierId(object, returnClazz);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private <I extends ObjectId> I checkObjectId(ObjectId objectId, Class<I> returnClazz) {
 		if (returnClazz.isInstance(objectId)) {
 			return (I) objectId;
 		}
-		
+
 		// TODO solve this in a standard JDWP way
 		throw new RuntimeException("Got an incompatible object identifier. Object ID '" + objectId + "' is not '" + returnClazz + "'");
 	}
-	
+
 	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
 		return checkObjectId(super.getIdentifierId(object), returnClazz);
 	}
+
 	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
 		return checkObjectId(readIdentifier(bytes), returnClazz);
 	}
+
 	public <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
 		defaultIdFactory.initialize(null);
 		return fetchIdentifierId(object, returnClazz);
@@ -103,5 +101,4 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 	public ThreadId getThreadId(ThreadInfo threadInfo) {
 		return getIdentifierId(threadInfo.getThreadObject(), threadInfo, threadIdFactory, ThreadId.class);
 	}
-
 }

@@ -2,8 +2,8 @@ package gov.nasa.jpf.jdwp.command;
 
 
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.VirtualMachine;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.vm.VM;
 
 public class CommandContextProvider {

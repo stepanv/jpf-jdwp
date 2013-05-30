@@ -1,6 +1,7 @@
-package gov.nasa.jpf.jdwp;
+package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.id.Identifier;
+
+import gov.nasa.jpf.vm.ElementInfo;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -40,7 +41,11 @@ public class IdManager<I extends Identifier<T>, T> {
 			objectToIdentifierMap.put(object, identifier);
 			idToIdentifierMap.put(id, identifier);
 			
-			System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass());
+			if (object instanceof ElementInfo) {
+				System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
+			} else {
+				System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass());
+			}
 			
 			return identifier;
 		}

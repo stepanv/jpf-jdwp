@@ -14,6 +14,7 @@ import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;

@@ -48,8 +48,8 @@ import gnu.classpath.jdwp.transport.JdwpCommandPacket;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

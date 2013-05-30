@@ -2,7 +2,6 @@ package gov.nasa.jpf.jdwp.id;
 
 import java.nio.ByteBuffer;
 
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.MethodInfo;

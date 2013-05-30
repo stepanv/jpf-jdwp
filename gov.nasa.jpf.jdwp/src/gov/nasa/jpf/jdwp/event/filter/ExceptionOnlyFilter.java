@@ -1,9 +1,9 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;

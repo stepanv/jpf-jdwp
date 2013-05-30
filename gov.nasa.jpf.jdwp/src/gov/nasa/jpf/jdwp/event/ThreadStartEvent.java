@@ -3,8 +3,8 @@ package gov.nasa.jpf.jdwp.event;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.vm.ThreadInfo;
 

@@ -1,11 +1,11 @@
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.ClassStatus;
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.ClassInfo;

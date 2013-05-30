@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
