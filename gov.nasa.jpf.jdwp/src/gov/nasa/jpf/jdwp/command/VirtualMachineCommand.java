@@ -1,7 +1,5 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.util.JdwpString;
-import gnu.classpath.jdwp.util.Signature;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
@@ -76,8 +74,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 				ClassInfo clazz = (ClassInfo) iter.next();
 				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
 				id.writeTagged(os);
-				String sig = Signature.computeClassSignature(clazz);
-				JdwpString.writeString(os, sig);
+				new StringRaw(clazz.getSignature()).write(os);
 				// TODO [for PJA] do we have class statuses in JPF?
 				ClassStatus.VERIFIED.write(os);
 			}

@@ -42,6 +42,8 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
 import gnu.classpath.jdwp.transport.JdwpPacket;
+import gov.nasa.jpf.jdwp.command.CommandSet;
+import gov.nasa.jpf.jdwp.command.EventCommand;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -157,8 +159,8 @@ public abstract class Event
           _toData (dos, events[i], requests[i]);
 
         pkt
-          = new JdwpCommandPacket (JdwpConstants.CommandSet.Event.CS_VALUE,
-                                   JdwpConstants.CommandSet.Event.COMPOSITE);
+          = new JdwpCommandPacket (CommandSet.EVENT,
+                                   EventCommand.COMPOSITE);
       }
     catch (IOException ioe)
       {

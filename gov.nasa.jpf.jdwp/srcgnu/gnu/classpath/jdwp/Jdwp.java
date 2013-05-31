@@ -39,15 +39,14 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp;
 
-import gnu.classpath.jdwp.event.BreakpointEvent;
-import gnu.classpath.jdwp.event.ClassPrepareEvent;
 import gnu.classpath.jdwp.event.EventManager;
-import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.processor.PacketProcessor;
 import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
+import gov.nasa.jpf.jdwp.JDWPRunner;
+import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
@@ -363,7 +362,6 @@ public class Jdwp
 
   // Helper function to enforce suspend policies on event notification
   private void _enforceSuspendPolicy (SuspendPolicy suspendPolicy)
-    throws JdwpException
   {
     switch (suspendPolicy)
       {
@@ -373,12 +371,12 @@ public class Jdwp
 
       case EVENT_THREAD:
     	  // TODO how to solve just one thread suspension?
-    	  VMVirtualMachine.suspendAllThreads ();
+    	  JDWPRunner.vm.suspendAllThreads ();
         //VMVirtualMachine.suspendThread (Thread.currentThread ());
         break;
 
       case ALL:
-        VMVirtualMachine.suspendAllThreads ();
+    	  JDWPRunner.vm.suspendAllThreads();
         break;
       }
   }

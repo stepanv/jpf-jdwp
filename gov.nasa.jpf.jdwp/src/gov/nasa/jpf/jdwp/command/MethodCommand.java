@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMMethod;
 import gnu.classpath.jdwp.util.LineTable;
 import gnu.classpath.jdwp.util.VariableTable;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
@@ -30,7 +29,7 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 		@Override
 		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 
-			    VariableTable variableTable = VMMethod.variableTable(methodInfo); // TODO do this in a different uniform way
+			    VariableTable variableTable = new VariableTable(methodInfo); // TODO do this in a different uniform way
 //			    VariableTable vt = method.getVariableTable();
 			    variableTable.write(os);
 

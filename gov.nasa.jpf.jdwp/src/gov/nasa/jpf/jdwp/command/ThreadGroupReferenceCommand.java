@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -42,7 +41,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
 				throws IOException, JdwpError {
 			int parentref = threadGroupElementInfo.getReferenceField("parent");
-			ElementInfo parent = VMVirtualMachine.vm.getJpf().getVM().getHeap().get(parentref);
+			ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
 			System.out.println("Thread group parent: " + parent);
 
 			if (parent == null) {

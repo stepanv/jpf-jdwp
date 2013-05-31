@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import gov.nasa.jpf.jdwp.value.StringRaw;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.Instruction;
@@ -195,8 +196,8 @@ public class VariableTable {
 		os.writeInt(slots.size());
 		for (Slot slot : slots) {
 			os.writeLong(slot.codeIndex); // 2 words
-			JdwpString.writeString(os, slot.name);
-			JdwpString.writeString(os, slot.signature);
+			new StringRaw(slot.name).write(os);
+			new StringRaw(slot.signature).write(os);
 			os.writeInt(slot.length); // 1 word
 			os.writeInt(slot.slot); // 1 word
 		}

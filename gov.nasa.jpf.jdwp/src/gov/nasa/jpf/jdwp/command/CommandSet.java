@@ -22,6 +22,10 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 
 	private ConvertibleEnum<Byte, ? extends Command> commandConverterSample;
 
+	public ConvertibleEnum<Byte, ? extends Command> getCommandConverterSample() {
+		return commandConverterSample;
+	}
+
 	private CommandSet(int commandSetId, ConvertibleEnum<Byte, ? extends Command> commandConverterSample) {
 		this.commandSetId = (byte) commandSetId;
 		this.commandConverterSample = commandConverterSample;
@@ -42,15 +46,9 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 		return map.get(val);
 	}
 
-	public static void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		execute(bytes.get(), bytes.get(), bytes, os, contextProvider);
-	}
-
-	public static void execute(byte commandSetId, byte commandId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+	public static void execute(CommandSet commandSet, Command command, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		
-		ConvertibleEnum<Byte, ? extends Command> commandConverterSample = map.get(commandSetId).commandConverterSample;
-		Command command = commandConverterSample.convert(commandId);
-		System.out.println("Running: SET: " + map.get(commandSetId) + " (" + commandSetId + "), CMD: " + command + " (" + commandId + ")");
+		System.out.println("Running: SET: " + commandSet + " (" + commandSet + "), CMD: " + command + " (" + command + ")");
 		try {
 			command.execute(bytes, os, contextProvider);
 		} finally {

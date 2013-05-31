@@ -41,13 +41,11 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.JdwpConstants;
-import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
+import gov.nasa.jpf.jdwp.JDWPRunner;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 
@@ -74,9 +72,6 @@ public class PacketProcessor
   // Shutdown this thread?
   private boolean _shutdown;
 
-  // A Mapping of the command set (Byte) to the specific CommandSet
-  private CommandSet[] _sets;
-
   // Contents of the ReplyPackets data field
   private ByteArrayOutputStream _outputBytes;
 
@@ -95,43 +90,9 @@ public class PacketProcessor
     _shutdown = false;
 
     // MAXIMUM is the value of the largest command set we may receive
-    _sets = new CommandSet[JdwpConstants.CommandSet.MAXIMUM + 1];
     _outputBytes = new ByteArrayOutputStream();
     _os = new DataOutputStream (_outputBytes);
 
-    // Create all the Command Sets and add them to our array
-    _sets[JdwpConstants.CommandSet.VirtualMachine.CS_VALUE] =
-      new VirtualMachineCommandSet();
-    _sets[JdwpConstants.CommandSet.ReferenceType.CS_VALUE] =
-      new ReferenceTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassType.CS_VALUE] =
-      new ClassTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.ArrayType.CS_VALUE] =
-      new ArrayTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.InterfaceType.CS_VALUE] =
-      new InterfaceTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.Method.CS_VALUE] =
-      new MethodCommandSet();
-    _sets[JdwpConstants.CommandSet.Field.CS_VALUE] =
-      new FieldCommandSet();
-    _sets[JdwpConstants.CommandSet.ObjectReference.CS_VALUE] =
-      new ObjectReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.StringReference.CS_VALUE] =
-      new StringReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ThreadReference.CS_VALUE] =
-      new ThreadReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ThreadGroupReference.CS_VALUE] =
-      new ThreadGroupReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ArrayReference.CS_VALUE] =
-      new ArrayReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassLoaderReference.CS_VALUE] =
-      new ClassLoaderReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.EventRequest.CS_VALUE] =
-      new EventRequestCommandSet();
-    _sets[JdwpConstants.CommandSet.StackFrame.CS_VALUE] =
-      new StackFrameCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassObjectReference.CS_VALUE] =
-      new ClassObjectReferenceCommandSet();
   }
 
   /**
@@ -160,7 +121,7 @@ public class PacketProcessor
     return null;
   }
   
-  private static CommandContextProvider ccp = new CommandContextProvider(VMVirtualMachine.vm, JdwpObjectManager.getInstance());
+  private static CommandContextProvider ccp = new CommandContextProvider(JDWPRunner.vm, JdwpObjectManager.getInstance());
 
   /**
    * Shutdown the packet processor

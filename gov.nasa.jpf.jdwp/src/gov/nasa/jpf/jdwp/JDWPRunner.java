@@ -1,15 +1,15 @@
 package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.VMVirtualMachine;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 public class JDWPRunner {
+	
+	public static VirtualMachine vm;
 
 	/**
 	 * @param args
@@ -36,8 +36,7 @@ public class JDWPRunner {
 			Jdwp jdwp = new Jdwp();
 			jdwp.configure(jdwpProperty);
 
-			VirtualMachine vm = new VirtualMachine(jpf);
-			VMVirtualMachine.vm = vm;
+			vm = new VirtualMachine(jpf);
 
 			jpf.getVM().addListener(new JDWPListener(jpf, vm));
 			jdwp.start();

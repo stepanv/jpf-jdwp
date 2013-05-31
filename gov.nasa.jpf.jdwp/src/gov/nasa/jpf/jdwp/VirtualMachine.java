@@ -99,6 +99,7 @@ public class VirtualMachine {
 	}
 
 	public void suspendAllThreads() {
+		// TODO throw an exception if error occured
 		synchronized (this) {
 			try {
 				allThreadsSuspended = true;
