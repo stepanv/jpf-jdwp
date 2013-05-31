@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp;
 
 import gnu.classpath.jdwp.event.EventManager;
@@ -56,392 +55,355 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main interface from the virtual machine to the JDWP back-end.
- *
- * The thread created by this class is only used for initialization.
- * Once it exits, the JDWP backend is fully initialized.
- *
+ * 
+ * The thread created by this class is only used for initialization. Once it
+ * exits, the JDWP backend is fully initialized.
+ * 
  * @author Keith Seitz (keiths@redhat.com)
  */
-public class Jdwp
-  extends Thread
-{
-  // The single instance of the back-end
-  private static Jdwp _instance = null;
+public class Jdwp extends Thread {
+	// The single instance of the back-end
+	private static Jdwp _instance = null;
 
-  /**
-   * Are we debugging? Only true if debugging
-   * *and* initialized.
-   */
-  public static boolean isDebugging = false;
+	/**
+	 * Are we debugging? Only true if debugging *and* initialized.
+	 */
+	public static boolean isDebugging = false;
 
-  // Packet processor
-  private PacketProcessor _packetProcessor;
-  private Thread _ppThread;
+	// Packet processor
+	private PacketProcessor _packetProcessor;
+	private Thread _ppThread;
 
-  // JDWP configuration properties
-  private HashMap<String, String> _properties;
+	// JDWP configuration properties
+	private HashMap<String, String> _properties;
 
-  // The suspend property of the configure string
-  // (-Xrunjdwp:..suspend=<boolean>)
-  private static final String _PROPERTY_SUSPEND = "suspend";
-  private static final String _PROPERTY_QUIET = "quiet";
-  private static final String _PROPERTY_SERVER = "server";
+	// The suspend property of the configure string
+	// (-Xrunjdwp:..suspend=<boolean>)
+	private static final String _PROPERTY_SUSPEND = "suspend";
+	private static final String _PROPERTY_QUIET = "quiet";
+	private static final String _PROPERTY_SERVER = "server";
 
-  // Connection to debugger
-  private JdwpConnection _connection;
+	// Connection to debugger
+	private JdwpConnection _connection;
 
-  // Are we shutting down the current session?
-  private boolean _shutdown;
+	// Are we shutting down the current session?
+	private boolean _shutdown;
 
-  // A thread group for the JDWP threads
-  private ThreadGroup _group;
+	// A thread group for the JDWP threads
+	private ThreadGroup _group;
 
-  // Initialization synchronization
-  private Object _initLock = new Object ();
-  private int _initCount = 0;
+	// Initialization synchronization
+	private Object _initLock = new Object();
+	private int _initCount = 0;
 
-  /**
-   * constructor
-   */
-  public Jdwp ()
-  {
-	  super("JDWP-initializator");
-    _shutdown = false;
-    _instance = this;
-  }
+	/**
+	 * constructor
+	 */
+	public Jdwp() {
+		super("JDWP-initializator");
+		_shutdown = false;
+		_instance = this;
+	}
 
-  /**
-   * Returns the JDWP back-end, creating an instance of it
-   * if one does not already exist.
-   */
-  public static Jdwp getDefault ()
-  {
-    return _instance;
-  }
+	/**
+	 * Returns the JDWP back-end, creating an instance of it if one does not
+	 * already exist.
+	 */
+	public static Jdwp getDefault() {
+		return _instance;
+	}
 
-  /**
-   * Get the thread group used by JDWP threads
-   *
-   * @return the thread group
-   */
-  public ThreadGroup getJdwpThreadGroup()
-  {
-    return _group;
-  }
+	/**
+	 * Get the thread group used by JDWP threads
+	 * 
+	 * @return the thread group
+	 */
+	public ThreadGroup getJdwpThreadGroup() {
+		return _group;
+	}
 
-  /**
-   * Should the virtual machine suspend on startup?
-   */
-  public static boolean suspendOnStartup ()
-  {
-    Jdwp jdwp = getDefault ();
-    if (jdwp != null)
-      {
-        String suspend = (String) jdwp._properties.get (_PROPERTY_SUSPEND);
-        if (suspend != null && suspend.equals ("y"))
-          return true;
-      }
+	/**
+	 * Should the virtual machine suspend on startup?
+	 */
+	public static boolean suspendOnStartup() {
+		Jdwp jdwp = getDefault();
+		if (jdwp != null) {
+			String suspend = (String) jdwp._properties.get(_PROPERTY_SUSPEND);
+			if (suspend != null && suspend.equals("y"))
+				return true;
+		}
 
-    return false;
-  }
-  
-  public boolean isServer() {
-	  Jdwp jdwp = getDefault ();
-	    if (jdwp != null)
-	      {
-	        String suspend = (String) jdwp._properties.get (_PROPERTY_SERVER);
-	        if (suspend != null && suspend.equals ("y"))
-	          return true;
-	      }
+		return false;
+	}
 
-	    return false;
-  }
+	public boolean isServer() {
+		Jdwp jdwp = getDefault();
+		if (jdwp != null) {
+			String suspend = (String) jdwp._properties.get(_PROPERTY_SERVER);
+			if (suspend != null && suspend.equals("y"))
+				return true;
+		}
 
-  /**
-   * Configures the back-end
-   *
-   * @param configArgs  a string of configury options
-   */
-  public void configure (String configArgs)
-  {
-    _processConfigury (configArgs);
-  }
+		return false;
+	}
 
-  // A helper function to initialize the transport layer
-  private void _doInitialization ()
-    throws TransportException
-  {
-    _group = new ThreadGroup ("JDWP threads");
-    // initialize transport
-    ITransport transport = TransportFactory.newInstance (_properties);
-    _connection = new JdwpConnection (_group, transport);
-    
-    // Get quiet {form: "y" or "n"} .. applies only when server=y
-    if (_properties.get(_PROPERTY_QUIET) == null || _properties.get(_PROPERTY_QUIET).toLowerCase().equals("y")) {
-    	if (transport.isServer()) { 
-    		System.out.println("Listening for transport " + transport.getName() + " at address: " + transport.getAddress());
-    	}
-    }
-    _connection.initialize ();
-    _connection.start ();
+	/**
+	 * Configures the back-end
+	 * 
+	 * @param configArgs
+	 *            a string of configury options
+	 */
+	public void configure(String configArgs) {
+		_processConfigury(configArgs);
+	}
 
-    // Create processor
-    _packetProcessor = new PacketProcessor (_connection);
-    _ppThread = new Thread (_group, new Runnable ()
-      {
-        public void run ()
-        {
-          AccessController.doPrivileged (_packetProcessor);
-        }
-      }, "packet processor");
-    _ppThread.start ();
-  }
+	// A helper function to initialize the transport layer
+	private void _doInitialization() throws TransportException {
+		_group = new ThreadGroup("JDWP threads");
+		// initialize transport
+		ITransport transport = TransportFactory.newInstance(_properties);
+		_connection = new JdwpConnection(_group, transport);
 
-  /**
-   * Shutdown the JDWP back-end
-   *
-   * NOTE: This does not quite work properly. See notes in
-   * run() on this subject (catch of InterruptedException).
-   */
-  public void shutdown ()
-  {
-    if (!_shutdown)
-      {
-        _packetProcessor.shutdown ();
-        _ppThread.interrupt ();
-        _connection.shutdown ();
-        _shutdown = true;
-        isDebugging = false;
+		// Get quiet {form: "y" or "n"} .. applies only when server=y
+		if (_properties.get(_PROPERTY_QUIET) == null || _properties.get(_PROPERTY_QUIET).toLowerCase().equals("y")) {
+			if (transport.isServer()) {
+				System.out.println("Listening for transport " + transport.getName() + " at address: " + transport.getAddress());
+			}
+		}
+		_connection.initialize();
+		_connection.start();
 
-        /* FIXME: probably need to check state of user's
-           program -- if it is suspended, we need to either
-           resume or kill them. */
+		// Create processor
+		_packetProcessor = new PacketProcessor(_connection);
+		_ppThread = new Thread(_group, new Runnable() {
+			public void run() {
+				AccessController.doPrivileged(_packetProcessor);
+			}
+		}, "packet processor");
+		_ppThread.start();
+	}
 
-        interrupt ();
-      }
-  }
+	/**
+	 * Shutdown the JDWP back-end
+	 * 
+	 * NOTE: This does not quite work properly. See notes in run() on this
+	 * subject (catch of InterruptedException).
+	 */
+	public void shutdown() {
+		if (!_shutdown) {
+			_packetProcessor.shutdown();
+			_ppThread.interrupt();
+			_connection.shutdown();
+			_shutdown = true;
+			isDebugging = false;
 
-  /**
-   * Notify the debugger of an event. This method should not
-   * be called if debugging is not active (but it would not
-   * cause any harm). Places where event notifications occur
-   * should check isDebugging before doing anything.
-   *
-   * The event is filtered through the event manager before being
-   * sent.
-   *
-   * @param event the event to report
-   */
-  public static void notify(Event event)
-  {
-    Jdwp jdwp = getDefault();
-    if (jdwp != null)
-      {
-        EventManager em = EventManager.getDefault();
-        EventRequest[] requests = em.getEventRequests(event);
-        for (int i = 0; i < requests.length; ++i)
-          {
-            try
-              {
-                sendEvent(requests[i], event);
-                jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
-              }
-            catch (Exception e)
-              {
-                /* Really not much we can do. For now, just print out
-                   a warning to the user. */
-                System.out.println ("Jdwp.notify: caught exception: " + e);
-                e.printStackTrace();
-              }
-          }
-      }
-  }
-  
-  
+			/*
+			 * FIXME: probably need to check state of user's program -- if it is
+			 * suspended, we need to either resume or kill them.
+			 */
 
-/**
-   * Notify the debugger of "co-located" events. This method should
-   * not be called if debugging is not active (but it would not
-   * cause any harm). Places where event notifications occur
-   * should check isDebugging before doing anything.
-   *
-   * The events are filtered through the event manager before being
-   * sent.
-   *
-   * @param events the events to report
-   */
-  public static void notify(EventBase[] events)
-  {
-    Jdwp jdwp = getDefault();
+			interrupt();
+		}
+	}
 
-    if (jdwp != null)
-      {
-    	SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
-        EventManager em = EventManager.getDefault();
-        ArrayList allEvents = new ArrayList ();
-        ArrayList allRequests = new ArrayList ();
-        for (int i = 0; i < events.length; ++i)
-          {
-            EventRequest[] r = em.getEventRequests(events[i]);
-            for (int j = 0; j < r.length; ++j)
-              {
-                /* This is hacky, but it's not clear whether this
-                   can really happen, and if it does, what should
-                   occur. */
-                allEvents.add (events[i]);
-                allRequests.add (r[j]);
+	/**
+	 * Notify the debugger of an event. This method should not be called if
+	 * debugging is not active (but it would not cause any harm). Places where
+	 * event notifications occur should check isDebugging before doing anything.
+	 * 
+	 * The event is filtered through the event manager before being sent.
+	 * 
+	 * @param event
+	 *            the event to report
+	 */
+	public static void notify(Event event) {
+		Jdwp jdwp = getDefault();
+		if (jdwp != null) {
+			EventManager em = EventManager.getDefault();
+			EventRequest[] requests = em.getEventRequests(event);
+			for (int i = 0; i < requests.length; ++i) {
+				try {
+					sendEvent(requests[i], event);
+					jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
+				} catch (Exception e) {
+					/*
+					 * Really not much we can do. For now, just print out a
+					 * warning to the user.
+					 */
+					System.out.println("Jdwp.notify: caught exception: " + e);
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
-             // Perhaps this is overkill?
-                if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
-                	 suspendPolicy = r[j].getSuspendPolicy();
-                }
-                
-              }
-          }
+	/**
+	 * Notify the debugger of "co-located" events. This method should not be
+	 * called if debugging is not active (but it would not cause any harm).
+	 * Places where event notifications occur should check isDebugging before
+	 * doing anything.
+	 * 
+	 * The events are filtered through the event manager before being sent.
+	 * 
+	 * @param events
+	 *            the events to report
+	 */
+	public static void notify(EventBase[] events) {
+		Jdwp jdwp = getDefault();
 
-        try
-          {
-            EventBase[] e = new EventBase[allEvents.size()];
-            allEvents.toArray(e);
-            EventRequest[] r = new EventRequest[allRequests.size()];
-            allRequests.toArray(r);
-            sendEvents(r, e, suspendPolicy);
-            jdwp._enforceSuspendPolicy(suspendPolicy);
-          }
-        catch (Exception e)
-          {
-            /* Really not much we can do. For now, just print out
-               a warning to the user. */
-            System.out.println ("Jdwp.notify: caught exception: " + e);
-          }
-      }
-  }
+		if (jdwp != null) {
+			SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
+			EventManager em = EventManager.getDefault();
 
-  /**
-   * Sends the event to the debugger.
-   *
-   * This method bypasses the event manager's filtering.
-   *
-   * @param  request  the debugger request for the event
-   * @param  event    the event to send
-   * @throws IOException if a communications failure occurs
-   */
-  public static void sendEvent (EventRequest request, Event event)
-      throws IOException
-  {
-    sendEvents (new EventRequest[] { request }, new Event[] { event },
-                request.getSuspendPolicy());
-  }
+			Map<Event, EventRequest<Event>> eventToRequestMap = new HashMap<Event, EventRequest<Event>>();
+			for (int i = 0; i < events.length; ++i) {
+				EventRequest[] r = em.getEventRequests(events[i]);
+				for (int j = 0; j < r.length; ++j) {
+					/*
+					 * This is hacky, but it's not clear whether this can really
+					 * happen, and if it does, what should occur.
+					 */
+					eventToRequestMap.put(events[i], r[j]);
 
-  /**
-   * Sends the events to the debugger.
-   *
-   * This method bypasses the event manager's filtering.
-   *
-   * @param  requests  list of debugger requests for the events
-   * @param  events    the events to send
-   * @param  suspendPolicy.identifier() the suspendPolicy enforced by the VM
-   * @throws IOException if a communications failure occurs
-   */
-  public static void sendEvents (EventRequest[] requests, Event[] events,
-                                 SuspendPolicy suspendPolicy)
-    throws IOException
-  {
-    Jdwp jdwp = getDefault();
-    if (jdwp != null && isDebugging)
-      {
-        synchronized (jdwp._connection)
-          {
-            jdwp._connection.sendEvents (requests, events, suspendPolicy.identifier());
-          }
-      }
-  }
+					// Perhaps this is overkill?
+					if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
+						suspendPolicy = r[j].getSuspendPolicy();
+					}
 
-  // Helper function to enforce suspend policies on event notification
-  private void _enforceSuspendPolicy (SuspendPolicy suspendPolicy)
-  {
-    switch (suspendPolicy)
-      {
-      case NONE:
-        // do nothing
-        break;
+				}
+			}
 
-      case EVENT_THREAD:
-    	  // TODO how to solve just one thread suspension?
-    	  JDWPRunner.vm.suspendAllThreads ();
-        //VMVirtualMachine.suspendThread (Thread.currentThread ());
-        break;
+			try {
+				sendEvents(eventToRequestMap, suspendPolicy);
+				jdwp._enforceSuspendPolicy(suspendPolicy);
+			} catch (Exception e) {
+				/*
+				 * Really not much we can do. For now, just print out a warning
+				 * to the user.
+				 */
+				System.out.println("Jdwp.notify: caught exception: " + e);
+			}
+		}
+	}
 
-      case ALL:
-    	  JDWPRunner.vm.suspendAllThreads();
-        break;
-      }
-  }
+	/**
+	 * Sends the event to the debugger.
+	 * 
+	 * This method bypasses the event manager's filtering.
+	 * 
+	 * @param request
+	 *            the debugger request for the event
+	 * @param event
+	 *            the event to send
+	 * @throws IOException
+	 *             if a communications failure occurs
+	 */
+	public static void sendEvent(EventRequest request, Event event) throws IOException {
+		Map<Event, EventRequest<Event>> eventToRequestMap = new HashMap<Event, EventRequest<Event>>();
+		eventToRequestMap.put(event, request);
+		sendEvents(eventToRequestMap, request.getSuspendPolicy());
+	}
 
-  /**
-   * Allows subcomponents to specify that they are
-   * initialized.
-   *
-   * Subcomponents include JdwpConnection and PacketProcessor.
-   */
-  public void subcomponentInitialized ()
-  {
-    synchronized (_initLock)
-      {
-        ++_initCount;
-        _initLock.notify ();
-      }
-  }
+	/**
+	 * Sends the events to the debugger.
+	 * 
+	 * This method bypasses the event manager's filtering.
+	 * 
+	 * @param requests
+	 *            list of debugger requests for the events
+	 * @param events
+	 *            the events to send
+	 * @param suspendPolicy
+	 *            .identifier() the suspendPolicy enforced by the VM
+	 * @throws IOException
+	 *             if a communications failure occurs
+	 */
+	public static void sendEvents(Map<Event, EventRequest<Event>> eventToRequestMap, SuspendPolicy suspendPolicy) throws IOException {
+		Jdwp jdwp = getDefault();
+		if (jdwp != null && isDebugging) {
+			synchronized (jdwp._connection) {
+				jdwp._connection.sendEvents(eventToRequestMap, suspendPolicy);
+			}
+		}
+	}
 
-  public void run ()
-  {
-    try
-      {
-        _doInitialization ();
+	// Helper function to enforce suspend policies on event notification
+	private void _enforceSuspendPolicy(SuspendPolicy suspendPolicy) {
+		switch (suspendPolicy) {
+		case NONE:
+			// do nothing
+			break;
 
-        /* We need a little internal synchronization here, so that
-           when this thread dies, the back-end will be fully initialized,
-           ready to start servicing the VM and debugger. */
-        synchronized (_initLock)
-          {
-            while (_initCount != 2)
-              _initLock.wait ();
-          }
-        _initLock = null;
-      }
-    catch (Throwable t)
-      {
-        System.out.println ("Exception in JDWP back-end: " + t);
-        System.exit (1);
-      }
+		case EVENT_THREAD:
+			// TODO how to solve just one thread suspension?
+			JDWPRunner.vm.suspendAllThreads();
+			// VMVirtualMachine.suspendThread (Thread.currentThread ());
+			break;
 
-    /* Force creation of the EventManager. If the event manager
-       has not been created when isDebugging is set, it is possible
-       that the VM will call Jdwp.notify (which uses EventManager)
-       while the EventManager is being created (or at least this is
-       a problem with gcj/gij). */
-    EventManager.getDefault();
+		case ALL:
+			JDWPRunner.vm.suspendAllThreads();
+			break;
+		}
+	}
 
-    // Now we are finally ready and initialized
-    isDebugging = true;
-  }
+	/**
+	 * Allows subcomponents to specify that they are initialized.
+	 * 
+	 * Subcomponents include JdwpConnection and PacketProcessor.
+	 */
+	public void subcomponentInitialized() {
+		synchronized (_initLock) {
+			++_initCount;
+			_initLock.notify();
+		}
+	}
 
-  // A helper function to process the configure string "-Xrunjdwp:..."
-  private void _processConfigury (String configString)
-  {
-    // Loop through configuration arguments looking for a
-    // transport name
-    _properties = new HashMap<String, String> ();
-    String[] options = configString.split (",");
-    for (int i = 0; i < options.length; ++i)
-      {
-        String[] property = options[i].split ("=");
-        if (property.length == 2)
-          _properties.put (property[0], property[1]);
-        // ignore malformed options
-      }
-  }
+	public void run() {
+		try {
+			_doInitialization();
+
+			/*
+			 * We need a little internal synchronization here, so that when this
+			 * thread dies, the back-end will be fully initialized, ready to
+			 * start servicing the VM and debugger.
+			 */
+			synchronized (_initLock) {
+				while (_initCount != 2)
+					_initLock.wait();
+			}
+			_initLock = null;
+		} catch (Throwable t) {
+			System.out.println("Exception in JDWP back-end: " + t);
+			System.exit(1);
+		}
+
+		/*
+		 * Force creation of the EventManager. If the event manager has not been
+		 * created when isDebugging is set, it is possible that the VM will call
+		 * Jdwp.notify (which uses EventManager) while the EventManager is being
+		 * created (or at least this is a problem with gcj/gij).
+		 */
+		EventManager.getDefault();
+
+		// Now we are finally ready and initialized
+		isDebugging = true;
+	}
+
+	// A helper function to process the configure string "-Xrunjdwp:..."
+	private void _processConfigury(String configString) {
+		// Loop through configuration arguments looking for a
+		// transport name
+		_properties = new HashMap<String, String>();
+		String[] options = configString.split(",");
+		for (int i = 0; i < options.length; ++i) {
+			String[] property = options[i].split("=");
+			if (property.length == 2)
+				_properties.put(property[0], property[1]);
+			// ignore malformed options
+		}
+	}
 }

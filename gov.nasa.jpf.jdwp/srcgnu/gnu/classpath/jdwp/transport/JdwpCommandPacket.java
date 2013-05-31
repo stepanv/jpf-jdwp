@@ -41,7 +41,6 @@ package gnu.classpath.jdwp.transport;
 
 import gov.nasa.jpf.jdwp.command.Command;
 import gov.nasa.jpf.jdwp.command.CommandSet;
-import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
 import java.io.DataOutputStream;
@@ -103,35 +102,11 @@ public class JdwpCommandPacket extends JdwpPacket
   }
 
   /**
-   * Returns the command set
-   */
-  public CommandSet getCommandSet ()
-  {
-    return _commandSet;
-  }
-
-  /**
-   * Sets the command set
-   */
-  public void setCommandSet (CommandSet cs)
-  {
-    _commandSet = cs;
-  }
-
-  /**
    * Returns the command
    */
   public Command getCommand ()
   {
     return _command;
-  }
-
-  /**
-   * Sets the command
-   */
-  public void setCommand (Command cmd)
-  {
-    _command = cmd;
   }
 
   // Reads command packet data from the given buffer, starting
@@ -140,9 +115,10 @@ public class JdwpCommandPacket extends JdwpPacket
   {
     int i = 0;
     
-    CommandSet commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
-    setCommandSet (commandSet);
-	Command command = commandSet.getCommandConverterSample().convert(bytes[index + i++]);
+    _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
+	_command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
+	
+	System.out.println("Running: SET: " + _commandSet + " (" + _commandSet + "), CMD: " + _command + " (" + _command + ")");
 	
     return i;
   }
@@ -151,7 +127,7 @@ public class JdwpCommandPacket extends JdwpPacket
   protected void myWrite (DataOutputStream dos)
     throws IOException
   {
-    dos.writeByte (getCommandSet ().identifier());
-    dos.writeByte (getCommand ().identifier());
+    dos.writeByte (_commandSet.identifier());
+    dos.writeByte (_command.identifier());
   }
 }
