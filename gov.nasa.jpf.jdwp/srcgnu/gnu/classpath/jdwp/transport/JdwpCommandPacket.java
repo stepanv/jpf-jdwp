@@ -39,6 +39,10 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.transport;
 
+import gov.nasa.jpf.jdwp.command.Command;
+import gov.nasa.jpf.jdwp.command.CommandSet;
+import gov.nasa.jpf.jdwp.exception.JdwpError;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -55,12 +59,12 @@ public class JdwpCommandPacket extends JdwpPacket
   /**
    * Command set
    */
-  protected byte _commandSet;
+  protected CommandSet _commandSet;
 
   /**
    * Command
    */
-  protected byte _command;
+  protected Command _command;
 
   // Minimum packet size [excluding super class]
   // ( commandSet (1) + command (1) )
@@ -82,7 +86,7 @@ public class JdwpCommandPacket extends JdwpPacket
    * @param set      the command set
    * @param command  the command
    */
-  public JdwpCommandPacket (byte set, byte command)
+  public JdwpCommandPacket (CommandSet set, Command command)
   {
     _id = ++_last_id;
     _commandSet = set;
@@ -98,44 +102,24 @@ public class JdwpCommandPacket extends JdwpPacket
   }
 
   /**
-   * Returns the command set
-   */
-  public byte getCommandSet ()
-  {
-    return _commandSet;
-  }
-
-  /**
-   * Sets the command set
-   */
-  public void setCommandSet (byte cs)
-  {
-    _commandSet = cs;
-  }
-
-  /**
    * Returns the command
    */
-  public byte getCommand ()
+  public Command getCommand ()
   {
     return _command;
   }
 
-  /**
-   * Sets the command
-   */
-  public void setCommand (byte cmd)
-  {
-    _command = cmd;
-  }
-
   // Reads command packet data from the given buffer, starting
   // at the given offset
-  protected int myFromBytes (byte[] bytes, int index)
+  protected int myFromBytes (byte[] bytes, int index) throws JdwpError
   {
     int i = 0;
-    setCommandSet (bytes[index + i++]);
-    setCommand (bytes[index + i++]);
+    
+    _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
+	_command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
+	
+	System.out.println("Running: SET: " + _commandSet + " (" + _commandSet + "), CMD: " + _command + " (" + _command + ")");
+	
     return i;
   }
 
@@ -143,7 +127,7 @@ public class JdwpCommandPacket extends JdwpPacket
   protected void myWrite (DataOutputStream dos)
     throws IOException
   {
-    dos.writeByte (getCommandSet ());
-    dos.writeByte (getCommand ());
+    dos.writeByte (_commandSet.identifier());
+    dos.writeByte (_command.identifier());
   }
 }

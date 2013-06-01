@@ -1,20 +1,22 @@
 package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.VMVirtualMachine;
-import gnu.classpath.jdwp.event.VmDeathEvent;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-
-import java.util.ArrayList;
-import java.util.List;
+import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
+import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 public class JDWPRunner {
+	
+	public static VirtualMachine vm;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		System.out.println(VirtualMachineCommand.ALLCLASSES);
+		System.out.println(EventKind.BREAKPOINT);
 
 		// this initializes the JPF configuration from default.properties,
 		// site.properties
@@ -34,8 +36,7 @@ public class JDWPRunner {
 			Jdwp jdwp = new Jdwp();
 			jdwp.configure(jdwpProperty);
 
-			VirtualMachine vm = new VirtualMachine(jpf);
-			VMVirtualMachine.vm = vm;
+			vm = new VirtualMachine(jpf);
 
 			jpf.getVM().addListener(new JDWPListener(jpf, vm));
 			jdwp.start();

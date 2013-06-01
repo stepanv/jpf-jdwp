@@ -1,0 +1,1 @@
+Jaky je rozdil mezi Heap.getModifiable a Heap.get?

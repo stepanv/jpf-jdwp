@@ -40,8 +40,10 @@ exception statement from your version. */
 package gnu.classpath.jdwp.transport;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.event.Event;
-import gnu.classpath.jdwp.event.EventRequest;
+import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventBase;
+import gov.nasa.jpf.jdwp.event.EventRequest;
+import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -49,6 +51,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * A connection via some transport to some JDWP-speaking entity.
@@ -282,8 +285,8 @@ public class JdwpConnection
    * @param suspendPolicy  the suspend policy enforced by the VM
    * @throws IOException
    */
-  public void sendEvents(EventRequest[] requests, Event[] events,
-                         byte suspendPolicy)
+  public void sendEvents(Map<Event, EventRequest<Event>> eventToRequestMap,
+                         SuspendPolicy suspendPolicy)
     throws IOException
   {
     JdwpPacket pkt;
@@ -291,7 +294,7 @@ public class JdwpConnection
     synchronized (_bytes)
       {
         _bytes.reset ();
-        pkt = Event.toPacket (_doStream, events, requests, suspendPolicy);
+        pkt = EventBase.toPacket (_doStream, eventToRequestMap, suspendPolicy);
         pkt.setData (_bytes.toByteArray ());
       }
 

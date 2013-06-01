@@ -41,12 +41,13 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.JdwpConstants;
-import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
+import gov.nasa.jpf.jdwp.JDWPRunner;
+import gov.nasa.jpf.jdwp.command.CommandContextProvider;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -71,9 +72,6 @@ public class PacketProcessor
   // Shutdown this thread?
   private boolean _shutdown;
 
-  // A Mapping of the command set (Byte) to the specific CommandSet
-  private CommandSet[] _sets;
-
   // Contents of the ReplyPackets data field
   private ByteArrayOutputStream _outputBytes;
 
@@ -92,43 +90,9 @@ public class PacketProcessor
     _shutdown = false;
 
     // MAXIMUM is the value of the largest command set we may receive
-    _sets = new CommandSet[JdwpConstants.CommandSet.MAXIMUM + 1];
     _outputBytes = new ByteArrayOutputStream();
     _os = new DataOutputStream (_outputBytes);
 
-    // Create all the Command Sets and add them to our array
-    _sets[JdwpConstants.CommandSet.VirtualMachine.CS_VALUE] =
-      new VirtualMachineCommandSet();
-    _sets[JdwpConstants.CommandSet.ReferenceType.CS_VALUE] =
-      new ReferenceTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassType.CS_VALUE] =
-      new ClassTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.ArrayType.CS_VALUE] =
-      new ArrayTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.InterfaceType.CS_VALUE] =
-      new InterfaceTypeCommandSet();
-    _sets[JdwpConstants.CommandSet.Method.CS_VALUE] =
-      new MethodCommandSet();
-    _sets[JdwpConstants.CommandSet.Field.CS_VALUE] =
-      new FieldCommandSet();
-    _sets[JdwpConstants.CommandSet.ObjectReference.CS_VALUE] =
-      new ObjectReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.StringReference.CS_VALUE] =
-      new StringReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ThreadReference.CS_VALUE] =
-      new ThreadReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ThreadGroupReference.CS_VALUE] =
-      new ThreadGroupReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ArrayReference.CS_VALUE] =
-      new ArrayReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassLoaderReference.CS_VALUE] =
-      new ClassLoaderReferenceCommandSet();
-    _sets[JdwpConstants.CommandSet.EventRequest.CS_VALUE] =
-      new EventRequestCommandSet();
-    _sets[JdwpConstants.CommandSet.StackFrame.CS_VALUE] =
-      new StackFrameCommandSet();
-    _sets[JdwpConstants.CommandSet.ClassObjectReference.CS_VALUE] =
-      new ClassObjectReferenceCommandSet();
   }
 
   /**
@@ -156,6 +120,8 @@ public class PacketProcessor
     Jdwp.getDefault().shutdown();
     return null;
   }
+  
+  private static CommandContextProvider ccp = new CommandContextProvider(JDWPRunner.vm, JdwpObjectManager.getInstance());
 
   /**
    * Shutdown the packet processor
@@ -189,36 +155,45 @@ public class PacketProcessor
 
         // Create a ByteBuffer around the command packet
         ByteBuffer bb = ByteBuffer.wrap(commandPkt.getData());
-        byte command = commandPkt.getCommand();
-        byte commandSet = commandPkt.getCommandSet();
-
-        CommandSet set = null;
-        try
-          {
-            // There is no command set with value 0
-            if (commandSet > 0 && commandSet < _sets.length)
-              {
-                set = _sets[commandPkt.getCommandSet()];
-              }
-            if (set != null)
-              {
-                _shutdown = set.runCommandWithInfo(bb, _os, command);
-                reply.setData(_outputBytes.toByteArray());
-              }
-            else
-              {
-                // This command set wasn't in our tree
-                reply.setErrorCode(JdwpConstants.Error.NOT_IMPLEMENTED);
-              }
-          }
-          catch (JdwpException ex)
-            {
-            reply.setErrorCode(ex.getErrorCode ());
-            System.err.println(" ============================");
-            System.err.println(" !!!!!!!! EXCEPTION !!!!!!!!!"); // TODO remove this ... just for debuggin purposes only
-            ex.printStackTrace();
-            System.err.println(" ============================");
-            }
+        
+        try {
+			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommand(), bb, _os, ccp);
+			reply.setData(_outputBytes.toByteArray());
+		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
+			e.printStackTrace();
+			reply.setErrorCode(e.getErrorType().identifier());
+		}
+//        
+//        byte command = commandPkt.getCommand();
+//        byte commandSet = commandPkt.getCommandSet();
+//
+//        CommandSet set = null;
+//        try
+//          {
+//            // There is no command set with value 0
+//            if (commandSet > 0 && commandSet < _sets.length)
+//              {
+//                set = _sets[commandPkt.getCommandSet()];
+//              }
+//            if (set != null)
+//              {
+//                _shutdown = set.runCommandWithInfo(bb, _os, command);
+//                reply.setData(_outputBytes.toByteArray());
+//              }
+//            else
+//              {
+//                // This command set wasn't in our tree
+//                reply.setErrorCode(JdwpConstants.Error.NOT_IMPLEMENTED);
+//              }
+//          }
+//          catch (JdwpException ex)
+//            {
+//            reply.setErrorCode(ex.getErrorCode ());
+//            System.err.println(" ============================");
+//            System.err.println(" !!!!!!!! EXCEPTION !!!!!!!!!"); // TODO remove this ... just for debuggin purposes only
+//            ex.printStackTrace();
+//            System.err.println(" ============================");
+//            }
           _connection.sendPacket (reply);
       }
   }

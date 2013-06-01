@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.transport;
 
+import gov.nasa.jpf.jdwp.exception.JdwpError;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -171,8 +173,9 @@ public abstract class JdwpPacket
    * @param   bytes  packet data from the wire
    * @param   index  index into <code>bytes</code> to start processing
    * @return         number of bytes in <code>bytes</code> processed
+ * @throws JdwpError 
    */
-  protected abstract int myFromBytes (byte[] bytes, int index);
+  protected abstract int myFromBytes (byte[] bytes, int index) throws JdwpError;
 
   /**
    * Convert the given bytes into a <code>JdwpPacket</code>. Uses the
@@ -229,7 +232,12 @@ public abstract class JdwpPacket
         pkt.setId (id);
         pkt.setFlags (flags);
 
-        i += pkt.myFromBytes (bytes, i);
+        try {
+			i += pkt.myFromBytes (bytes, i);
+		} catch (JdwpError e) {
+			// Discard packet
+			return null;
+		}
         byte[] data = new byte[length - i];
         System.arraycopy (bytes, i, data, 0, data.length);
         pkt.setData (data);

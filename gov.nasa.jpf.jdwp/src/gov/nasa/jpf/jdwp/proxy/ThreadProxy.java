@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.proxy;
 
-import gov.nasa.jpf.jvm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public class ThreadProxy extends Thread {
 	
