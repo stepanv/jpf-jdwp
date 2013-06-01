@@ -34,6 +34,7 @@ public class IdManager<I extends Identifier<T>, T> {
 			throw new RuntimeException("Null is not allowed here!");
 		}
 		if (objectToIdentifierMap.containsKey(object)) {
+			System.out.println("ALREADY EXISTS: " + objectToIdentifierMap.get(object).toString() + " object:" + object + " class:" + object.getClass());
 			return objectToIdentifierMap.get(object);
 		} else {
 			Long id = idGenerator++;

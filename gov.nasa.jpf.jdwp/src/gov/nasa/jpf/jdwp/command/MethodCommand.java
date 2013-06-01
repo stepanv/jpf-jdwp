@@ -45,10 +45,8 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 	VARIABLETABLE(2) {
 		@Override
 		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-
 			VariableTable variableTable = new VariableTable(methodInfo);
 			variableTable.write(os);
-
 		}
 	},
 	BYTECODES(3) {
