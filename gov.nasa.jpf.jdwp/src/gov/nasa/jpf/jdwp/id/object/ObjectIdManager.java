@@ -67,21 +67,23 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <I extends ObjectId> I checkObjectId(ObjectId objectId, Class<I> returnClazz) {
+	private <I extends ObjectId> I checkObjectId(ObjectId objectId, Class<I> returnClazz, ElementInfo object) {
 		if (returnClazz.isInstance(objectId)) {
 			return (I) objectId;
 		}
+		
+		super.getIdentifierId(object);
 
 		// TODO solve this in a standard JDWP way
 		throw new RuntimeException("Got an incompatible object identifier. Object ID '" + objectId + "' is not '" + returnClazz + "'");
 	}
 
 	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
-		return checkObjectId(super.getIdentifierId(object), returnClazz);
+		return checkObjectId(super.getIdentifierId(object), returnClazz, object);
 	}
 
 	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
-		return checkObjectId(readIdentifier(bytes), returnClazz);
+		return checkObjectId(readIdentifier(bytes), returnClazz, null);
 	}
 
 	public <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {

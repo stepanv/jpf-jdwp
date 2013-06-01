@@ -72,13 +72,15 @@ public class LineTable {
 		if (methodInfo.isNative()) {
 			start = -1;
 			end = -1;
-			
+
 			// TODO I'd like to test this first
 			// we're supposed to send 0 number of lines, right?
 			throw new RuntimeException("HAS TO BE TESTED");
 		} else {
-			for (Instruction instruction : methodInfo.getInstructions()) {
-				new LineTableItem(instruction);
+			if (methodInfo.getInstructions() != null) {
+				for (Instruction instruction : methodInfo.getInstructions()) {
+					new LineTableItem(instruction);
+				}
 			}
 		}
 	}

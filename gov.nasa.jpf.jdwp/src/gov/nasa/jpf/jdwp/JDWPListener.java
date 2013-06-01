@@ -52,44 +52,44 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		private void fieldAccess(FieldInstruction fieldInstruction) {
 			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
 			
-			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-			Event event;
-			try {
-				event = new FieldAccessEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull);
-				dispatchEvent(event);
-			} catch (InvalidObject e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
+//			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+//			Event event;
+//			try {
+//				event = new FieldAccessEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull);
+//				dispatchEvent(event);
+//			} catch (InvalidObject e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				return;
+//			}
 		}
 		
 		private void fieldModification(FieldInstruction fieldInstruction) {
-			ThreadInfo threadInfo;
-			try {
-				threadInfo = threadId.getInfoObject();
-			} catch (InvalidObject e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
-			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
-			
-			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-			Tag tag = Tag.classInfoToTag(fieldClassInfo);
-			Value valueToBe = tag.peekValue(topStackFrame);
-			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
+//			ThreadInfo threadInfo;
+//			try {
+//				threadInfo = threadId.getInfoObject();
+//			} catch (InvalidObject e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				return;
+//			}
+//			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
 //			
-//			
-			Event event;
-			try {
-				System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());
-				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
-				dispatchEvent(event);
-			} catch (InvalidObject e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+//			Tag tag = Tag.classInfoToTag(fieldClassInfo);
+//			Value valueToBe = tag.peekValue(topStackFrame);
+//			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
+////			
+////			
+//			Event event;
+//			try {
+//				System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());
+//				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
+//				dispatchEvent(event);
+//			} catch (InvalidObject e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 		
 		@Override

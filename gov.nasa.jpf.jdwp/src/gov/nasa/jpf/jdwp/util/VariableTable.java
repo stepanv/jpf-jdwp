@@ -29,8 +29,10 @@ public class VariableTable {
 	public VariableTable(MethodInfo methodInfo) {
 		System.out.println("VARIABLE TABLE CREATION: method: " + methodInfo);
 
-		for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
-			new Slot(localVarInfo, methodInfo);
+		if (methodInfo.getLocalVars() != null) {
+			for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
+				new Slot(localVarInfo, methodInfo);
+			}
 		}
 		argCnt = methodInfo.getArgumentsSize(); // TODO this might be wrong ..
 												// see a comment bellow
