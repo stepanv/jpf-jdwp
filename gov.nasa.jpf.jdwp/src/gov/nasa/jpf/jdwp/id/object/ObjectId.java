@@ -114,7 +114,7 @@ public class ObjectId extends TaggableIdentifier<ElementInfo> implements Value {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Factory that creates JDWP object identifier for the given parameter.<br/>
 	 * Note that this factory should be used only and only if the given object
@@ -133,17 +133,24 @@ public class ObjectId extends TaggableIdentifier<ElementInfo> implements Value {
 	static ObjectId objectIdFactory(long id, ElementInfo object) {
 		ClassInfo classInfo = object.getClassInfo();
 
+		/*
+		 * Here, we need to dynamically find whether the object is more than
+		 * just a normal object. It is important to understand, that methods
+		 * like classInfo.isThreadClassInfo() are misleading since we can have
+		 * also subclasses of standard java.lang classes.
+		 */
+
 		if (classInfo.isArray()) {
 			return new ArrayId(id, object);
-		} else if ("java.lang.Thread".equals(classInfo.getName())) {
+		} else if (classInfo.isInstanceOf("java.lang.Thread")) {
 			return new ThreadId(id, object);
-		} else if (classInfo.isStringClassInfo()) {
+		} else if (classInfo.isInstanceOf("java.lang.String")) {
 			return new StringId(id, object);
-		} else if ("java.lang.Class".equals(classInfo.getName())) {
+		} else if (classInfo.isInstanceOf("java.lang.Class")) {
 			return new ClassObjectId(id, object);
-		} else if ("java.lang.ThreadGroup".equals(classInfo.getName())) {
+		} else if (classInfo.isInstanceOf("java.lang.ThreadGroup")) {
 			return new ThreadGroupId(id, object);
-		} else if ("java.lang.ClassLoader".equals(classInfo.getName())) {
+		} else if (classInfo.isInstanceOf("java.lang.ClassLoader")) {
 			return new ClassLoaderId(id, object);
 		} else {
 			// any other ElementInfos don't have a specific representation in

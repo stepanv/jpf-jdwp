@@ -34,7 +34,7 @@ public class IdManager<I extends Identifier<T>, T> {
 			throw new RuntimeException("Null is not allowed here!");
 		}
 		if (objectToIdentifierMap.containsKey(object)) {
-			System.out.println("ALREADY EXISTS: " + objectToIdentifierMap.get(object).toString() + " object:" + object + " class:" + object.getClass());
+			//System.out.println("ALREADY EXISTS: " + objectToIdentifierMap.get(object).toString() + " object:" + object + " class:" + object.getClass());
 			return objectToIdentifierMap.get(object);
 		} else {
 			Long id = idGenerator++;
@@ -43,9 +43,9 @@ public class IdManager<I extends Identifier<T>, T> {
 			idToIdentifierMap.put(id, identifier);
 			
 			if (object instanceof ElementInfo) {
-				System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
+				System.out.println("CREATED OBJECT id: " + id + " (identifier: " + identifier + ") object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
 			} else {
-				System.out.println("CREATED OBJECT id: " + id + " object:" + object + " class:" + object.getClass());
+				System.out.println("CREATED OBJECT id: " + id + " (identifier: " + identifier + ") object:" + object + " class:" + object.getClass());
 			}
 			
 			return identifier;

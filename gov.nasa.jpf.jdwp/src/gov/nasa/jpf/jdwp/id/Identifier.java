@@ -54,7 +54,7 @@ public class Identifier<T> {
 	
 	public String toString() {
 		try {
-			return "" + get() + ", id: " + id;
+			return super.toString() + ", reference: " + get() + ", id: " + id;
 		} catch (InvalidObject e) {
 			return "invalid reference, id: " + id;
 		}
