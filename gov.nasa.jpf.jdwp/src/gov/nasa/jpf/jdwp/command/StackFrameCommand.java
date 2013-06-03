@@ -7,6 +7,7 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -43,16 +44,22 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
 				Object object = null;
 
-				// There might be different variable with the same slot index
-				for (LocalVarInfo localVarInfo : stackFrame.getMethodInfo().getLocalVars()) {
-					if (localVarInfo.getSlotIndex() == slot) {
-						// TODO [for PJA] looks like StackFrame#getLocalValueObject doesn't work properly
-						// seems like 'slots' are managed incorrectly
-						object = stackFrame.getLocalValueObject(localVarInfo);
-						break;
-					}
-
-				}
+//				// There might be different variable with the same slot index
+//				for (LocalVarInfo localVarInfo : stackFrame.getMethodInfo().getLocalVars()) {
+//					if (localVarInfo.getSlotIndex() == slot) {
+//						// TODO [for PJA] looks like StackFrame#getLocalValueObject doesn't work properly
+//						// seems like 'slots' are managed incorrectly
+//						object = stackFrame.getLocalValueObject(localVarInfo);
+//						
+//						
+//						break;
+//					}
+//
+//				}
+				
+				// This probably fixed the problem we had here (TODO remove all other TODO s when this is tested)
+				LocalVarInfo localVarInfo = stackFrame.getLocalVarInfo(slot);
+				object = stackFrame.getLocalValueObject(localVarInfo);
 
 				if (object == null) {
 					throw new InvalidObject();
