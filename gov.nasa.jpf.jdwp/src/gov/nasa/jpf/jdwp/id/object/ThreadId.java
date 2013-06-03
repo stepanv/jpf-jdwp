@@ -5,10 +5,9 @@ import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
 
 public class ThreadId extends InfoObjectId<ThreadInfo> {
 
@@ -62,14 +61,10 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 	}
 	
 	private static ThreadInfo getThreadInfo(ElementInfo elementInfo) {
-		//int typeNameRef = elementInfo.getReferenceField("name");
-		return ThreadInfo.getCurrentThread();
-	    //ElementInfo typeName = VM.getVM().getHeap().get(typeNameRef);
-	   // String reflectedTypeString = typeName.asString();
-	   // ClassInfo ci = ClassInfo.getInitializedClassInfo(reflectedTypeString, VM.getVM().getCurrentThread());
-	   // throw new RuntimeException("NOT IMPELEMNTED YET!");
-	    // TODO implement ElementInfo to ThreadInfo mapping!
-	    //return ci;
+		// we can use any thread actually
+		ThreadInfo currentThreadInfo = ThreadInfo.getCurrentThread();
+		MJIEnv env = currentThreadInfo.getEnv();
+		return env.getThreadInfoForObjRef(elementInfo.getObjectRef());
 	}
 	
 }
