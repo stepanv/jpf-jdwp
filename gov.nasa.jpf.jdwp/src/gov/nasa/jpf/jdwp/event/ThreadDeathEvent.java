@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ThreadDeathEvent extends EventBase implements Threadable {
+public class ThreadDeathEvent extends ThreadableEvent implements Threadable {
 
 	/**
 	 * Creates Thread Death event.
@@ -35,7 +35,7 @@ public class ThreadDeathEvent extends EventBase implements Threadable {
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 	}
 
 }

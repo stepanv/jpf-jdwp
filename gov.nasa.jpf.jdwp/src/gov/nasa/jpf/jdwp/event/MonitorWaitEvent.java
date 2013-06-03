@@ -39,8 +39,8 @@ public class MonitorWaitEvent extends MonitorBase {
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
-		super.writeSpecific(os);
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+		super.writeThreadableSpecific(os);
 		os.writeLong(timeout);
 	}
 

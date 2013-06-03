@@ -82,15 +82,16 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		return checkObjectId(super.getIdentifierId(object), returnClazz, object);
 	}
 
-	public <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
+	public synchronized <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
 		return checkObjectId(readIdentifier(bytes), returnClazz, null);
 	}
 
-	public <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
+	public synchronized <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
 		defaultIdFactory.initialize(null);
 		return fetchIdentifierId(object, returnClazz);
 	}
 
+	
 	public ClassLoaderId getClassLoaderId(ClassLoaderInfo classLoaderInfo) {
 		ElementInfo classLoaderObject = VM.getVM().getHeap().get(classLoaderInfo.getClassLoaderObjectRef());
 		return getIdentifierId(classLoaderObject, classLoaderInfo, classLoaderIdFactory, ClassLoaderId.class);

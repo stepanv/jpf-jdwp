@@ -240,6 +240,50 @@ public class Jdwp extends Thread {
 			}
 		}
 	}
+	
+//	public static void notify2(EventBase[] events) {
+//		Jdwp jdwp = getDefault();
+//
+//		if (jdwp != null) {
+//			SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
+//			EventManager em = EventManager.getDefault();
+//			ArrayList allEvents = new ArrayList();
+//			ArrayList allRequests = new ArrayList();
+//			for (int i = 0; i < events.length; ++i) {
+//				EventRequest[] r = em.getEventRequests(events[i]);
+//				for (int j = 0; j < r.length; ++j) {
+//					/*
+//					 * This is hacky, but it's not clear whether this can really
+//					 * happen, and if it does, what should occur.
+//					 */
+//					allEvents.add(events[i]);
+//					allRequests.add(r[j]);
+//
+//					// Perhaps this is overkill?
+//					if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
+//						suspendPolicy = r[j].getSuspendPolicy();
+//					}
+//
+//				}
+//			}
+//
+//			try {
+//				EventBase[] e = new EventBase[allEvents.size()];
+//				allEvents.toArray(e);
+//				EventRequest[] r = new EventRequest[allRequests.size()];
+//				allRequests.toArray(r);
+//				sendEvents(r, e, suspendPolicy);
+//				jdwp._enforceSuspendPolicy(suspendPolicy);
+//			} catch (Exception e) {
+//				/*
+//				 * Really not much we can do. For now, just print out a warning
+//				 * to the user.
+//				 */
+//				System.out.println("Jdwp.notify: caught exception: " + e);
+//			}
+//		}
+//	}
+
 
 	/**
 	 * Notify the debugger of "co-located" events. This method should not be
@@ -259,7 +303,7 @@ public class Jdwp extends Thread {
 			SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
 			EventManager em = EventManager.getDefault();
 
-			Map<Event, EventRequest<Event>> eventToRequestMap = new HashMap<Event, EventRequest<Event>>();
+			Map<EventRequest<Event>, Event> requestToEventMap = new HashMap<EventRequest<Event>, Event>();
 			for (int i = 0; i < events.length; ++i) {
 				EventRequest[] r = em.getEventRequests(events[i]);
 				for (int j = 0; j < r.length; ++j) {
@@ -267,7 +311,7 @@ public class Jdwp extends Thread {
 					 * This is hacky, but it's not clear whether this can really
 					 * happen, and if it does, what should occur.
 					 */
-					eventToRequestMap.put(events[i], r[j]);
+					requestToEventMap.put(r[j], events[i]);
 
 					// Perhaps this is overkill?
 					if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
@@ -278,7 +322,7 @@ public class Jdwp extends Thread {
 			}
 
 			try {
-				sendEvents(eventToRequestMap, suspendPolicy);
+				sendEvents(requestToEventMap, suspendPolicy);
 				jdwp._enforceSuspendPolicy(suspendPolicy);
 			} catch (Exception e) {
 				/*
@@ -303,9 +347,9 @@ public class Jdwp extends Thread {
 	 *             if a communications failure occurs
 	 */
 	public static void sendEvent(EventRequest request, Event event) throws IOException {
-		Map<Event, EventRequest<Event>> eventToRequestMap = new HashMap<Event, EventRequest<Event>>();
-		eventToRequestMap.put(event, request);
-		sendEvents(eventToRequestMap, request.getSuspendPolicy());
+		Map<EventRequest<Event>, Event> requestToEventMap = new HashMap<EventRequest<Event>, Event>();
+		requestToEventMap.put(request, event);
+		sendEvents(requestToEventMap, request.getSuspendPolicy());
 	}
 
 	/**
@@ -322,11 +366,11 @@ public class Jdwp extends Thread {
 	 * @throws IOException
 	 *             if a communications failure occurs
 	 */
-	public static void sendEvents(Map<Event, EventRequest<Event>> eventToRequestMap, SuspendPolicy suspendPolicy) throws IOException {
+	public static void sendEvents(Map<EventRequest<Event>, Event> requestToEventMap, SuspendPolicy suspendPolicy) throws IOException {
 		Jdwp jdwp = getDefault();
 		if (jdwp != null && isDebugging) {
 			synchronized (jdwp._connection) {
-				jdwp._connection.sendEvents(eventToRequestMap, suspendPolicy);
+				jdwp._connection.sendEvents(requestToEventMap, suspendPolicy);
 			}
 		}
 	}

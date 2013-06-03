@@ -30,22 +30,14 @@ public class ClassUnloadEvent extends EventBase implements ClassFilterable {
 	 *            Type signature
 	 */
 	public ClassUnloadEvent(String signature) {
-		super(EventKind.CLASS_UNLOAD, null);
+		super(EventKind.CLASS_UNLOAD);
 		this.signature = signature;
 	}
 
-	/**
-	 * Must be overridden because this event type, as an exception, doesn't have
-	 * associated thread
-	 */
-	@Override
-	public void write(DataOutputStream os, int requestId) throws IOException {
-		os.writeInt(requestId);
-		new StringRaw(signature).write(os);
-	}
 
 	@Override
 	protected void writeSpecific(DataOutputStream os) throws IOException {
+		new StringRaw(signature).write(os);
 	}
 
 	@Override

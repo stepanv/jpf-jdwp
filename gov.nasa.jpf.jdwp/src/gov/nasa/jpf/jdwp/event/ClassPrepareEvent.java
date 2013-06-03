@@ -25,7 +25,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ClassPrepareEvent extends EventBase implements Threadable, ClassFilterable, ClassOnlyFilterable, SourceNameMatchFilterable {
+public class ClassPrepareEvent extends ThreadableEvent implements Threadable, ClassFilterable, ClassOnlyFilterable, SourceNameMatchFilterable {
 
 	private int status;
 	private ClassInfo classInfo;
@@ -61,7 +61,7 @@ public class ClassPrepareEvent extends EventBase implements Threadable, ClassFil
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 		JdwpObjectManager.getInstance().getReferenceTypeId(classInfo).writeTagged(os);
 		new StringRaw(classInfo.getSignature()).write(os);
 		os.writeInt(status);
@@ -76,5 +76,12 @@ public class ClassPrepareEvent extends EventBase implements Threadable, ClassFil
 	public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidObject {
 		return classOnlyFilter.matches(classInfo);
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " for class: " + classInfo;
+	}
+	
+	
 
 }

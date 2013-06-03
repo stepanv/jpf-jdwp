@@ -280,12 +280,11 @@ public class JdwpConnection
    * method will only send out one notification: all the events
    * are passed in a single Event.COMPOSITE packet.
    *
-   * @param requests  debugger requests for events
-   * @param events    the events to send
+   * @param requestToEventMap  requests to events pair
    * @param suspendPolicy  the suspend policy enforced by the VM
    * @throws IOException
    */
-  public void sendEvents(Map<Event, EventRequest<Event>> eventToRequestMap,
+  public void sendEvents(Map<EventRequest<Event>, Event> requestToEventMap,
                          SuspendPolicy suspendPolicy)
     throws IOException
   {
@@ -294,7 +293,7 @@ public class JdwpConnection
     synchronized (_bytes)
       {
         _bytes.reset ();
-        pkt = EventBase.toPacket (_doStream, eventToRequestMap, suspendPolicy);
+        pkt = EventBase.toPacket (_doStream, requestToEventMap, suspendPolicy);
         pkt.setData (_bytes.toByteArray ());
       }
 

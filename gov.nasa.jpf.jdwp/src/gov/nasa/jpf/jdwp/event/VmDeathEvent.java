@@ -6,16 +6,13 @@ import java.io.IOException;
 public class VmDeathEvent extends EventBase {
 
 	public VmDeathEvent() {
-		super(EventKind.VM_DEATH, null);
+		super(EventKind.VM_DEATH);
 	}
 
 	@Override
 	protected void writeSpecific(DataOutputStream os) throws IOException {
+		// this body is empty
 	}
 	
-	@Override
-	public void write(DataOutputStream os, int requestId) throws IOException {
-		os.writeInt(requestId);
-	}
 
 }

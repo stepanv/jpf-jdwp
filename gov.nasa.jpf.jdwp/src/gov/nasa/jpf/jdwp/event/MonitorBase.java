@@ -17,7 +17,7 @@ public class MonitorBase extends LocatableEvent {
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 		taggedObjectId.write(os);
 		getLocation().write(os);
 		writeLocatableSpecific(os);

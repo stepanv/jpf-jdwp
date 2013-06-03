@@ -30,7 +30,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * @author stepan
  * 
  */
-public class ThreadStartEvent extends EventBase implements Threadable {
+public class ThreadStartEvent extends ThreadableEvent implements Threadable {
 
 	/**
 	 * Creates Thread Start event.
@@ -43,7 +43,7 @@ public class ThreadStartEvent extends EventBase implements Threadable {
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 	}
 
 }

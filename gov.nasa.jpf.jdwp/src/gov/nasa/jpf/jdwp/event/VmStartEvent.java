@@ -20,7 +20,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * @author stepan
  * 
  */
-public class VmStartEvent extends EventBase implements Threadable {
+public class VmStartEvent extends ThreadableEvent implements Threadable {
 
 	/**
 	 * Creates VM Start event.
@@ -29,11 +29,12 @@ public class VmStartEvent extends EventBase implements Threadable {
 	 *            The initial thread of the VM.
 	 */
 	public VmStartEvent(ThreadInfo currentThread) {
+		// TODO unify whether ThreadId or ThreadInfo can by used with Events
 		super(EventKind.VM_START, (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread));
 	}
 
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 	}
 
 }

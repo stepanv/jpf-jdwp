@@ -50,8 +50,8 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		private JdwpObjectManager objectManager;
 
 		private void fieldAccess(FieldInstruction fieldInstruction) {
-			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
-			
+//			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
+//			
 //			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
 //			Event event;
 //			try {
@@ -79,8 +79,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 //			Tag tag = Tag.classInfoToTag(fieldClassInfo);
 //			Value valueToBe = tag.peekValue(topStackFrame);
 //			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
-////			
-////			
+//
 //			Event event;
 //			try {
 //				System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());

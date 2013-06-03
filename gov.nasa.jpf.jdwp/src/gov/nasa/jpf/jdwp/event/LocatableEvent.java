@@ -10,7 +10,7 @@ import gov.nasa.jpf.vm.ClassInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public abstract class LocatableEvent extends EventBase implements Locatable {
+public abstract class LocatableEvent extends ThreadableEvent implements Locatable {
 
 	private Location location;
 
@@ -25,7 +25,7 @@ public abstract class LocatableEvent extends EventBase implements Locatable {
 	}
 	
 	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
+	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 		location.write(os);
 		writeLocatableSpecific(os);
 		

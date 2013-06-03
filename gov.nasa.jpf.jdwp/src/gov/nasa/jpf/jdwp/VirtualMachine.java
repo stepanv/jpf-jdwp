@@ -38,26 +38,10 @@ public class VirtualMachine {
 				events.add(new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0));
 			}
 			postponedLoadedClasses.clear();
-			Jdwp.notify(events.toArray(new EventBase[events.size()])); // TODO
-																		// according
-																		// to
-																		// JDWP
-																		// specs
-																		// classprepare
-																		// events
-																		// can
-																		// be in
-																		// a
-																		// composite
-																		// event
-																		// only
-																		// if
-																		// are
-																		// for
-																		// the
-																		// same
-																		// class
-
+			
+			// TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
+			Jdwp.notify(events.toArray(new EventBase[events.size()])); 
+			
 			VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
 			System.out.println("Notifying about vm started");
 			events.add(vmInitEvent);
