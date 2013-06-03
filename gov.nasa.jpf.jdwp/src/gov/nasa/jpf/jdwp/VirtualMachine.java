@@ -77,7 +77,7 @@ public class VirtualMachine {
 
 	public void resumeAllThreads() {
 		synchronized (this) {
-			System.out.println("RESUMING ALL THREADS");
+			System.out.println("RESUMING ALL THREADS by: " + Thread.currentThread());
 			this.notify();
 		}
 	}
@@ -87,12 +87,12 @@ public class VirtualMachine {
 		synchronized (this) {
 			try {
 				allThreadsSuspended = true;
-				System.out.println("SUSPENDING ALL THREADS");
+				System.out.println("SUSPENDING ALL THREADS in: " + Thread.currentThread());
 				wait();
 			} catch (InterruptedException e) {
 			} finally {
 				allThreadsSuspended = false;
-				System.out.println("ALL THREADS RESUMED");
+				System.out.println("ALL THREADS RESUMED in: " + Thread.currentThread());
 			}
 		}
 	}

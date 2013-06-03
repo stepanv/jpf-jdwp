@@ -16,15 +16,20 @@ public class MonitorBase extends LocatableEvent {
 		this.taggedObjectId = taggedObjectId;
 	}
 
+	/**
+	 * Overrides threadable specific write since we have to write tagged Object
+	 * Id before it's actual location.
+	 */
 	@Override
 	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 		taggedObjectId.write(os);
 		getLocation().write(os);
-		writeLocatableSpecific(os);
+
 	}
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+		//empty
 	}
 
 }
