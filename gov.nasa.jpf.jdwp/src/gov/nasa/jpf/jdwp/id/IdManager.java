@@ -35,7 +35,41 @@ public class IdManager<I extends Identifier<T>, T> {
 		}
 		if (objectToIdentifierMap.containsKey(object)) {
 			//System.out.println("ALREADY EXISTS: " + objectToIdentifierMap.get(object).toString() + " object:" + object + " class:" + object.getClass());
-			return objectToIdentifierMap.get(object);
+			I identifier = objectToIdentifierMap.get(object);
+//			try {
+//				T alternateObject = identifier.get();
+//				if (alternateObject != object) {
+//					System.out.println("A BIG PROBLEM!");
+//					System.out.println("BIG PROBLEM: " + object + " maps to: " + alternateObject);
+//					
+//					System.out.println("Object hash code: " + object.hashCode());
+//					System.out.println("Alternate hash code: " + alternateObject.hashCode());
+//					
+//					HashMap<T, I> testMap = new HashMap<T, I>();
+//					testMap.put(alternateObject, identifier);
+//					if (testMap.containsKey(object)) {
+//						System.out.println("WEIRD FOR THE SECOND TIME!");
+//					}
+//					
+//					Map<T, I> testWeakMap = new WeakHashMap<T, I>();
+//					testWeakMap.put(alternateObject, identifier);
+//					if (testWeakMap.containsKey(object)) {
+//						System.out.println("WEIRD FOR THE THIRD TIME!");
+//					}
+//					System.out.println(objectToIdentifierMap.get(object));
+//					
+//					if (alternateObject instanceof ElementInfo && object instanceof ElementInfo) {
+//						if (((ElementInfo)alternateObject).getObjectRef() == ((ElementInfo)object).getObjectRef()) {
+//							// I'm so not sure what to do here ... TODO .. is this ok or not?
+//							return identifier;
+//						}
+//					}
+//					
+//					throw new RuntimeException("BIG PROBLEM: " + object + " maps to: " + alternateObject);
+//				}
+//			} catch (InvalidObject e) {
+//			}
+			return identifier;
 		} else {
 			Long id = idGenerator++;
 			I identifier = idFactory.create(id, object);
@@ -47,6 +81,18 @@ public class IdManager<I extends Identifier<T>, T> {
 			} else {
 				System.out.println("CREATED OBJECT id: " + id + " (identifier: " + identifier + ") object:" + object + " class:" + object.getClass());
 			}
+			
+//			try {
+//				if (identifier.get() != object) {
+//					System.out.println("WTF?");
+//					I identifier2 = idFactory.create(id, object);
+//					if (identifier2.get() != object) {
+//						System.out.println("WTF 2?");
+//					}
+//					
+//				}
+//			} catch (InvalidObject e) {
+//			}
 			
 			return identifier;
 		}
