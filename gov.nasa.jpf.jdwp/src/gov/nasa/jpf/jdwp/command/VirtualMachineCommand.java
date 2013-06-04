@@ -1,9 +1,11 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gnu.classpath.jdwp.event.EventManager;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
@@ -102,8 +104,19 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	DISPOSE(6) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
+			// All event requests are cancelled. 
+			for (EventKind eventKind: EventKind.values()) {
+				EventManager.getDefault().clearRequests(eventKind);
+			}
+			
+			// All threads suspended by the thread-level resume command or the VM-level resume command are resumed as many times as necessary for them to run. 
+			// TODO do the simulation for all threads
+			
+			// Garbage collection is re-enabled in all cases where it was ObjectReference
+			contextProvider.getVirtualMachine().collectAllDisabledObjects();
+			
+			// TODO now, we need to get prepared for another connection .. this might be a problem with singletons...
 		}
 	},
 	IDSIZES(7) {

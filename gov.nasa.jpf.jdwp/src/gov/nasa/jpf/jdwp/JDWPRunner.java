@@ -49,8 +49,10 @@ public class JDWPRunner {
 				}
 			}
 			jpf.run();
-
-			Jdwp.notify(new VmDeathEvent());
+			
+			synchronized (vm) {
+				Jdwp.notify(new VmDeathEvent());
+			}
 
 			jdwp.shutdown();
 		} else {

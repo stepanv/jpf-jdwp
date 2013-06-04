@@ -7,14 +7,44 @@ import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.event.VmStartEvent;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * <p>
+ * <h3>Synchronization</h3>
+ * It's actually not clear how events and related consecutive debugger actions
+ * are synchronized.<br/>
+ * At first, a following problem needs to be solved:<br/>
+ * <ol>
+ * <li>JDWP agent sends an event (a conditional breakpoint for instance (note
+ * that the condition is always evaluated at the debugger side, thus a big
+ * number of unused breakpoint events is sent))</li>
+ * <li>The breakpoint has suspend thread related action</li>
+ * <li>The debugger decides that breakpoint condition is not satisfied and sends
+ * back resume</li>
+ * <li>The JDWP receive resume command.</li>
+ * <li>And now the suspend command (related to the breakpoint event) is
+ * performed.</li>
+ * <li>Deadlock</li>
+ * </ol>
+ * <h4>Solution</h4>
+ * Event send and the related suspend action has to be encapsulated as a atomic
+ * action.
+ * 
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
 public class VirtualMachine {
 	private JPF jpf;
 	private List<ClassInfo> loadedClases = new CopyOnWriteArrayList<ClassInfo>();
@@ -38,21 +68,27 @@ public class VirtualMachine {
 				events.add(new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0));
 			}
 			postponedLoadedClasses.clear();
+
+			// TODO according to JDWP specs classprepare events can be in a
+			// composite event only if are for the same class
+			synchronized (this) {
+				Jdwp.notify(events.toArray(new EventBase[events.size()]));
+			}
 			
-			// TODO according to JDWP specs classprepare events can be in a composite event only if are for the same class
-			Jdwp.notify(events.toArray(new EventBase[events.size()])); 
-			
-			VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
-			System.out.println("Notifying about vm started");
-			events.add(vmInitEvent);
-			Jdwp.notify(vmInitEvent);
-			System.out.println(" not suspending after start");
+			synchronized (this) {
+				VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
+				System.out.println("Notifying about vm started");
+				Jdwp.notify(vmInitEvent);
+				System.out.println(" not suspending after start");
+			}
 			// suspendAllThreads();
 
 			// we also need to send thread start event
 			// TODO [for PJA] is this a bug in JPF main thread start doesn't
 			// trigger threadStarted event in JPF listeners
-			Jdwp.notify(new ThreadStartEvent(vm.getCurrentThread()));
+			synchronized (this) {
+				Jdwp.notify(new ThreadStartEvent(vm.getCurrentThread()));
+			}
 			// events.add(new ThreadStartEvent(vm.getCurrentThread()));
 
 		}
@@ -124,7 +160,7 @@ public class VirtualMachine {
 		 * Can the VM watch field access, and therefore can it send the Access
 		 * Watchpoint Event?
 		 */
-		public static final boolean CAN_WATCH_FIELD_ACCESS = true; 
+		public static final boolean CAN_WATCH_FIELD_ACCESS = true;
 
 		/** Can the VM get the bytecodes of a given method? */
 		public static final boolean CAN_GET_BYTECODES = false;
@@ -223,6 +259,43 @@ public class VirtualMachine {
 
 		/** Can the VM force early return from a method? */
 		public static final boolean CAN_FORCE_EARLY_RETURN = false;
+	}
+
+	private List<ObjectId> disableCollectionObjects = new CopyOnWriteArrayList<ObjectId>();
+
+	public void disableCollection(ObjectId objectId) throws InvalidObject {
+		synchronized (disableCollectionObjects) {
+			// TODO maybe we should use counters
+			objectId.disableCollection();
+			if (!disableCollectionObjects.contains(objectId)) {
+				disableCollectionObjects.add(objectId);
+			}
+		}
+
+	}
+
+	public void enableCollection(ObjectId objectId) throws InvalidObject {
+		synchronized (disableCollectionObjects) {
+			// TODO maybe we should use counters
+			objectId.enableCollection();
+			if (disableCollectionObjects.contains(objectId)) {
+				disableCollectionObjects.remove(objectId);
+			}
+		}
+	}
+
+	public void collectAllDisabledObjects() {
+		synchronized (disableCollectionObjects) {
+			for (Iterator<ObjectId> iteratorObjectId = disableCollectionObjects.iterator(); iteratorObjectId.hasNext();) {
+				ObjectId objectId = iteratorObjectId.next();
+
+				try {
+					objectId.enableCollection();
+				} catch (InvalidObject e) {
+				}
+				disableCollectionObjects.remove(objectId);
+			}
+		}
 	}
 
 }

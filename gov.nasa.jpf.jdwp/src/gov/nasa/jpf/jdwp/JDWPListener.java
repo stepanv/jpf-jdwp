@@ -39,6 +39,7 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class JDWPListener extends ListenerAdapter implements VMListener {
@@ -140,7 +141,17 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 	@Override
 	public void threadStarted(VM vm, ThreadInfo startedThread) {
+		System.out.println(Arrays.toString(VM.getVM().getLiveThreads()));
+		
+		for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
+			System.out.println("threadInfo: " + threadInfo + " ... dynamic object: " + threadInfo.getThreadObject());
+			System.out.println(JdwpObjectManager.getInstance().getThreadId(threadInfo));
+			System.out.println(JdwpObjectManager.getInstance().getObjectId(threadInfo.getThreadObject()));
+		}
+	
 		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
+		
+		System.out.println("STARTED THREAD: " + startedThread);
 		
 		dispatchEvent(threadStartEvent);
 	}
@@ -176,15 +187,17 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 			ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
-			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
-			dispatchEvent(breakpointEvent);
+			
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
-				//System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
+//				System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
 			} else {
-				//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
+//				System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
 			}
+			
+			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
+			dispatchEvent(breakpointEvent);
 			
 			if (instructionToExecute instanceof FieldInstruction) {
 				fieldVisitor.initalize(currentThread);
@@ -248,7 +261,10 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 //				}
 //			}
 //		}
-		Jdwp.notify(event);
+		synchronized (virtualMachine) {
+			Jdwp.notify(event);
+		}
+		
 	}
 	
 }

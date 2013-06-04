@@ -131,14 +131,13 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	DISABLECOLLECTION(7) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			objectId.disableCollection();
-
+			contextProvider.getVirtualMachine().disableCollection(objectId);
 		}
 	},
 	ENABLECOLLECTION(8) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			objectId.enableCollection();
+			contextProvider.getVirtualMachine().enableCollection(objectId);
 		}
 	},
 	ISCOLLECTED(9) {
