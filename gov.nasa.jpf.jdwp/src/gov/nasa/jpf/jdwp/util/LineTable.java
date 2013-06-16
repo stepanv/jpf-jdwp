@@ -57,8 +57,6 @@ public class LineTable {
 
 			System.out.println("LINE TABLE: index: " + lineCodeIndex + " line: " + lineNumber + " position: " + instruction.getPosition()
 					+ " ... instruction: " + instruction);
-
-			lineRows.add(this);
 		}
 
 		public void write(DataOutputStream os) throws IOException {
@@ -79,7 +77,7 @@ public class LineTable {
 		} else {
 			if (methodInfo.getInstructions() != null) {
 				for (Instruction instruction : methodInfo.getInstructions()) {
-					new LineTableItem(instruction);
+					lineRows.add(new LineTableItem(instruction));
 				}
 			}
 		}

@@ -31,7 +31,7 @@ public class VariableTable {
 
 		if (methodInfo.getLocalVars() != null) {
 			for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
-				new Slot(localVarInfo, methodInfo);
+				slots.add(new Slot(localVarInfo, methodInfo));
 			}
 		}
 		argCnt = methodInfo.getArgumentsSize(); // TODO this might be wrong ..
@@ -102,8 +102,6 @@ public class VariableTable {
 			signature = localVarInfo.getSignature();
 			length = (int) (endInstruction.getInstructionIndex() - codeIndex) + 1;
 			slot = localVarInfo.getSlotIndex();
-
-			slots.add(this);
 
 			System.out.println("VARIABLE TABLE: index: " + codeIndex + " slot: " + slot + " length: " + length + " name: " + name + " ... localVarInfo: "
 					+ localVarInfo);
