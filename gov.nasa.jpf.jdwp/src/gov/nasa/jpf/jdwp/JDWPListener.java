@@ -83,7 +83,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 			Event event;
 			try {
-				System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());
+				//System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());
 				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
 				dispatchEvent(event);
 			} catch (InvalidObject e) {
@@ -191,9 +191,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			
 			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
-//				System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getLineNumber());
+				//System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getFileLocation());
 			} else {
-//				System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getLineNumber());	
+				//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getFileLocation());	
 			}
 			
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
@@ -224,6 +224,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	
 	@Override
 	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
+		System.out.println("EXCEPTOIN: UNCAUGHT THROWN");
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
 		Instruction instruction = vm.getInstruction();
 		if (instruction != null) {
@@ -235,6 +236,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	
 	@Override
 	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
+		System.out.println("EXCEPTION: CAUGHT THROWN");
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
 		Instruction instruction = vm.getInstruction();
 		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
@@ -248,6 +250,16 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		} else {
 			// TODO what if we get an exception without possibility to get a position?
 		}
+	}
+	
+	@Override
+	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
+		System.out.println("EXCEPTION: THROWN");
+	}
+
+	@Override
+	public void exceptionBailout(VM vm, ThreadInfo currentThread) {
+		System.out.println("EXCEPTION: IN BAILOUT");
 	}
 
 	private void dispatchEvent(Event event) {

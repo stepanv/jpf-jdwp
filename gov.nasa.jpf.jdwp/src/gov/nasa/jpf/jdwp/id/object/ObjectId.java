@@ -29,6 +29,12 @@ import gov.nasa.jpf.vm.VM;
  * Specification. Nevertheless, those subclasses are sometimes treated by JPDA
  * as {@link ObjectId} instances as well.
  * 
+ * <br/>
+ * <h3>ElementInfo hashCode invariant problem</h3>
+ * The biggest problem with ElementInfos is that their hashCode() method returns different values throughout the lifetime of the object they represent.<br/>
+ * If ElementInfo represents java.lang.Thread then its hashCode changes even when the thread changes its state from STARTED to RUNNING.<br/>
+ * Therefore it's not possible to put ElementInfos into hashMaps and it's also tricky to call equals (since equals is congruent).
+ * 
  * <h2>JDWP Specification</h2>
  * Uniquely identifies an object in the target VM. A particular object will be
  * identified by exactly one objectID in JDWP commands and replies throughout

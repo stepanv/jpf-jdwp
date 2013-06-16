@@ -1,18 +1,27 @@
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.id.IdManager;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.IdManager.IdFactory;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
-public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
+public class ObjectIdManager {
+
+	private IdFactory<ObjectId, ElementInfo> dynamicIdFactory;
+	
+	public void setDynamicIdFactory(IdFactory<ObjectId, ElementInfo> dynamicIdFactory) {
+		this.dynamicIdFactory = dynamicIdFactory;
+	}
 
 	public ObjectIdManager() {
-		super(null);
 	}
 
 	public abstract class MorfableIdFactory<T> implements IdFactory<ObjectId, ElementInfo> {
@@ -21,16 +30,64 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 
 		public void initialize(T infoObject) {
 			this.infoObject = infoObject;
-			setIdFactory(this);
+			setDynamicIdFactory(this);
 		}
 
 	}
+	
+	private Map<Long, ObjectId> idMap = new HashMap<Long, ObjectId>();
+	
+	@SuppressWarnings("unchecked")
+	private <I extends ObjectId> I checkAndCastObjectId(ObjectId objectId, Class<I> returnClazz) {
+		if (returnClazz.isInstance(objectId)) {
+			return (I) objectId;
+		}
+		
+		// TODO solve this in a standard JDWP way
+		throw new RuntimeException("Got an incompatible object identifier. Object ID '" + objectId + "' is not '" + returnClazz + "'");
+	}
+	
+	
 
-	@Override
 	public synchronized ObjectId getIdentifierId(ElementInfo object) {
 		defaultIdFactory.initialize(null);
-		return super.getIdentifierId(object);
+		return getIdentifierIdInitializedFactory(object);
+	}
+	
+	public synchronized <O, I extends InfoObjectId<O>> I getIdentifierId(ElementInfo object, O infoObject, MorfableIdFactory<O> morfableIdFactory,
+			Class<I> returnClazz) {
+		morfableIdFactory.initialize(infoObject);
 
+		return checkAndCastObjectId(this.getIdentifierIdInitializedFactory(object), returnClazz);
+	}
+	
+
+	public synchronized <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
+		return checkAndCastObjectId(this.getIdentifierId(object), returnClazz);
+	}
+
+	private synchronized ObjectId getIdentifierIdInitializedFactory(ElementInfo object) {
+		Long id;
+		if (object instanceof DynamicElementInfo) {
+			id = (long) object.getObjectRef() + Integer.MAX_VALUE + 1;
+		} else {
+			id = (long) object.getObjectRef() + (Integer.MAX_VALUE << 2 ) + 1;
+		}
+		if (idMap.containsKey(id)) {
+			ObjectId objectId = idMap.get(id);
+			try {
+				if (!object.getClassInfo().equals(objectId.get().getClassInfo())) {
+					System.out.println("A PROBLEM 2");
+					throw new RuntimeException(String.format("Object %s is not object %s for objectId %s", object, objectId.get(), objectId));
+				}
+			} catch (InvalidObject e) {
+			}
+			return objectId;
+		} else {
+			ObjectId objectId = dynamicIdFactory.create(id, object);
+			idMap.put(id, objectId);
+			return objectId;
+		}
 	}
 
 	MorfableIdFactory<?> defaultIdFactory = new MorfableIdFactory<ElementInfo>() {
@@ -59,37 +116,15 @@ public class ObjectIdManager extends IdManager<ObjectId, ElementInfo> {
 		}
 	};
 
-	public synchronized <O, I extends InfoObjectId<O>> I getIdentifierId(ElementInfo object, O infoObject, MorfableIdFactory<O> morfableIdFactory,
-			Class<I> returnClazz) {
-		morfableIdFactory.initialize(infoObject);
-
-		return fetchIdentifierId(object, returnClazz);
-	}
-
-	@SuppressWarnings("unchecked")
-	private <I extends ObjectId> I checkObjectId(ObjectId objectId, Class<I> returnClazz, ElementInfo object) {
-		if (returnClazz.isInstance(objectId)) {
-			return (I) objectId;
-		}
-		
-		super.getIdentifierId(object);
-
-		// TODO solve this in a standard JDWP way
-		throw new RuntimeException("Got an incompatible object identifier. Object ID '" + objectId + "' is not '" + returnClazz + "'");
-	}
-
-	private <I extends ObjectId> I fetchIdentifierId(ElementInfo object, Class<I> returnClazz) {
-		return checkObjectId(super.getIdentifierId(object), returnClazz, object);
+	public synchronized ObjectId readIdentifier(ByteBuffer bytes) {
+		// TODO throw ErrorType.INVALID_OBJECT
+		return idMap.get(bytes.getLong());
 	}
 
 	public synchronized <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
-		return checkObjectId(readIdentifier(bytes), returnClazz, null);
+		return checkAndCastObjectId(readIdentifier(bytes), returnClazz);
 	}
 
-	public synchronized <I extends ObjectId> I getIdentifierId(ElementInfo object, Class<I> returnClazz) {
-		defaultIdFactory.initialize(null);
-		return fetchIdentifierId(object, returnClazz);
-	}
 
 	
 	public ClassLoaderId getClassLoaderId(ClassLoaderInfo classLoaderInfo) {

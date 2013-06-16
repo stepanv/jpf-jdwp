@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.id;
 
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.vm.ElementInfo;
 
 import java.nio.ByteBuffer;
@@ -16,15 +17,11 @@ public class IdManager<I extends Identifier<T>, T> {
 	
 	// TODO when an identifier doesn't contain mapping to an object it should remove itself from here (to prevent memory leaking)
 	private Map<Long, I> idToIdentifierMap = new HashMap<Long, I>();
-	private Map<T, I> objectToIdentifierMap = new WeakHashMap<T, I>();
+	private Map<T, I> objectToIdentifierMap = new HashMap<T, I>();
 	private Long idGenerator = (long) 1;
 	private IdFactory<I, T> idFactory;
 
 	public IdManager(IdFactory<I, T> idFactory) {
-		this.idFactory = idFactory;
-	}
-
-	public void setIdFactory(IdFactory<I, T> idFactory) {
 		this.idFactory = idFactory;
 	}
 
@@ -36,39 +33,39 @@ public class IdManager<I extends Identifier<T>, T> {
 		if (objectToIdentifierMap.containsKey(object)) {
 			//System.out.println("ALREADY EXISTS: " + objectToIdentifierMap.get(object).toString() + " object:" + object + " class:" + object.getClass());
 			I identifier = objectToIdentifierMap.get(object);
-//			try {
-//				T alternateObject = identifier.get();
-//				if (alternateObject != object) {
-//					System.out.println("A BIG PROBLEM!");
-//					System.out.println("BIG PROBLEM: " + object + " maps to: " + alternateObject);
-//					
-//					System.out.println("Object hash code: " + object.hashCode());
-//					System.out.println("Alternate hash code: " + alternateObject.hashCode());
-//					
-//					HashMap<T, I> testMap = new HashMap<T, I>();
-//					testMap.put(alternateObject, identifier);
-//					if (testMap.containsKey(object)) {
-//						System.out.println("WEIRD FOR THE SECOND TIME!");
-//					}
-//					
-//					Map<T, I> testWeakMap = new WeakHashMap<T, I>();
-//					testWeakMap.put(alternateObject, identifier);
-//					if (testWeakMap.containsKey(object)) {
-//						System.out.println("WEIRD FOR THE THIRD TIME!");
-//					}
-//					System.out.println(objectToIdentifierMap.get(object));
-//					
-//					if (alternateObject instanceof ElementInfo && object instanceof ElementInfo) {
-//						if (((ElementInfo)alternateObject).getObjectRef() == ((ElementInfo)object).getObjectRef()) {
-//							// I'm so not sure what to do here ... TODO .. is this ok or not?
-//							return identifier;
-//						}
-//					}
-//					
-//					throw new RuntimeException("BIG PROBLEM: " + object + " maps to: " + alternateObject);
-//				}
-//			} catch (InvalidObject e) {
-//			}
+			try {
+				T alternateObject = identifier.get();
+				if (!alternateObject.equals(object)) {
+					System.out.println("A BIG PROBLEM!");
+					System.out.println("BIG PROBLEM: " + object + " maps to: " + alternateObject);
+					
+					System.out.println("Object hash code: " + object.hashCode());
+					System.out.println("Alternate hash code: " + alternateObject.hashCode());
+					
+					HashMap<T, I> testMap = new HashMap<T, I>();
+					testMap.put(alternateObject, identifier);
+					if (testMap.containsKey(object)) {
+						System.out.println("WEIRD FOR THE SECOND TIME!");
+					}
+					
+					Map<T, I> testWeakMap = new WeakHashMap<T, I>();
+					testWeakMap.put(alternateObject, identifier);
+					if (testWeakMap.containsKey(object)) {
+						System.out.println("WEIRD FOR THE THIRD TIME!");
+					}
+					System.out.println(objectToIdentifierMap.get(object));
+					
+					if (alternateObject instanceof ElementInfo && object instanceof ElementInfo) {
+						if (((ElementInfo)alternateObject).getObjectRef() == ((ElementInfo)object).getObjectRef()) {
+							// I'm so not sure what to do here ... TODO .. is this ok or not?
+							return identifier;
+						}
+					}
+					
+					throw new RuntimeException("BIG PROBLEM: " + object + " maps to: " + alternateObject);
+				}
+			} catch (InvalidObject e) {
+			}
 			return identifier;
 		} else {
 			Long id = idGenerator++;
@@ -98,7 +95,7 @@ public class IdManager<I extends Identifier<T>, T> {
 		}
 	}
 
-	public I readIdentifier(ByteBuffer bytes) {
+	public synchronized I readIdentifier(ByteBuffer bytes) {
 		// TODO throw ErrorType.INVALID_OBJECT
 		return idToIdentifierMap.get(bytes.getLong());
 	}

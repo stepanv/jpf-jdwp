@@ -44,13 +44,13 @@ public class JdwpObjectManager {
 		}
 	});
 
-	IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
+	private IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
 		@Override
 		public FieldId create(long id, FieldInfo fieldInfo) {
 			return new FieldId(id, fieldInfo);
 		}
 	});
-	IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
+	private IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
 		@Override
 		public FrameId create(long id, StackFrame stackFrame) {
 			return new FrameId(id, stackFrame);
