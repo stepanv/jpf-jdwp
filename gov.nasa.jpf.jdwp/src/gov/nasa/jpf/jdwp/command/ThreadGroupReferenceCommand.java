@@ -5,7 +5,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ElementInfo;
 
 import java.io.DataOutputStream;
@@ -26,7 +26,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 				throws IOException, JdwpError {
 			int nameref = threadGroupElementInfo.getReferenceField("name");
 			ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
-			new StringRaw(name.asString()).write(os);
+			JdwpString.write(name.asString(), os);
 		}
 	},
 

@@ -11,7 +11,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -30,17 +30,17 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	VERSION(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			new StringRaw(contextProvider.getJPF().getReporter().getJPFBanner()).write(os);
+			JdwpString.write(contextProvider.getJPF().getReporter().getJPFBanner(), os);
 			os.writeInt(JdwpConstants.MINOR);
 			os.writeInt(JdwpConstants.MAJOR);
-			new StringRaw(System.getProperty("java.version")).write(os);
-			new StringRaw(System.getProperty("java.vm.name")).write(os);
+			JdwpString.write(System.getProperty("java.version"), os);
+			JdwpString.write(System.getProperty("java.vm.name"), os);
 		}
 	},
 	CLASSESBYSIGNATURE(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			String signature = StringRaw.readString(bytes);
+			String signature = JdwpString.read(bytes);
 
 			ArrayList<ClassInfo> matchingClasses = new ArrayList<ClassInfo>();
 
@@ -76,7 +76,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 				ClassInfo clazz = (ClassInfo) iter.next();
 				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
 				id.writeTagged(os);
-				new StringRaw(clazz.getSignature()).write(os);
+				JdwpString.write(clazz.getSignature(), os);
 				// TODO [for PJA] do we have class statuses in JPF?
 				ClassStatus.VERIFIED.write(os);
 			}
@@ -154,7 +154,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			// is invoked when inspecting an array field for instance (TODO
 			// rewrite this method)
-			String string = StringRaw.readString(bytes);
+			String string = JdwpString.read(bytes);
 			
 			// TODO [for PJA] which thread we should use?
 			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); 

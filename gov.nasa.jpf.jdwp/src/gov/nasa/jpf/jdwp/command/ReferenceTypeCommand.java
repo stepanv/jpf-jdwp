@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -28,7 +28,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			new StringRaw(classInfo.getSignature()).write(os);
+			JdwpString.write(classInfo.getSignature(),os);
 		}
 	},
 	CLASSLOADER(2) {
@@ -76,8 +76,8 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				FieldInfo field = fields[i];
 				FieldId fieldId = contextProvider.getObjectManager().getFieldId(field);
 				fieldId.write(os);
-				new StringRaw(field.getName()).write(os);
-				new StringRaw(field.getSignature()).write(os);
+				JdwpString.write(field.getName(), os);
+				JdwpString.write(field.getSignature(), os);
 				System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature() + ", fieldId: " + fieldId);
 				os.writeInt(field.getModifiers());
 			}
@@ -111,9 +111,9 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				os.writeLong(method.getGlobalId());
 				System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + " (global id: " + method.getGlobalId() + ")");
 				// method.writeId(os);
-				new StringRaw(method.getName()).write(os);
+				JdwpString.write(method.getName(), os);
 
-				new StringRaw(method.getSignature()).write(os);
+				JdwpString.write(method.getSignature(), os);
 				os.writeInt(method.getModifiers());
 			}
 
@@ -155,7 +155,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 			String sourceFileName = classInfo.getSourceFileName();
-			new StringRaw(SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst("")).write(os);
+			JdwpString.write(SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst(""), os);
 		}
 	},
 	NESTEDTYPES(8) {

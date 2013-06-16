@@ -9,7 +9,7 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.SuspendStatus;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -24,7 +24,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			new StringRaw(threadInfo.getName()).write(os);
+			JdwpString.write(threadInfo.getName(), os);
 		}
 	},
 	SUSPEND(2) {

@@ -12,7 +12,7 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 
 import java.nio.ByteBuffer;
 
@@ -67,14 +67,14 @@ public abstract class Filter<T extends Event> {
 		CLASS_MATCH(5) {
 			@Override
 			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				String classPattern = StringRaw.readString(bytes);
+				String classPattern = JdwpString.read(bytes);
 				return new ClassMatchFilter(classPattern);
 			}
 		},
 		CLASS_EXCLUDE(6) {
 			@Override
 			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				String classPattern = StringRaw.readString(bytes);
+				String classPattern = JdwpString.read(bytes);
 				return new ClassExcludeFilter(classPattern);
 			}
 		},

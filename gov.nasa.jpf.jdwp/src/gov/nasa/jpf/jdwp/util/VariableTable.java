@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.util;
 
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jvm.ClassFile;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.LocalVarInfo;
@@ -181,8 +181,8 @@ public class VariableTable {
 		 */
 		public void write(DataOutputStream os) throws IOException {
 			os.writeLong(codeIndex);
-			new StringRaw(name).write(os);
-			new StringRaw(signature).write(os);
+			JdwpString.write(name, os);
+			JdwpString.write(signature, os);
 			os.writeInt(length);
 			os.writeInt(slot);
 		}

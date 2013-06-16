@@ -7,7 +7,7 @@ import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -63,7 +63,7 @@ public class ClassPrepareEvent extends ThreadableEvent implements Threadable, Cl
 	@Override
 	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
 		JdwpObjectManager.getInstance().getReferenceTypeId(classInfo).writeTagged(os);
-		new StringRaw(classInfo.getSignature()).write(os);
+		JdwpString.write(classInfo.getSignature(), os);
 		os.writeInt(status);
 	}
 

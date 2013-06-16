@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
-import gov.nasa.jpf.jdwp.value.StringRaw;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class ClassUnloadEvent extends EventBase implements ClassFilterable {
 
 	@Override
 	protected void writeSpecific(DataOutputStream os) throws IOException {
-		new StringRaw(signature).write(os);
+		JdwpString.write(signature, os);
 	}
 
 	@Override
