@@ -12,6 +12,12 @@ import gov.nasa.jpf.vm.MethodInfo;
  * Utility class for creation Line Table for a method according to the JDWP
  * Specification.
  * 
+ * <h3>NOTES</h3>
+ * The specification isn't really clear in the terms how the line table should be constructed.<br/>
+ * There is one questionable thing:<br/>
+ * When a method has a <tt>for</tt> cycle for instance, the line information at the end of the cycle is lower then it was with previous entries.<br/>
+ * Looking at OpenJDK implementation it's obvious that whenever line number for a code index sequence is changed, new line entry has to be added to the line table.<br/>
+ * 
  * @author stepan
  * 
  */
@@ -53,7 +59,9 @@ public class LineTable {
 			lineNumber = instruction.getLineNumber();
 
 			start = lineCodeIndex < start ? lineCodeIndex : start;
-			end = lineNumber > end ? lineNumber : end;
+			end = lineCodeIndex > end ? lineCodeIndex : end;
+			
+			lineRows.add(this);
 
 			System.out.println("LINE TABLE: index: " + lineCodeIndex + " line: " + lineNumber + " position: " + instruction.getPosition()
 					+ " ... instruction: " + instruction);
@@ -70,14 +78,14 @@ public class LineTable {
 		if (methodInfo.isNative()) {
 			start = -1;
 			end = -1;
-
-			// TODO I'd like to test this first
-			// we're supposed to send 0 number of lines, right?
-			throw new RuntimeException("HAS TO BE TESTED");
 		} else {
 			if (methodInfo.getInstructions() != null) {
+				int lastLineEntry = -1;
 				for (Instruction instruction : methodInfo.getInstructions()) {
-					lineRows.add(new LineTableItem(instruction));
+					if (lastLineEntry != instruction.getLineNumber()) {
+						lastLineEntry = instruction.getLineNumber();
+						new LineTableItem(instruction);
+					}
 				}
 			}
 		}
