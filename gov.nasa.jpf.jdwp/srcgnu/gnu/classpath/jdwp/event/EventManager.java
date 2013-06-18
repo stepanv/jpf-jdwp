@@ -99,6 +99,7 @@ public class EventManager
     _requests = new Hashtable <EventKind, Hashtable<Integer, EventRequest>>();
 
     // Add lists for all the event types
+    // We're using Hashtables since all access methods are synchronized (using this object as a lock)
     _requests.put (EventKind.SINGLE_STEP,
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.BREAKPOINT,
@@ -173,6 +174,9 @@ public class EventManager
         throw new IllegalArgumentException("invalid event kind: " + event.getEventKind());
       }
 
+    synchronized (requests) {
+		
+	
     // Loop through the requests. Must look at ALL requests in order
     // to evaluate all filters (think count filter).
     Iterator<EventRequest> rIter = requests.values().iterator();
@@ -182,10 +186,12 @@ public class EventManager
         if (request.matches(event))
           interestedEvents.add(request);
       }
+    }
 
     EventRequest[] r = new EventRequest[interestedEvents.size()];
     interestedEvents.toArray(r);
     return r;
+    
   }
 
   /**
@@ -237,6 +243,8 @@ public class EventManager
         throw new IllegalArgumentException ("invalid event kind: " + kind);
       }
 
+		
+	
     Integer iid = new Integer (id);
     EventRequest request = requests.get (iid);
     if (request != null)
@@ -261,7 +269,9 @@ public class EventManager
     Hashtable<Integer, EventRequest> requests = _requests.get (eventKind);
 
    //VMVirtualMachine.clearEvents (kind);
-    requests.clear ();
+    
+    	requests.clear ();
+    
   }
 
   /**
@@ -277,7 +287,8 @@ public class EventManager
   {
     Hashtable<Integer, EventRequest> requests = _requests.get (eventKind);
 
-    return (EventRequest) requests.get (new Integer (id));
+    	return (EventRequest) requests.get (new Integer (id));
+    
   }
 
   /**
