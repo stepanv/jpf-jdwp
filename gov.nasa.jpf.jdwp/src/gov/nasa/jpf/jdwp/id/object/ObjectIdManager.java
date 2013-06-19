@@ -69,9 +69,11 @@ public class ObjectIdManager {
 	private synchronized ObjectId getIdentifierIdInitializedFactory(ElementInfo object) {
 		Long id;
 		if (object instanceof DynamicElementInfo) {
-			id = (long) object.getObjectRef() + Integer.MAX_VALUE + 1;
+			id = (long) object.getObjectRef();
 		} else {
-			id = (long) object.getObjectRef() + (Integer.MAX_VALUE << 2 ) + 1;
+			// TODO (see ObjectId#get()) - we probably want to use DynamicElementInfo everywhere
+			// We don't want StaticElementInfo here!!!
+			throw new RuntimeException("We have StaticElementInfo instead of DynamicElementInfo! Object: " + object);
 		}
 		if (idMap.containsKey(id)) {
 			ObjectId objectId = idMap.get(id);
@@ -86,6 +88,7 @@ public class ObjectIdManager {
 		} else {
 			ObjectId objectId = dynamicIdFactory.create(id, object);
 			idMap.put(id, objectId);
+			System.out.println("CREATED OBJECT id: " + id + " (identifier: " + objectId + ") object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
 			return objectId;
 		}
 	}

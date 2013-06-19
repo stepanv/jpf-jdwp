@@ -31,14 +31,6 @@ public class Identifier<T> {
 		return objectReference.get() == null;
 	}
 
-	public void disableCollection() throws InvalidObject {
-		object = get();
-	}
-
-	public void enableCollection() throws InvalidObject {
-		object = null;
-	}
-
 	public T get() throws InvalidObject {
 		T object = objectReference.get();
 

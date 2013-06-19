@@ -9,6 +9,7 @@ import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.Heap;
@@ -30,10 +31,29 @@ import gov.nasa.jpf.vm.VM;
  * as {@link ObjectId} instances as well.
  * 
  * <br/>
+ * 
  * <h3>ElementInfo hashCode invariant problem</h3>
- * The biggest problem with ElementInfos is that their hashCode() method returns different values throughout the lifetime of the object they represent.<br/>
- * If ElementInfo represents java.lang.Thread then its hashCode changes even when the thread changes its state from STARTED to RUNNING.<br/>
- * Therefore it's not possible to put ElementInfos into hashMaps and it's also tricky to call equals (since equals is congruent).
+ * The biggest problem with ElementInfos is that their hashCode() method returns
+ * different values throughout the lifetime of the object they represent.<br/>
+ * If ElementInfo represents java.lang.Thread then its hashCode changes even
+ * when the thread changes its state from STARTED to RUNNING.<br/>
+ * Therefore it's not possible to put ElementInfos into hashMaps and it's also
+ * tricky to call equals (since equals is congruent).
+ * 
+ * <br/>
+ * 
+ * <h3>What kind of information do we need</h3>
+ * Every ObjectId stands for one object instance which is identified by its
+ * pointer (heap obj ref).<br/>
+ * JPF is little bit tricky since it can recreate new ElementInfo instance for a
+ * object instance in SuT. And therefore it's irrelevant to keep the ElementInfo
+ * instance here (even as a weak reference). We should keep the HEAP index and
+ * always return the up-to-date ElementInfo instance.<br/>
+ * The only question is what if HEAP index is reused after the GC activity by
+ * completely strange new object?<br/>
+ * TODO [for PJA] is this possible?
+ * 
+ * <br/>
  * 
  * <h2>JDWP Specification</h2>
  * Uniquely identifies an object in the target VM. A particular object will be
@@ -54,13 +74,20 @@ import gov.nasa.jpf.vm.VM;
  * @author stepan
  * 
  */
-public class ObjectId extends TaggableIdentifier<ElementInfo> implements Value {
+public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements Value {
 
 	private Tag tag;
 
+	private int objectRef;
+
 	public ObjectId(Tag tag, long id, ElementInfo object) {
-		super(id, object);
+		this(tag, id, object.getObjectRef());
+	}
+
+	protected ObjectId(Tag tag, long id, int objectRef) {
+		super(id, null);
 		this.tag = tag;
+		this.objectRef = objectRef;
 	}
 
 	@Override
@@ -88,37 +115,28 @@ public class ObjectId extends TaggableIdentifier<ElementInfo> implements Value {
 	}
 
 	@Override
-	public void disableCollection() throws InvalidObject {
-		ElementInfo elementInfo = get();
+	public DynamicElementInfo get() throws InvalidObject {
 		Heap heap = VM.getVM().getHeap();
-		heap.registerPinDown(elementInfo.getObjectRef());
-
-		super.disableCollection();
+		// TODO [for PJA] do we have StaticElementInfo in the heap?
+		// this cast sucks, but we always want DynamicElementInfo and we want to
+		// enforce it!
+		return (DynamicElementInfo) heap.get(objectRef);
 	}
 
-	@Override
-	public void enableCollection() throws InvalidObject {
-		ElementInfo elementInfo = get();
+	public void disableCollection() throws InvalidObject {
 		Heap heap = VM.getVM().getHeap();
-		heap.releasePinDown(elementInfo.getObjectRef());
+		heap.registerPinDown(objectRef);
+	}
 
-		super.enableCollection();
+	public void enableCollection() throws InvalidObject {
+		Heap heap = VM.getVM().getHeap();
+		heap.releasePinDown(objectRef);
 	}
 
 	@Override
 	public boolean isNull() {
-		if (super.isNull()) {
-			return true;
-		}
-		try {
-			ElementInfo elementInfo = get();
-			boolean isLiving = elementInfo != null && elementInfo.getObjectRef() >= 0;
-			return !isLiving;
-		} catch (InvalidObject e) {
-			// this won't happen unless JPF is running and the object was
-			// collected between the isNull() call and the get() right after it.
-			return true;
-		}
+		Heap heap = VM.getVM().getHeap();
+		return heap.get(objectRef) == null;
 	}
 
 	/**

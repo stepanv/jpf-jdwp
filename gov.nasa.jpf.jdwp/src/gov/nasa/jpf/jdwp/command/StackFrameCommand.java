@@ -43,45 +43,14 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
 				Object object = null;
 
-//				// There might be different variable with the same slot index
-//				for (LocalVarInfo localVarInfo : stackFrame.getMethodInfo().getLocalVars()) {
-//					if (localVarInfo.getSlotIndex() == slot) {
-//						// TODO [for PJA] looks like StackFrame#getLocalValueObject doesn't work properly
-//						// seems like 'slots' are managed incorrectly
-//						object = stackFrame.getLocalValueObject(localVarInfo);
-//						
-//						
-//						break;
-//					}
-//
-//				}
-				
-				// This probably fixed the problem we had here (TODO remove all other TODO s when this is tested)
 				LocalVarInfo localVarInfo = stackFrame.getLocalVarInfo(slot);
+				
+				// object will remain as null (if it really is null)
 				object = stackFrame.getLocalValueObject(localVarInfo);
 
-				if (object == null) {
-					throw new InvalidObject();
-				}
-				try {
-					Value value = Tag.taggedObjectToValue(tag, object);
-					// TODO write tagged by default (see TODO.txt)
-					value.writeTagged(os);
-					// TODO [for PJA] we have a problem here - respectively there, above
-				} catch (ClassCastException e) {
-					// TODO this problem is related to code of debugged application bellow
-					throw new InvalidObject("Local value request cannot be fulfilled", e);
-				}
-				// for (String string : anArray) {
-				// System.out.println("Array string: " + string);
-				// }
-				// for (int string : anIntArray) {
-				// System.out.println("int: " + string); /* TODO [jpf-core] BUG resolving this
-				// variable causes an error - probably bug in JPF */
-				// }
-				// for (Object string : anObjectArray) {
-				// System.out.println("object: " + string);
-				// }
+				Value value = Tag.taggedObjectToValue(tag, object);
+				// TODO write tagged by default (see TODO.txt)
+				value.writeTagged(os);
 
 			}
 		}

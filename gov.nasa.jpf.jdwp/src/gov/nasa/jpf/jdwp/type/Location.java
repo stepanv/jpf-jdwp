@@ -97,7 +97,7 @@ public class Location {
 
 	@Override
 	public String toString() {
-		return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation();
+		return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation() + ", methodId: " + methodInfo.getGlobalId() + ", index: " + index;
 	}
 
 }

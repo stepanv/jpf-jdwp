@@ -2,3 +2,6 @@
 
 -> ObjectId.write() and ObjectId.writeTagged()
 -> Value.write() and Value.writeUntagged()
+
+2. Use objectIdManager as late as possible (in the whole Event facility for instance) - it will speed up everything
+  -> we don't need objectId for an object we're not sure we will send across JDWP (like when creating FieldModificationEvent)
