@@ -73,7 +73,7 @@ public abstract class InfoObjectId<T> extends ObjectId {
 	 * The way how to resolve the info object by the subclass for use in
 	 * {@link InfoObjectId#getInfoObject()} in case lazy load is performed.
 	 * 
-	 * @return
+	 * @return Info Object instance
 	 * @throws InvalidObject
 	 */
 	abstract protected T resolveInfoObject() throws InvalidObject;
