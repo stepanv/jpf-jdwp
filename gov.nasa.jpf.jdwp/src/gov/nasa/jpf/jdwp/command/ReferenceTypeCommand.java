@@ -41,7 +41,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			if (classLoaderInfo == null) {
 				// TODO do this in a uniform way - object manager should return nullObjectId by itself...
 				// system classloader
-				NullObjectId.getInstance().write(os);
+				NullObjectId.instantWrite(os);
 			} else {
 				ObjectId objectId = contextProvider.getObjectManager().getClassLoaderObjectId(classLoaderInfo);
 				objectId.write(os);

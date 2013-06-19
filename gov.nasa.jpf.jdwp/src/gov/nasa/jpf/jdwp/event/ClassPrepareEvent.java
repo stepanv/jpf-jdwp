@@ -6,7 +6,6 @@ import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -53,7 +52,7 @@ public class ClassPrepareEvent extends ThreadableEvent implements Threadable, Cl
 	 *            Status of type. See {@link ClassStatus}.
 	 */
 	public ClassPrepareEvent(ThreadInfo currentThread, ClassInfo classInfo, int status) {
-		super(EventKind.CLASS_PREPARE, (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread));
+		super(EventKind.CLASS_PREPARE, currentThread);
 
 		this.classInfo = classInfo;
 		this.status = status;

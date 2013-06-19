@@ -1,19 +1,21 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class MonitorBase extends LocatableEvent {
 
-	private ObjectId taggedObjectId;
+	private ElementInfo taggedObject;
 
-	public MonitorBase(EventKind eventKind, ThreadId threadId, ObjectId taggedObjectId, Location location) {
-		super(eventKind, threadId, location);
-		this.taggedObjectId = taggedObjectId;
+	public MonitorBase(EventKind eventKind, ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
+		super(eventKind, threadInfo, location);
+		this.taggedObject = taggedObject;
 	}
 
 	/**
@@ -22,6 +24,7 @@ public class MonitorBase extends LocatableEvent {
 	 */
 	@Override
 	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+		ObjectId taggedObjectId = JdwpObjectManager.getInstance().getObjectId(taggedObject);
 		taggedObjectId.write(os);
 		getLocation().write(os);
 

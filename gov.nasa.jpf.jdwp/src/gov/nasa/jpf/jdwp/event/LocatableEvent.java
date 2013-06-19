@@ -6,6 +6,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,8 +15,8 @@ public abstract class LocatableEvent extends ThreadableEvent implements Locatabl
 
 	private Location location;
 
-	public LocatableEvent(EventKind eventKind, ThreadId threadId, Location location) {
-		super(eventKind, threadId);
+	public LocatableEvent(EventKind eventKind, ThreadInfo threadInfo, Location location) {
+		super(eventKind, threadInfo);
 		
 		this.location = location;
 	}

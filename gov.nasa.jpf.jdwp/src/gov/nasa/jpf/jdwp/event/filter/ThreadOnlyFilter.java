@@ -1,7 +1,9 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.Threadable;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * <p>
@@ -33,7 +35,14 @@ public class ThreadOnlyFilter extends Filter<Threadable> {
 
 	@Override
 	public boolean matches(Threadable event) {
-		return event.getThread() == threadId;
+		ThreadInfo threadInfo;
+		try {
+			threadInfo = threadId.getInfoObject();
+			return event.getThread() == threadInfo;
+		} catch (InvalidObject e) {
+			// info object is not accessible and therefore this filter is not effective
+			return false;
+		}
 	}
 
 }

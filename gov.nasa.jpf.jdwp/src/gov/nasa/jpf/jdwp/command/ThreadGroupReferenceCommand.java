@@ -45,7 +45,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 			System.out.println("Thread group parent: " + parent);
 
 			if (parent == null) {
-				NullObjectId.getInstance().write(os);
+				NullObjectId.instantWrite(os);
 			} else {
 				ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
 				parentGroup.write(os);

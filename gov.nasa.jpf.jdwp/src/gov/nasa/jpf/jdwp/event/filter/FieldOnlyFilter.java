@@ -1,8 +1,10 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.FieldOnlyFilterable;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.vm.FieldInfo;
 
 /**
  * <p>
@@ -40,7 +42,14 @@ public class FieldOnlyFilter extends Filter<FieldOnlyFilterable> {
 
 	@Override
 	public boolean matches(FieldOnlyFilterable event) {
-		return fieldId == event.getFieldId();
+		try {
+			FieldInfo fieldInfo = fieldId.get();
+			return fieldInfo == event.getFieldInfo();
+		} catch (InvalidObject e) {
+			// if fieldId is not resolvable, this filter is not effective
+			// anymore
+			return false;
+		}
 	}
 
 }

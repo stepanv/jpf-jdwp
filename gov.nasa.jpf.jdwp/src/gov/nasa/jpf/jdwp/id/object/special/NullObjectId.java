@@ -1,5 +1,8 @@
 package gov.nasa.jpf.jdwp.id.object.special;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -22,6 +25,31 @@ public class NullObjectId extends ObjectId {
 
 	public static NullObjectId getInstance() {
 		return instance;
+	}
+
+	/**
+	 * Helper method that writes {@link NullObjectId} instance to the stream.
+	 * 
+	 * @param os
+	 *            Where to write the null object
+	 * @throws IOException
+	 *             If IO error occurs
+	 */
+	public static void instantWrite(DataOutputStream os) throws IOException {
+		instance.write(os);
+	}
+
+	/**
+	 * Helper method that writes {@link NullObjectId} tagged instance to the
+	 * stream.
+	 * 
+	 * @param os
+	 *            Where to write the null object
+	 * @throws IOException
+	 *             If IO error occurs
+	 */
+	public static void instanceWriteTagged(DataOutputStream os) throws IOException {
+		instance.writeTagged(os);
 	}
 
 	private static final NullObjectId instance = new NullObjectId();

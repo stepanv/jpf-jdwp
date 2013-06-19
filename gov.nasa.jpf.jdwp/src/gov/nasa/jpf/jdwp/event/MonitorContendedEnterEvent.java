@@ -1,8 +1,8 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * <p>
@@ -20,15 +20,15 @@ public class MonitorContendedEnterEvent extends MonitorBase {
 	/**
 	 * Creates Monitor Contended Enter event.
 	 * 
-	 * @param threadId
+	 * @param threadInfo
 	 *            Thread which entered monitor
 	 * @param location
 	 *            location of contended monitor enter
-	 * @param taggedObjectId
+	 * @param taggedObject
 	 *            Monitor object reference
 	 */
-	public MonitorContendedEnterEvent(ThreadId threadId, ObjectId taggedObjectId, Location location) {
-		super(EventKind.MONITOR_CONTENDED_ENTER, threadId, taggedObjectId, location);
+	public MonitorContendedEnterEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
+		super(EventKind.MONITOR_CONTENDED_ENTER, threadInfo, taggedObject, location);
 	}
 
 }

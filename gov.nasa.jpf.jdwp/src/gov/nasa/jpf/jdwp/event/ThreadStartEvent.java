@@ -1,12 +1,10 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
+import gov.nasa.jpf.vm.ThreadInfo;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * <p>
@@ -35,11 +33,11 @@ public class ThreadStartEvent extends ThreadableEvent implements Threadable {
 	/**
 	 * Creates Thread Start event.
 	 * 
-	 * @param thread
+	 * @param threadInfo
 	 *            Started thread
 	 */
-	public ThreadStartEvent(ThreadInfo thread) {
-		super(EventKind.THREAD_START, (ThreadId) JdwpObjectManager.getInstance().getThreadId(thread));
+	public ThreadStartEvent(ThreadInfo threadInfo) {
+		super(EventKind.THREAD_START, threadInfo);
 	}
 
 	@Override

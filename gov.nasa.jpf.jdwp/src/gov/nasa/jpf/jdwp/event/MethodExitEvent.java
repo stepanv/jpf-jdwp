@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,11 +23,13 @@ public class MethodExitEvent extends LocatableEvent {
 
 	/**
 	 * 
-	 * @param threadId thread which exited method  
-	 * @param location Location of exit  
+	 * @param threadInfo
+	 *            The thread which exited method
+	 * @param location
+	 *            Location of exit
 	 */
-	public MethodExitEvent(ThreadId threadId, Location location) {
-		super(EventKind.METHOD_EXIT, threadId, location);
+	public MethodExitEvent(ThreadInfo threadInfo, Location location) {
+		super(EventKind.METHOD_EXIT, threadInfo, location);
 	}
 
 	@Override

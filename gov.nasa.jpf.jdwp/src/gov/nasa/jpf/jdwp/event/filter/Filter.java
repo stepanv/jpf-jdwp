@@ -13,11 +13,17 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.value.JdwpString;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.nio.ByteBuffer;
 
 /**
- * 
+ * The base class of the filter facility. <br/>
+ * Here, in the filter facility, we want to use only and only JDWP internal
+ * wrappers so that GC of JPF itself isn't affected. Therefore all Filter
+ * instances never keep references to {@link ThreadInfo} or {@link ElementInfo}
+ * (or any other JPF specific) instances.
  * <p>
  * <h2>JDWP Specification for modifiers/filters</h2>
  * Constraints used to control the number of generated events. Modifiers specify
@@ -147,7 +153,8 @@ public abstract class Filter<T extends Event> {
 	private ModKind modKind;
 	private Class<T> genericClazz;
 
-	public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove unused parameter
+	public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove
+															// unused parameter
 		this.modKind = modKind;
 		this.genericClazz = genericClass;
 	}
@@ -162,16 +169,16 @@ public abstract class Filter<T extends Event> {
 	 * @param event
 	 *            The event to be filtered.
 	 * @return True of false as a result of filtering.
-	 * @throws InvalidObject 
+	 * @throws InvalidObject
 	 */
 	public boolean matches(T event) throws InvalidObject {
 		return false;
 	}
-	
+
 	public String toString() {
 		return "class: " + this.getClass() + "; modKind: " + modKind.toString();
 	}
-	
+
 	public Class<T> getGenericClass() {
 		return this.genericClazz;
 	}

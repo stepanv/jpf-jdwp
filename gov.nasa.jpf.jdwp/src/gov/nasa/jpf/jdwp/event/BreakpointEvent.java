@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,8 +25,8 @@ public class BreakpointEvent extends LocatableEvent implements LocationOnlyFilte
 	 * @param location
 	 *            Location hit
 	 */
-	public BreakpointEvent(ThreadId threadId, Location location) {
-		super(EventKind.BREAKPOINT, threadId, location);
+	public BreakpointEvent(ThreadInfo threadInfo, Location location) {
+		super(EventKind.BREAKPOINT, threadInfo, location);
 	}
 
 	@Override

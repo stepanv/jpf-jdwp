@@ -209,7 +209,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 
 	@Override
 	public boolean matches(StepFilterable event) throws InvalidObject {
-		return matches(event.getLocation().getInstruction(), event.getThread().getInfoObject());
+		return matches(event.getLocation().getInstruction(), event.getThread());
 	}
 
 	private boolean matches(Instruction currentInstruction, ThreadInfo currentThread) {

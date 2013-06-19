@@ -1,11 +1,11 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.type.Location;
 
 /**
  * <p>
@@ -24,17 +24,17 @@ public class MonitorWaitEvent extends MonitorBase {
 	/**
 	 * Creates Monitor Wait event.
 	 * 
-	 * @param threadId
+	 * @param threadInfo
 	 *            Thread which entered monitor
-	 * @param taggedObjectId
+	 * @param taggedObject
 	 *            Monitor object reference
 	 * @param location
 	 *            location contended monitor enter
 	 * @param timeout
 	 *            thread wait time in milliseconds
 	 */
-	public MonitorWaitEvent(ThreadId threadId, ObjectId taggedObjectId, Location location, long timeout) {
-		super(EventKind.MONITOR_WAIT, threadId, taggedObjectId, location);
+	public MonitorWaitEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, long timeout) {
+		super(EventKind.MONITOR_WAIT, threadInfo, taggedObject, location);
 		this.timeout = timeout;
 	}
 

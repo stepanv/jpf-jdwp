@@ -1,8 +1,8 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,8 +25,17 @@ public class MethodExitWithReturnValueEvent extends LocatableEvent implements Lo
 
 	private Value value;
 
-	public MethodExitWithReturnValueEvent(ThreadId threadId, Location location, Value value) {
-		super(EventKind.METHOD_EXIT_WITH_RETURN_VALUE, threadId, location);
+	/**
+	 * 
+	 * @param threadInfo
+	 *            Thread which exited method
+	 * @param location
+	 *            Location of exit
+	 * @param value
+	 *            Value that will be returned by the method
+	 */
+	public MethodExitWithReturnValueEvent(ThreadInfo threadInfo, Location location, Value value) {
+		super(EventKind.METHOD_EXIT_WITH_RETURN_VALUE, threadInfo, location);
 		this.value = value;
 	}
 

@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,11 +27,11 @@ public class ThreadDeathEvent extends ThreadableEvent implements Threadable {
 	/**
 	 * Creates Thread Death event.
 	 * 
-	 * @param threadId
+	 * @param threadInfo
 	 *            Ending thread
 	 */
-	public ThreadDeathEvent(ThreadId threadId) {
-		super(EventKind.THREAD_DEATH, threadId);
+	public ThreadDeathEvent(ThreadInfo threadInfo) {
+		super(EventKind.THREAD_DEATH, threadInfo);
 	}
 
 	@Override

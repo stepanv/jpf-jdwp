@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,13 +27,13 @@ public class MethodEntryEvent extends LocatableEvent {
 	/**
 	 * Creates Method Entry event.
 	 * 
-	 * @param threadId
+	 * @param threadInfo
 	 *            thread which entered method
 	 * @param location
 	 *            The initial executable location in the method.
 	 */
-	public MethodEntryEvent(ThreadId threadId, Location location) {
-		super(EventKind.METHOD_ENTRY, threadId, location);
+	public MethodEntryEvent(ThreadInfo threadInfo, Location location) {
+		super(EventKind.METHOD_ENTRY, threadInfo, location);
 	}
 
 	@Override

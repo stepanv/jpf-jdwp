@@ -5,11 +5,14 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.StaticElementInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,47 +31,53 @@ import java.io.IOException;
 public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilterable, FieldOnlyFilterable {
 
 	private ClassInfo fieldType;
-	private FieldId fieldId;
-	private ObjectId object;
+	private FieldInfo fieldInfo;
+	private ElementInfo objectBeingAccessed;
 
 	/**
 	 * 
-	 * @param threadId
+	 * @param threadInfo
 	 *            Accessing thread
 	 * @param location
 	 *            Location of access
 	 * @param fieldType
 	 *            Type of field
-	 * @param fieldId
+	 * @param fieldInfo
 	 *            Field being accessed
-	 * @param objectOrNull
-	 *            Object being accessed (null=0 for statics)
+	 * @param objectBeingAccessed
+	 *            Object being accessed (will be null=0 for statics when sent across JDWP)
 	 */
-	public FieldAccessEvent(ThreadId threadId, Location location, ClassInfo fieldType, FieldId fieldId, ObjectId objectOrNull) {
-		super(EventKind.FIELD_ACCESS, threadId, location);
+	public FieldAccessEvent(ThreadInfo threadInfo, Location location, ClassInfo fieldType, FieldInfo fieldInfo, ElementInfo objectBeingAccessed) {
+		super(EventKind.FIELD_ACCESS, threadInfo, location);
 		this.fieldType = fieldType;
-		this.fieldId = fieldId;
-		this.object = objectOrNull == null ? NullObjectId.getInstance() : objectOrNull;
+		this.fieldInfo = fieldInfo;
+		this.objectBeingAccessed = objectBeingAccessed;
 	}
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
 		ClassInfo fieldObjectClassInfo;
-		try {
-			fieldObjectClassInfo = fieldId.get().getClassInfo();
-			// TODO this is not according the spec!
-		} catch (InvalidObject e) {
-			throw new IOException(e);
-		}
+		
+		// TODO this is not according the spec!
+		fieldObjectClassInfo = fieldInfo.getClassInfo();
+		
 		ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
 		referenceTypeId.writeTagged(os);
+		
+		FieldId fieldId = JdwpObjectManager.getInstance().getFieldId(fieldInfo);
 		fieldId.write(os);
-		object.writeTagged(os);
+		
+		if (objectBeingAccessed instanceof StaticElementInfo) {
+			NullObjectId.instanceWriteTagged(os);
+		} else {		
+			ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(objectBeingAccessed);
+			objectId.writeTagged(os);
+		}
 	}
 
 	@Override
-	public FieldId getFieldId() {
-		return fieldId;
+	public FieldInfo getFieldInfo() {
+		return fieldInfo;
 	}
 
 }

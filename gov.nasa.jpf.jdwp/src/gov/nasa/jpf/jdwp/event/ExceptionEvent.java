@@ -2,10 +2,10 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -34,8 +34,8 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	 * It's interesting that catchLocation is not used by JDT debugger (Eclipse) at all.
 	 * It could be interesting to check how other debuggers use catchLocation attribute.
 	 * 
-	 * @param threadId
-	 *            Thread with exception
+	 * @param threadInfo
+	 *            Thread with pending exception
 	 * @param location
 	 *            Location of exception throw (or first non-native location
 	 *            after throw if thrown from a native method)
@@ -71,8 +71,8 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	 *            be considered caught even though it appears to be uncaught
 	 *            from examination of the source code.
 	 */
-	public ExceptionEvent(ThreadId threadId, Location location, ElementInfo exception, Location catchLocation) {
-		super(EventKind.EXCEPTION, threadId, location);
+	public ExceptionEvent(ThreadInfo threadInfo, Location location, ElementInfo exception, Location catchLocation) {
+		super(EventKind.EXCEPTION, threadInfo, location);
 
 		this.exception = exception;
 		this.catchLocation = catchLocation;
@@ -80,7 +80,8 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		JdwpObjectManager.getInstance().getObjectId(exception).writeTagged(os);
+		ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(exception);
+		objectId.writeTagged(os);
 		if (catchLocation == null) {
 			// TODO when location is null, we need to send twice null long ... do it a better way?
 			// I checked the Eclipse debugger and because of that I know what is it about

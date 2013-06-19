@@ -35,7 +35,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 			// The superclass (null if the class ID for java.lang.Object is
 			// specified).
 			if (superClassInfo == null) {
-				NullObjectId.getInstance().write(os);
+				NullObjectId.instantWrite(os);
 			} else {
 				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(superClassInfo);
 				referenceTypeId.write(os);

@@ -1,11 +1,9 @@
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.vm.ThreadInfo;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
  * <p>
@@ -29,8 +27,7 @@ public class VmStartEvent extends ThreadableEvent implements Threadable {
 	 *            The initial thread of the VM.
 	 */
 	public VmStartEvent(ThreadInfo currentThread) {
-		// TODO unify whether ThreadId or ThreadInfo can by used with Events
-		super(EventKind.VM_START, (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread));
+		super(EventKind.VM_START, currentThread);
 	}
 
 	@Override

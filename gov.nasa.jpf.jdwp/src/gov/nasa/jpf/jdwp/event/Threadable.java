@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 public interface Threadable extends Event {
-	public ThreadId getThread();
+	public ThreadInfo getThread();
 }
