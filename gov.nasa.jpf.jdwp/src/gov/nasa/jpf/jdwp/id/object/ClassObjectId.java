@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.id.object;
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -23,11 +24,15 @@ import gov.nasa.jpf.vm.VM;
 public class ClassObjectId extends InfoObjectId<ClassInfo> {
 
 	public ClassObjectId(long id, ClassInfo classInfo) {
-		super(Tag.CLASS_OBJECT, id, classInfo.getClassObject(), classInfo);
+		this(id, classInfo.getClassObject(), classInfo);
 	}
 
+	private  ClassObjectId(long id, ElementInfo elementInfo, ClassInfo classInfo) {
+		super(Tag.CLASS_OBJECT, id, elementInfo, classInfo);
+	}
+	
 	public ClassObjectId(long id, ElementInfo elementInfo) {
-		this(id, getClassInfo(elementInfo));
+		this(id, elementInfo, getClassInfo(elementInfo));
 	}
 
 	/**
@@ -45,5 +50,10 @@ public class ClassObjectId extends InfoObjectId<ClassInfo> {
 		String reflectedTypeString = typeName.asString();
 		ClassInfo ci = ClassInfo.getInitializedClassInfo(reflectedTypeString, VM.getVM().getCurrentThread());
 		return ci;
+	}
+
+	@Override
+	protected ClassInfo resolveInfoObject() throws InvalidObject {
+		return getClassInfo(get());
 	}
 }

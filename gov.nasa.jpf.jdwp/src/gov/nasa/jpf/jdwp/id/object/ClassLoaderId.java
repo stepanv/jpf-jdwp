@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.id.object;
 
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -10,11 +11,15 @@ import gov.nasa.jpf.vm.VM;
 public class ClassLoaderId extends InfoObjectId<ClassLoaderInfo>  {
 
 	public ClassLoaderId(long id, ClassLoaderInfo classLoaderInfo) {
-		super(Tag.CLASS_LOADER, id, VM.getVM().getHeap().get(classLoaderInfo.getClassLoaderObjectRef()), classLoaderInfo);
+		this(id, VM.getVM().getHeap().get(classLoaderInfo.getClassLoaderObjectRef()), classLoaderInfo);
+	}
+	
+	private ClassLoaderId(long id, ElementInfo elementInfo, ClassLoaderInfo classLoaderInfo) {
+		super(Tag.CLASS_LOADER, id, elementInfo, classLoaderInfo);
 	}
 
 	public ClassLoaderId(long id, ElementInfo elementInfo) {
-		this(id, getClassLoaderInfo(elementInfo));
+		this(id, elementInfo, getClassLoaderInfo(elementInfo));
 	}
 
 	/**
@@ -27,5 +32,10 @@ public class ClassLoaderId extends InfoObjectId<ClassLoaderInfo>  {
 		// TODO maybe don't use current thread but something better...
 		
 		return env.getClassLoaderInfo(elementInfo.getObjectRef());
+	}
+
+	@Override
+	protected ClassLoaderInfo resolveInfoObject() throws InvalidObject {
+		return getClassLoaderInfo(get());
 	}
 }

@@ -2,7 +2,6 @@ package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -17,7 +16,9 @@ import java.lang.ref.WeakReference;
  * The need for this class comes from the fact that several objects in the SUT
  * are represented by both the {@link ElementInfo} instance and also
  * SomeNameInfo object (like {@link ThreadInfo}). Therefore it is convenient to
- * keep such information at one place.
+ * keep such information at one place.<br/>
+ * 
+ * Supports lazy load of the infoObject in case it's null.
  * 
  * @author stepan
  * 
@@ -27,16 +28,29 @@ import java.lang.ref.WeakReference;
  */
 public abstract class InfoObjectId<T> extends ObjectId {
 
+	/**
+	 * Constructs Info Object ID instance.
+	 * 
+	 * @param tag
+	 *            The Tag
+	 * @param id
+	 *            The identifier
+	 * @param object
+	 *            The instance in SuT this Object ID stands for
+	 * @param infoObject
+	 *            Info Object or null if lazy load is desired
+	 */
 	public InfoObjectId(Tag tag, long id, ElementInfo object, T infoObject) {
 		super(tag, id, object);
 
 		infoObjectReference = new WeakReference<T>(infoObject);
 	}
 
-	private WeakReference<T> infoObjectReference;
+	protected WeakReference<T> infoObjectReference;
 
 	/**
 	 * Gets the <tt>InfoObject</tt> that is bound to this identifier.<br/>
+	 * Tries to lazy load the object if it is null.
 	 * 
 	 * @return <tt>InfoObject</tt> instance
 	 * @throws InvalidObject
@@ -45,9 +59,23 @@ public abstract class InfoObjectId<T> extends ObjectId {
 	public T getInfoObject() throws InvalidObject {
 		T infoObject = infoObjectReference.get();
 		if (infoObject == null) {
-			throw new InvalidObject("ObjectId: " + this);
+			infoObject = resolveInfoObject();
+			if (infoObject != null) {
+				infoObjectReference = new WeakReference<T>(infoObject);
+			} else {
+				throw new InvalidObject("ObjectId: " + this);
+			}
 		}
 		return infoObject;
 	}
+
+	/**
+	 * The way how to resolve the info object by the subclass for use in
+	 * {@link InfoObjectId#getInfoObject()} in case lazy load is performed.
+	 * 
+	 * @return
+	 * @throws InvalidObject
+	 */
+	abstract protected T resolveInfoObject() throws InvalidObject;
 
 }
