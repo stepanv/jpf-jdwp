@@ -271,7 +271,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		lastInstruction = instructionToExecute;
 	}
 
-	@Override
 	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		System.out.println("EXCEPTOIN: UNCAUGHT THROWN");
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
@@ -282,7 +281,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
-	@Override
 	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
 		System.out.println("EXCEPTION: CAUGHT THROWN");
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
@@ -305,6 +303,14 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		System.out.println("EXCEPTION: THROWN");
+		StackFrame handlerFrame = currentThread.getPendingExceptionHandlerFrame();
+		ExceptionHandler exceptionHandler = currentThread.getPendingExceptionMatchingHandler();
+		
+		if (handlerFrame != null && exceptionHandler != null) {
+			caughtExceptionThrown(vm, currentThread, thrownException, handlerFrame, exceptionHandler);
+		} else {
+			uncaughtExceptionThrown(vm, currentThread, thrownException);
+		}
 	}
 
 	@Override
