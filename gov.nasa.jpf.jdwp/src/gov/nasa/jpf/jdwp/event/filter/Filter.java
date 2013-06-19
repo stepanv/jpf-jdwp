@@ -95,8 +95,8 @@ public abstract class Filter<T extends Event> {
 			@Override
 			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
 				ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-				boolean uncaught = bytes.get() != 0;
 				boolean caught = bytes.get() != 0;
+				boolean uncaught = bytes.get() != 0;
 				return new ExceptionOnlyFilter(exceptionOrNull, caught, uncaught);
 			}
 		},

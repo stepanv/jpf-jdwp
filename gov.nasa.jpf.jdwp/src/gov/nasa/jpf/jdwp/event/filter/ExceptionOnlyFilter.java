@@ -3,7 +3,6 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -60,20 +59,37 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 		}
 		return event.visit(this);
 	}
-	
+
 	public boolean matches(ExceptionEvent event) {
-		
-		ElementInfo exception = event.getException();
-		
-		// TODO do something with caught and uncaught too!
-		
-		ClassInfo exceptionClassInfo = exception.getClassInfo();
-		
-		try {
-			return exceptionClassInfo.equals(exceptionOrNull.get());
-		} catch (InvalidObject e) {
+
+		// we don't want caught exceptions
+		if (event.isCaught() && !caught) {
 			return false;
-			// TODO we don't want to throw errors?
+		}
+
+		// we don't want uncaught exceptions
+		if (!event.isCaught() && !uncaught) {
+			return false;
+		}
+
+		if (exceptionOrNull == null) {
+			// return exception of all types as the specs states
+			// it's not clear though whether we're able to receive null object
+			// for ReferenceTypeId
+			// TODO test null object here
+			return true;
+		}
+
+		ElementInfo exception = event.getException();
+		ClassInfo exceptionClassInfo = exception.getClassInfo();
+
+		try {
+			// restricts the reported exception events to exceptions of the
+			// given type or any of its !!subtypes!!
+			return exceptionClassInfo.isInstanceOf(exceptionOrNull.get());
+		} catch (InvalidObject e) {
+			// exceptionOrNull stands for not known (GCed) type hence is ineffective
+			return false;
 		}
 	}
 

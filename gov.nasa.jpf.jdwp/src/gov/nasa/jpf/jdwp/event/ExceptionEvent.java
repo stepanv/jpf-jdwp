@@ -30,9 +30,9 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	private Location catchLocation;
 
 	/**
-	 * Creates Exception event.
-	 * It's interesting that catchLocation is not used by JDT debugger (Eclipse) at all.
-	 * It could be interesting to check how other debuggers use catchLocation attribute.
+	 * Creates Exception event. It's interesting that catchLocation is not used
+	 * by JDT debugger (Eclipse) at all. It could be interesting to check how
+	 * other debuggers use catchLocation attribute.
 	 * 
 	 * @param threadInfo
 	 *            Thread with pending exception
@@ -42,12 +42,13 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	 * @param exception
 	 *            Thrown exception
 	 * @param catchLocation
-	 *            Location of catch, or 0 if not caught. An exception is
-	 *            considered to be caught if, at the point of the throw, the
-	 *            current location is dynamically enclosed in a try statement
-	 *            that handles the exception. (See the JVM specification for
-	 *            details). If there is such a try statement, the catch location
-	 *            is the first location in the appropriate catch clause.<br/>
+	 *            Location of catch, or null (0 sent across JDWP) if not caught.
+	 *            An exception is considered to be caught if, at the point of
+	 *            the throw, the current location is dynamically enclosed in a
+	 *            try statement that handles the exception. (See the JVM
+	 *            specification for details). If there is such a try statement,
+	 *            the catch location is the first location in the appropriate
+	 *            catch clause.<br/>
 	 * 
 	 *            If there are native methods in the call stack at the time of
 	 *            the exception, there are important restrictions to note about
@@ -83,8 +84,10 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 		ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(exception);
 		objectId.writeTagged(os);
 		if (catchLocation == null) {
-			// TODO when location is null, we need to send twice null long ... do it a better way?
-			// I checked the Eclipse debugger and because of that I know what is it about
+			// TODO when location is null, we need to send twice null long ...
+			// do it a better way?
+			// I checked the Eclipse debugger and because of that I know what is
+			// it about
 			os.writeLong(0);
 			os.writeLong(0);
 		} else {
@@ -96,9 +99,13 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 	public boolean visit(ExceptionOnlyFilter exceptionOnlyFilter) {
 		return exceptionOnlyFilter.matches(this);
 	}
-	
+
 	public ElementInfo getException() {
 		return exception;
+	}
+	
+	public boolean isCaught() {
+		return catchLocation != null;
 	}
 
 }
