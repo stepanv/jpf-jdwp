@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp;
 
-
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
@@ -17,9 +16,10 @@ import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.GETFIELD;
 import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
@@ -43,94 +43,114 @@ import java.util.Arrays;
 import java.util.List;
 
 public class JDWPListener extends ListenerAdapter implements VMListener {
-	
-	private class FieldVisitor extends InstructionVisitorAdapter {
 
+	private class FieldVisitor extends InstructionVisitorAdapter {
 
 		private ThreadId threadId;
 		private JdwpObjectManager objectManager;
 
-		private void fieldAccess(FieldInstruction fieldInstruction) {
-			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
-			
+		/**
+		 * Field access handler for standard instances and also statics of any
+		 * class.
+		 * 
+		 * @param fieldInstruction
+		 *            Instruction that has to be investigated
+		 * @param objectBeingAccessed
+		 *            Object being accessed or null for statics
+		 */
+		private void fieldAccess(FieldInstruction fieldInstruction, ObjectId objectBeingAccessed) {
+
 			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
 			Event event;
 			try {
-				event = new FieldAccessEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull);
+				event = new FieldAccessEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo,
+						objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectBeingAccessed);
 				dispatchEvent(event);
 			} catch (InvalidObject e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
+				// This shouldn't happen - we need ThreadInfo
+				throw new RuntimeException(e);
 			}
 		}
-		
-		private void fieldModification(FieldInstruction fieldInstruction) {
+
+		/**
+		 * Field modification handler for standard instances and also statics of
+		 * any class.
+		 * 
+		 * @param fieldInstruction
+		 *            Instruction that has to be investigated
+		 * @param objectBeingAccessed
+		 *            Object being accessed or null for statics
+		 */
+		private void fieldModification(FieldInstruction fieldInstruction, ObjectId objectBeingAccessed) {
 			ThreadInfo threadInfo;
 			try {
 				threadInfo = threadId.getInfoObject();
 			} catch (InvalidObject e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
+				// This shouldn't happen - we need ThreadInfo
+				throw new RuntimeException(e);
 			}
 			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
-			
+
 			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
 			Tag tag = Tag.classInfoToTag(fieldClassInfo);
 			Value valueToBe = tag.peekValue(topStackFrame);
-			ObjectId objectOrNull = objectManager.getObjectId(fieldInstruction.getLastElementInfo());
 
 			Event event;
 			try {
-				//System.out.println("Creating field modification event for: " + fieldInstruction + ", file: " + fieldInstruction.getFileLocation());
-				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo, objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectOrNull, valueToBe);
+				// System.out.println("Creating field modification event for: "
+				// + fieldInstruction + ", file: " +
+				// fieldInstruction.getFileLocation());
+				event = new FieldModificationEvent(threadId, Location.factorySafe(fieldInstruction, threadId.getInfoObject()), fieldClassInfo,
+						objectManager.getFieldId(fieldInstruction.getFieldInfo()), objectBeingAccessed, valueToBe);
 				dispatchEvent(event);
 			} catch (InvalidObject e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 		@Override
 		public void visit(GETFIELD ins) {
-			fieldAccess(ins);
+			fieldAccess(ins, objectManager.getObjectId(ins.getLastElementInfo()));
 		}
 
 		@Override
 		public void visit(PUTFIELD ins) {
-			fieldModification(ins);
+			fieldModification(ins, objectManager.getObjectId(ins.getLastElementInfo()));
 		}
 
 		@Override
 		public void visit(GETSTATIC ins) {
-			fieldAccess(ins);
+			fieldAccess(ins, NullObjectId.getInstance());
 		}
 
 		@Override
 		public void visit(PUTSTATIC ins) {
-			fieldModification(ins);
+
+			fieldModification(ins, NullObjectId.getInstance());
 		}
 
 		public void initalize(ThreadInfo currentThread) {
 			this.objectManager = JdwpObjectManager.getInstance();
 			this.threadId = objectManager.getThreadId(currentThread);
 		}
-		
+
 	}
 
 	private VirtualMachine virtualMachine;
 	private FieldVisitor fieldVisitor;
-	
+
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
 		this.virtualMachine = virtualMachine;
 		this.fieldVisitor = new FieldVisitor();
 	}
-	
+
 	@Override
-	public void methodEntered (VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
+	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		virtualMachine.started(vm, postponedLoadedClasses);
-		
+
 		Instruction instruction = enteredMethod.getInstruction(0);
 		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
 			ThreadId threadId = (ThreadId) JdwpObjectManager.getInstance().getThreadId(currentThread);
@@ -142,37 +162,45 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	@Override
 	public void threadStarted(VM vm, ThreadInfo startedThread) {
 		System.out.println(Arrays.toString(VM.getVM().getLiveThreads()));
-		
+
 		for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
 			System.out.println("threadInfo: " + threadInfo + " ... dynamic object: " + threadInfo.getThreadObject());
 			System.out.println(JdwpObjectManager.getInstance().getThreadId(threadInfo));
 			System.out.println(JdwpObjectManager.getInstance().getObjectId(threadInfo.getThreadObject()));
 		}
-	
+
 		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
-		
+
 		System.out.println("STARTED THREAD: " + startedThread);
-		
+
 		dispatchEvent(threadStartEvent);
 	}
 
 	@Override
 	public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
-		// TODO [for PJA] there is not relation 1:1 between thread start and thread death events. (e.g. one thread can die multiple times) and JDI doesn't know what to do about that.
-		//if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0) {
-			//ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi, vm.getLastThreadInfo(), vmJdi.getEventRequestManager().threadDeathRequests().get(0));
-			//vmJdi.addEvent(td);
-		//}
+		// TODO [for PJA] there is not relation 1:1 between thread start and
+		// thread death events. (e.g. one thread can die multiple times) and JDI
+		// doesn't know what to do about that.
+		// if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0)
+		// {
+		// ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi,
+		// vm.getLastThreadInfo(),
+		// vmJdi.getEventRequestManager().threadDeathRequests().get(0));
+		// vmJdi.addEvent(td);
+		// }
 	}
-	
+
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
 	private Instruction lastInstruction;
+
 	@Override
 	public void classLoaded(VM vm, ClassInfo loadedClass) {
 		virtualMachine.notifyClassLoaded(loadedClass);
-		// TODO [for PJA] This is weird.. According to JDWP we should sent threadID where this class loaded event occurred
-		// but in case of JPF it doesn't have a system thread 
-		// (which caused class load before the main thread was executed) .. does it?
+		// TODO [for PJA] This is weird.. According to JDWP we should sent
+		// threadID where this class loaded event occurred
+		// but in case of JPF it doesn't have a system thread
+		// (which caused class load before the main thread was executed) .. does
+		// it?
 		if (vm.getCurrentThread() != null && vm.isInitialized()) {
 			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
 			dispatchEvent(classPrepareEvent);
@@ -181,47 +209,68 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			postponedLoadedClasses.add(loadedClass);
 		}
 	}
-	
+
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 			ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(vm.getCurrentThread());
-			
-			
-			// TODO Breakpoint events and step events are supposed to be in one composite event if occurred together!
+
+			// ByteBuffer bytes = ByteBuffer.allocate(8);
+			// bytes.putLong(new Long(761));
+			// bytes.rewind();
+			// try {
+			// ObjectId objectId =
+			// gov.nasa.jpf.jdwp.id.JdwpObjectManager.getInstance().readObjectId(bytes);
+			// ElementInfo ei = objectId.get();
+			//
+			// System.out.println(ei);
+			// } catch (JdwpError e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (NullPointerException npe) {
+			// npe.printStackTrace();
+			// }
+
+			// TODO Breakpoint events and step events are supposed to be in one
+			// composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
-				//System.out.println("Instruction: '" + instructionToExecute + "' args: " + ((InvokeInstruction)instructionToExecute).arguments +" line: " + instructionToExecute.getFileLocation());
+				// System.out.println("Instruction: '" + instructionToExecute +
+				// "' args: " +
+				// ((InvokeInstruction)instructionToExecute).arguments
+				// +" line: " + instructionToExecute.getFileLocation());
 			} else {
-				//System.out.println("Instruction: '" + instructionToExecute + "' line: " + instructionToExecute.getFileLocation());	
+				// System.out.println("Instruction: '" + instructionToExecute +
+				// "' line: " + instructionToExecute.getFileLocation());
 			}
-			
+
 			BreakpointEvent breakpointEvent = new BreakpointEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(breakpointEvent);
-			
+
 			if (instructionToExecute instanceof FieldInstruction) {
 				fieldVisitor.initalize(currentThread);
-				((FieldInstruction)instructionToExecute).accept(fieldVisitor);
+				((FieldInstruction) instructionToExecute).accept(fieldVisitor);
 			}
-			
+
 			ClassInfo classInfo = instructionToExecute.getMethodInfo().getClassInfo();
 			for (FieldInfo fieldInfo : classInfo.getInstanceFields()) {
 				int fieldIndex = fieldInfo.getFieldIndex();
-				//classInfo.get
+				// classInfo.get
 			}
-			
-			//new FieldAccessEvent(threadId, location, fieldType, fieldId, objectOrNull)
-			
-			//new FieldModificationEvent(threadId, location, fieldType, fieldId, objectOrNull, valueToBe)
-			
-			//virtualMachine.conditionallyTriggerStepEvent(vm);
+
+			// new FieldAccessEvent(threadId, location, fieldType, fieldId,
+			// objectOrNull)
+
+			// new FieldModificationEvent(threadId, location, fieldType,
+			// fieldId, objectOrNull, valueToBe)
+
+			// virtualMachine.conditionallyTriggerStepEvent(vm);
 			SingleStepEvent singleStepEvent = new SingleStepEvent(threadId, Location.factory(instructionToExecute));
 			dispatchEvent(singleStepEvent);
 		}
 		lastInstruction = instructionToExecute;
 	}
-	
-	
+
 	@Override
 	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		System.out.println("EXCEPTOIN: UNCAUGHT THROWN");
@@ -233,7 +282,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
-	
 	@Override
 	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
 		System.out.println("EXCEPTION: CAUGHT THROWN");
@@ -241,17 +289,19 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		Instruction instruction = vm.getInstruction();
 		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
 		int handlerInstructionIndex = matchingHandler.getHandler();
-		
+
 		Instruction catchInstruction = handlerMethodInfo.getInstructionAt(handlerInstructionIndex);
-		
+
 		if (instruction != null && catchInstruction != null) {
-			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException, Location.factorySafe(catchInstruction, currentThread));
+			ExceptionEvent exceptionEvent = new ExceptionEvent(threadId, Location.factorySafe(instruction, currentThread), thrownException,
+					Location.factorySafe(catchInstruction, currentThread));
 			dispatchEvent(exceptionEvent);
 		} else {
-			// TODO what if we get an exception without possibility to get a position?
+			// TODO what if we get an exception without possibility to get a
+			// position?
 		}
 	}
-	
+
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		System.out.println("EXCEPTION: THROWN");
@@ -263,20 +313,20 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 
 	private void dispatchEvent(Event event) {
-//		for (EventRequest request : requests) {
-//			if (request.matches(event)) {
-//				try {
-//					
-//					Jdwp.sendEvent(request, event);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
+		// for (EventRequest request : requests) {
+		// if (request.matches(event)) {
+		// try {
+		//
+		// Jdwp.sendEvent(request, event);
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// }
 		synchronized (virtualMachine) {
 			Jdwp.notify(event);
 		}
-		
+
 	}
-	
+
 }
