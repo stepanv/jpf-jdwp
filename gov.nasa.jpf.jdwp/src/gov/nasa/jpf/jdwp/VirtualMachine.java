@@ -172,14 +172,14 @@ public class VirtualMachine {
 		 */
 		public static final boolean CAN_GET_SYNTHETIC_ATTRIBUTE = false;
 
-		/** Can the VM get the owned monitors infornation for a thread? */
-		public static final boolean CAN_GET_OWNED_MONITOR_INFO = false;
+		/** Can the VM get the owned monitors information for a thread? */
+		public static final boolean CAN_GET_OWNED_MONITOR_INFO = true;
 
 		/** Can the VM get the current contended monitor of a thread? */
-		public static final boolean CAN_GET_CURRENT_CONTENDED_MONITOR = false;
+		public static final boolean CAN_GET_CURRENT_CONTENDED_MONITOR = true;
 
 		/** Can the VM get the monitor information for a given object? */
-		public static final boolean CAN_GET_MONITOR_INFO = false;
+		public static final boolean CAN_GET_MONITOR_INFO = true;
 	}
 
 	public static class CapabilitiesNew {

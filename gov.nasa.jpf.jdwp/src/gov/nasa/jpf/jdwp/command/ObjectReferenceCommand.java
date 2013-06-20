@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -7,6 +8,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -15,6 +17,7 @@ import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.Monitor;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -67,7 +70,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				// field.setAccessible(true); // Might be a private field
 				Object object = field.getValueObject(obj.getFields());
 				Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
-				
+
 				// TODO write tagged by default (see TODO.txt)
 				val.writeTagged(os);
 			}
@@ -89,25 +92,55 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ElementInfo obj = (DynamicElementInfo) objectId.get();
 			int values = bytes.getInt();
-			
+
 			for (int i = 0; i < values; ++i) {
 				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
 				FieldInfo fieldInfo = fieldId.get();
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);
-				
+
 				valueUntagged.modify(obj.getFields(), fieldInfo.getFieldIndex());
-				
+
 			}
 
 		}
 	},
+
+	/**
+	 * Returns monitor information for an object. All threads int the VM must be
+	 * suspended.Requires {@link CapabilitiesNew#CAN_GET_MONITOR_INFO}
+	 * capability.
+	 */
 	MONITORINFO(5) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			ElementInfo elementInfo = objectId.get();
+			Monitor monitor = elementInfo.getMonitor();
+			
+			// The monitor owner, or null if it is not currently owned.  
+			ThreadInfo ownerThreadInfo = monitor.getLockingThread();
+			if (ownerThreadInfo == null) {
+				// is not currently owned
+				NullObjectId.instantWrite(os);
+			} else {
+				ThreadId ownerThreadId = contextProvider.getObjectManager().getThreadId(ownerThreadInfo);
+				ownerThreadId.write(os);
+			}
+			
+			// The number of times the monitor has been entered.  
+			int entryCount = monitor.getLockCount();
+			os.writeInt(entryCount);
+			
+			// The number of threads that are waiting for the monitor 0 if there is no current owner  
+			int waiters = monitor.getNumberOfWaitingThreads();
+			os.writeInt(waiters);
+			
+			for (ThreadInfo waitingThread : monitor.getWaitingThreads()) {
+				// A thread waiting for this monitor.  
+				ThreadId threadId = contextProvider.getObjectManager().getThreadId(waitingThread);
+				threadId.write(os);
+			}
 		}
 	},
 	INVOKEMETHOD(6) {

@@ -1,1 +1,3 @@
 Jaky je rozdil mezi Heap.getModifiable a Heap.get?
+
+Proc se pouziva ElementInfo i kdyz ve spouste pripadu tam MUSI byt DynamicElementInfo?

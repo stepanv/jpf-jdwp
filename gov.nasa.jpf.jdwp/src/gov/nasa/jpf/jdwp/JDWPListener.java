@@ -26,7 +26,6 @@ import gov.nasa.jpf.jvm.bytecode.PUTSTATIC;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
-import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -160,7 +159,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
-	private Instruction lastInstruction;
 
 	@Override
 	public void classLoaded(VM vm, ClassInfo loadedClass) {
@@ -184,22 +182,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 
-			// ByteBuffer bytes = ByteBuffer.allocate(8);
-			// bytes.putLong(new Long(761));
-			// bytes.rewind();
-			// try {
-			// ObjectId objectId =
-			// gov.nasa.jpf.jdwp.id.JdwpObjectManager.getInstance().readObjectId(bytes);
-			// ElementInfo ei = objectId.get();
-			//
-			// System.out.println(ei);
-			// } catch (JdwpError e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (NullPointerException npe) {
-			// npe.printStackTrace();
-			// }
-
 			// TODO Breakpoint events and step events are supposed to be in one
 			// composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
@@ -211,8 +193,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 				// System.out.println("Instruction: '" + instructionToExecute +
 				// "' line: " + instructionToExecute.getFileLocation());
 			}
+			Location locationOfInstructionToExecute = Location.factory(instructionToExecute);
 
-			BreakpointEvent breakpointEvent = new BreakpointEvent(currentThread, Location.factory(instructionToExecute));
+			BreakpointEvent breakpointEvent = new BreakpointEvent(currentThread, locationOfInstructionToExecute);
 			dispatchEvent(breakpointEvent);
 
 			if (instructionToExecute instanceof FieldInstruction) {
@@ -220,23 +203,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 				((FieldInstruction) instructionToExecute).accept(fieldVisitor);
 			}
 
-			ClassInfo classInfo = instructionToExecute.getMethodInfo().getClassInfo();
-			for (FieldInfo fieldInfo : classInfo.getInstanceFields()) {
-				int fieldIndex = fieldInfo.getFieldIndex();
-				// classInfo.get
-			}
-
-			// new FieldAccessEvent(threadId, location, fieldType, fieldId,
-			// objectOrNull)
-
-			// new FieldModificationEvent(threadId, location, fieldType,
-			// fieldId, objectOrNull, valueToBe)
-
-			// virtualMachine.conditionallyTriggerStepEvent(vm);
-			SingleStepEvent singleStepEvent = new SingleStepEvent(currentThread, Location.factory(instructionToExecute));
+			SingleStepEvent singleStepEvent = new SingleStepEvent(currentThread, locationOfInstructionToExecute);
 			dispatchEvent(singleStepEvent);
 		}
-		lastInstruction = instructionToExecute;
 	}
 
 	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {

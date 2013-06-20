@@ -204,6 +204,7 @@ public abstract class PrimitiveValue implements Value {
 			protected Value value(Fields fields, int index) {
 				return new BooleanValue(fields.getBooleanValue(index));
 			}
+
 			@Override
 			public Value peekValue(StackFrame stackFrame) {
 				return new BooleanValue(stackFrame.peek() != 0);
@@ -228,17 +229,63 @@ public abstract class PrimitiveValue implements Value {
 			this.arrayClazz = arrayClazz;
 		}
 
+		/**
+		 * Transforms an object into the {@link Value} instance. <br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * 
+		 * @param object
+		 *            Object to transform.
+		 * @return Value instance.
+		 */
 		public Value value(Object object) {
-			return JdwpObjectManager.getInstance().getObjectId((ElementInfo)object);
+			return JdwpObjectManager.getInstance().getObjectId((ElementInfo) object);
 		}
 
+		/**
+		 * Peeks the {@link Value} instance from the stack frame.<br/>
+		 * This is the common/default implementation.<br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * 
+		 * @param stackFrame
+		 *            Where to peek the value.
+		 * @return Value instance
+		 */
 		public Value peekValue(StackFrame stackFrame) {
 			ElementInfo result = VM.getVM().getHeap().get(stackFrame.peek());
 			return JdwpObjectManager.getInstance().getObjectId(result);
 		}
 
+		/**
+		 * Reads the {@link Value} instance from the byte buffer.<br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * 
+		 * @param bytes
+		 *            Source byte buffer
+		 * @return Value instance
+		 * @throws JdwpError
+		 */
 		public Value readValue(ByteBuffer bytes) throws JdwpError {
 			return JdwpObjectManager.getInstance().readObjectId(bytes);
+		}
+
+		/**
+		 * Designed for primitive types only.<br/>
+		 * Gets {@link Value} instance of primitive type for given
+		 * {@link Fields} instance at given index.<br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * 
+		 * @param fields
+		 *            The fields
+		 * @param index
+		 *            The index where to look for the primitive type
+		 * @return Value instance
+		 */
+		protected Value value(Fields fields, int index) {
+			throw new RuntimeException("value get for Fields instance: " + fields + " is not by design implemented. This shouldn't happened!");
 		}
 
 		private static final ReverseEnumMap<Byte, Tag> map = new ReverseEnumMap<Byte, Tag>(Tag.class);
@@ -263,10 +310,6 @@ public abstract class PrimitiveValue implements Value {
 
 		public static Value taggedObjectToValue(byte tagByte, Object object) throws JdwpError {
 			return map.get(tagByte).value(object);
-		}
-
-		protected Value value(Fields fields, int index) {
-			throw new RuntimeException("value get for Fields instance: " + fields + " is not by design implemented. This shouldn't happened!");
 		}
 
 		public static Tag classInfoToTag(ClassInfo classInfo) {

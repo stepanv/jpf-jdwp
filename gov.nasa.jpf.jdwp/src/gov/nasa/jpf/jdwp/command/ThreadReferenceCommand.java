@@ -1,9 +1,12 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FrameId;
+import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.SuspendStatus;
@@ -11,6 +14,7 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -62,15 +66,16 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 			ThreadStatus threadStatus = threadStatus(threadInfo);
 
 			os.writeInt(threadStatus.identifier());
-			
-			// This is how it is implemented in Harmony and OpenJDK (0 if not suspended)
+
+			// This is how it is implemented in Harmony and OpenJDK (0 if not
+			// suspended)
 			// Although the JDWP specification isn't clear about this
 			int suspendStatus = 0;
 			if (contextProvider.getVirtualMachine().isAllThreadsSuspended()) {
 				// There's only one possible SuspendStatus...
 				suspendStatus = SuspendStatus.SUSPEND_STATUS_SUSPENDED.identifier();
 			}
-			
+
 			os.writeInt(suspendStatus);
 			System.out.println("status: " + threadStatus + ", suspend status: " + suspendStatus);
 
@@ -99,7 +104,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 				JdwpError {
 			int startFrame = bytes.getInt();
 			int length = bytes.getInt();
-			
+
 			List<StackFrame> frames = VirtualMachineHelper.getFrames(threadInfo, startFrame, length);
 			os.writeInt(frames.size());
 			for (int i = 0; i < frames.size(); i++) {
@@ -110,7 +115,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 
 				Location location = Location.factorySafe(frame.getPC(), threadInfo);
 				location.write(os);
-				
+
 				System.out.println("Frame: " + frameId + ", StackFrame" + frame + ", Location: " + location);
 			}
 
@@ -122,25 +127,52 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 				JdwpError {
 			int frameCount = VirtualMachineHelper.getFrameCount(threadInfo);
 			os.writeInt(frameCount);
-			
+
 			System.out.println("writing frame count: " + frameCount);
 
 		}
 	},
+	/**
+	 * Returns the objects whose monitors have been entered by this thread. The
+	 * thread must be suspended, and the returned information is relevant only
+	 * while the thread is suspended. Requires
+	 * {@link CapabilitiesNew#CAN_GET_OWNED_MONITOR_INFO} capability.
+	 */
 	OWNEDMONITORS(8) {
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			// TODO verify the thread is suspended - we need to redesign thread suspension
+			
+			JdwpObjectManager objectManager = contextProvider.getObjectManager();
+			Heap heap = contextProvider.getVM().getHeap();
+			
+			// write number of owned monitors
+			os.writeInt(threadInfo.getLockedObjectReferences().length);
+			
+			for (int objRef : threadInfo.getLockedObjectReferences()) {
+				ElementInfo elementInfo = heap.get(objRef);
+				ObjectId objectId = objectManager.getObjectId(elementInfo);
+				objectId.writeTagged(os);
+			}
 		}
 	},
+	/**
+	 * Returns the object, if any, for which this thread is waiting. The thread
+	 * may be waiting to enter a monitor, or it may be waiting, via the
+	 * java.lang.Object.wait method, for another thread to invoke the notify
+	 * method. The thread must be suspended, and the returned information is
+	 * relevant only while the thread is suspended. Requires
+	 * {@link CapabilitiesNew#CAN_GET_CURRENT_CONTENDED_MONITOR} capability.
+	 */
 	CURRENTCONTENDEDMONITOR(9) {
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			// TODO verify the thread is suspended - we need to redesign thread suspension
+			
+			ObjectId objectId = contextProvider.getObjectManager().getObjectId(threadInfo.getLockObject());
+			objectId.writeTagged(os);
 		}
 	},
 	STOP(10) {
