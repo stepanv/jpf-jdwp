@@ -63,10 +63,22 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 
 		}
 	},
+
+	/**
+	 * Returns variable information for the method, including generic signatures
+	 * for the variables. The variable table includes arguments and locals
+	 * declared within the method. For instance methods, the "this" reference is
+	 * included in the table. Also, synthetic variables may be present. Generic
+	 * signatures are described in the signature attribute section in the Java
+	 * Virtual Machine Specification, 3rd Edition.
+	 * 
+	 * @since JDWP version 1.5
+	 */
 	VARIABLETABLEWITHGENERIC(5) {
 		@Override
 		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			VariableTable variableTable = new VariableTable(methodInfo);
+			variableTable.writeGeneric(os);
 
 		}
 	};
