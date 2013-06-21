@@ -250,7 +250,19 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	ALLCLASSESWITHGENERIC(20) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			Collection classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
+			os.writeInt(classes.size());
+
+			Iterator iter = classes.iterator();
+			while (iter.hasNext()) {
+				ClassInfo clazz = (ClassInfo) iter.next();
+				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+				id.writeTagged(os);
+				JdwpString.write(clazz.getSignature(), os);
+				JdwpString.writeNullAsEmpty(clazz.getGenericSignature(), os);
+				// TODO [for PJA] do we have class statuses in JPF?
+				ClassStatus.VERIFIED.write(os);
+			}
 
 		}
 	};
