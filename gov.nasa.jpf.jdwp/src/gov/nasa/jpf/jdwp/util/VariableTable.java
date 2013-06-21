@@ -42,13 +42,42 @@ public class VariableTable {
 		// I'm so unsure what exactly this means ... just TODO - has to be
 		// tested
 	}
-	
-	public void write (DataOutputStream os) throws IOException {
+
+	/**
+	 * Writes the variable table to the given output stream
+	 * 
+	 * @param os
+	 *            The output stream
+	 * @throws IOException
+	 *             If I/O error occurs
+	 */
+	public void write(DataOutputStream os) throws IOException {
+		write(os, false);
+	}
+
+	/**
+	 * Writes the variable table including generic information to the given
+	 * output stream
+	 * 
+	 * @param os
+	 *            The output stream
+	 * @throws IOException
+	 *             If I/O error occurs
+	 */
+	public void writeGeneric(DataOutputStream os) throws IOException {
+		write(os, true);
+	}
+
+	private void write(DataOutputStream os, boolean withGeneric) throws IOException {
 		os.writeInt(argCnt);
 		os.writeInt(slots.size());
-		
+
 		for (Slot slot : slots) {
-			slot.write(os);
+			if (withGeneric) {
+				slot.writeGeneric(os);
+			} else {
+				slot.write(os);
+			}
 		}
 	}
 
@@ -70,6 +99,12 @@ public class VariableTable {
 		 * The variable type's JNI signature.
 		 */
 		private String signature;
+
+		/**
+		 * The variable type's generic signature or an empty string if there is
+		 * none.
+		 */
+		public String genericSignature;
 
 		/**
 		 * Unsigned value used in conjunction with <code>codeIndex</code>.
@@ -100,11 +135,12 @@ public class VariableTable {
 			codeIndex = startInstruction.getInstructionIndex();
 			name = localVarInfo.getName();
 			signature = localVarInfo.getSignature();
+			genericSignature = localVarInfo.getGenericSignature();
 			length = (int) (endInstruction.getInstructionIndex() - codeIndex) + 1;
 			slot = localVarInfo.getSlotIndex();
 
 			System.out.println("VARIABLE TABLE: index: " + codeIndex + " slot: " + slot + " length: " + length + " name: " + name + " ... localVarInfo: "
-					+ localVarInfo);
+					+ localVarInfo + ", generic signature: " + genericSignature);
 		}
 
 		/**
@@ -178,12 +214,32 @@ public class VariableTable {
 		 *             If an I/O error occurs
 		 */
 		public void write(DataOutputStream os) throws IOException {
+			write(os, false);
+		}
+
+		/**
+		 * Outputs the slot including generic information into the stream.
+		 * 
+		 * @param os
+		 *            The stream where to output this slot.
+		 * @throws IOException
+		 *             If an I/O error occurs
+		 */
+		public void writeGeneric(DataOutputStream os) throws IOException {
+			write(os, true);
+		}
+
+		private void write(DataOutputStream os, boolean withGeneric) throws IOException {
 			os.writeLong(codeIndex);
 			JdwpString.write(name, os);
 			JdwpString.write(signature, os);
+			if (withGeneric) {
+				JdwpString.writeNullAsEmpty(genericSignature, os);
+			}
 			os.writeInt(length);
 			os.writeInt(slot);
 		}
+
 	}
 
 }
