@@ -11,6 +11,14 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
+ * This class implements corresponding value from the JDWP specification.<br/>
+ * By default value is sent across JDWP including the {@link Tag} byte. To the
+ * contrary, standard IDs are sent by default without the {@link Tag} byte. To
+ * avoid confusion {@link Value} doesn't declare <tt>write</tt> method and thus
+ * a developer must decide between {@link Value#writeTagged(DataOutputStream)}
+ * and {@link Value#writeUntagged(DataOutputStream)} explicitly, according to
+ * the specification.
+ * 
  * <p>
  * <h2>JDWP Specification</h2>
  * A value retrieved from the target VM. The first byte is a signature byte
@@ -25,9 +33,27 @@ import java.io.IOException;
  * 
  */
 public interface Value {
-	public void write(DataOutputStream os) throws IOException;
-
+	/**
+	 * Writes the value including the {@link Tag} as a first byte which is a
+	 * signature.<br/>
+	 * Values are written tagged by default.
+	 * 
+	 * @param os
+	 *            Output stream
+	 * @throws IOException
+	 *             If I/O error occurs
+	 */
 	public void writeTagged(DataOutputStream os) throws IOException;
+
+	/**
+	 * Writes the plain value to the output stream.<br/>
+	 * Values are written untagged rarely, as the JDWP specification states, if the
+	 * signature is known from the context as it is with arrays.
+	 * 
+	 * @param os
+	 * @throws IOException
+	 */
+	public void writeUntagged(DataOutputStream os) throws IOException;
 
 	public void push(StackFrame frame) throws InvalidObject;
 

@@ -102,7 +102,6 @@ public class VirtualMachineHelper {
 		}
 
 		public void write(DataOutputStream os) throws IOException {
-			// TODO write tagged by default (see TODO.txt)
 			value.writeTagged(os);
 			exception.writeTagged(os);
 		}

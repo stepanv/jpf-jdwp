@@ -343,11 +343,13 @@ public abstract class PrimitiveValue implements Value {
 		this.tag = tag;
 	}
 
-	public abstract void write(DataOutputStream os) throws IOException;
+	@Override
+	public abstract void writeUntagged(DataOutputStream os) throws IOException;
 
+	@Override
 	public void writeTagged(DataOutputStream os) throws IOException {
 		os.writeByte(tag.tagId);
-		write(os);
+		writeUntagged(os);
 	}
 
 }

@@ -16,7 +16,7 @@ public class ByteValue extends PrimitiveValue {
 	}
 
 	@Override
-	public void write(DataOutputStream os) throws IOException {
+	public void writeUntagged(DataOutputStream os) throws IOException {
 		os.writeByte(value);
 	}
 

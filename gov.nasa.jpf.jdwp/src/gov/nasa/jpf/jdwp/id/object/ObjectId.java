@@ -1,5 +1,8 @@
 package gov.nasa.jpf.jdwp.id.object;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -181,5 +184,10 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 			// the JDWP Specification
 			return new ObjectId(Tag.OBJECT, id, object);
 		}
+	}
+
+	@Override
+	public void writeUntagged(DataOutputStream os) throws IOException {
+		write(os);
 	}
 }

@@ -29,24 +29,10 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	REFERENCETYPE(1) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			Object obj = objectId.get();
-
-			ClassInfo clazz = null;
-			if (obj instanceof ThreadInfo) {
-				clazz = ((ThreadInfo) obj).getClassInfo();
-			} else if (obj instanceof StackFrame) {
-				clazz = ((StackFrame) obj).getClassInfo();
-			} else if (obj instanceof ElementInfo) {
-				clazz = ((ElementInfo) obj).getClassInfo();
-			} else {
-				throw new RuntimeException("object: ." + obj + "'(class: " + obj.getClass() + ") needs an reference type implementation"); // TODO
-																																			// complete
-																																			// the
-																																			// implementation
-			}
-			System.out.println(clazz);
-			// throw new RuntimeException("not implemented");
-			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(clazz);
+			ElementInfo elementInfo = objectId.get();
+			ClassInfo classInfo = elementInfo.getClassInfo();
+			
+			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(classInfo);
 			refId.writeTagged(os);
 		}
 	},
@@ -70,8 +56,6 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				// field.setAccessible(true); // Might be a private field
 				Object object = field.getValueObject(obj.getFields());
 				Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
-
-				// TODO write tagged by default (see TODO.txt)
 				val.writeTagged(os);
 			}
 

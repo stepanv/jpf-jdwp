@@ -1,7 +1,16 @@
-1. ObjectId.write() should be untagged contrary to Value.write() which is tagged!
+DONE 1. ObjectId.write() should be untagged contrary to Value.write() which is tagged!
 
--> ObjectId.write() and ObjectId.writeTagged()
--> Value.write() and Value.writeUntagged()
+DONE -> ObjectId.write() and ObjectId.writeTagged()
+DONE -> Value.write() and Value.writeUntagged()
 
-2. Use objectIdManager as late as possible (in the whole Event facility for instance) - it will speed up everything
-  -> we don't need objectId for an object we're not sure we will send across JDWP (like when creating FieldModificationEvent)
+IN PROGRESS 2. Use objectIdManager as late as possible (in the whole Event facility for instance) - it will speed up everything
+IN PROGRESS  -> we don't need objectId for an object we're not sure we will send across JDWP (like when creating FieldModificationEvent)
+  
+3. Change sysouts to standard logging
+4. Complete the possible errors - implement the rest of the Exceptions
+IN PROGRESS 5. Doplnovat javadoc
+6. Napsat testy - unit i integracni
+7. Vyhodit enumy do solo trid - uz jsou moc rozrostly
+8. Mozna predelat enumy na nejaky standartnejsi command pattern (skonzultovat s profikama)
+9. U stepovani udelat podrobny rozbor (javadoc), jestli je implementace dostacuji a korektni (napriklad chovani u F5 vs F6 v Eclipse atd...)
+IN PROGRESS 10. Odbouravat TODOs

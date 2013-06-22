@@ -120,8 +120,6 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				Fields fieldss = classInfo.getStaticElementInfo().getFields();
 				Object object = fieldInfo.getValueObject(fieldss);
 				Value val = Tag.classInfoToTag(fieldInfo.getTypeClassInfo()).value(object);
-
-				// TODO change value to write tagged by default (see TODO.txt)
 				val.writeTagged(os);
 			}
 		}

@@ -35,6 +35,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
+			threadInfo.suspend();
 			contextProvider.getVirtualMachine().suspendAllThreads(); // TODO
 																		// solve
 																		// this

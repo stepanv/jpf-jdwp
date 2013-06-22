@@ -49,7 +49,6 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				object = stackFrame.getLocalValueObject(localVarInfo);
 
 				Value value = Tag.taggedObjectToValue(tag, object);
-				// TODO write tagged by default (see TODO.txt)
 				value.writeTagged(os);
 
 			}
@@ -126,7 +125,11 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 	POPFRAMES(4) {
 		@Override
 		public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) {
-			throw new RuntimeException("NOT IMPLEMENTED");
+			
+			for (StackFrame frame = threadInfo.getTopFrame(); (frame != null) && (frame != stackFrame); frame = frame.getPrevious()) {
+				threadInfo.leave(); // that takes care of releasing locks
+				threadInfo.popFrame();
+			    }
 		}
 	};
 

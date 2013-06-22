@@ -243,8 +243,9 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	SETDEFAULTSTRATUM(19) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+			String stratumId = JdwpString.read(bytes);
+			System.out.println(stratumId);
+			// TODO Finish this if possible
 		}
 	},
 	ALLCLASSESWITHGENERIC(20) {

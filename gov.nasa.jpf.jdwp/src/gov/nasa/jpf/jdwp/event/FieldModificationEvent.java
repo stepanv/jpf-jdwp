@@ -84,9 +84,6 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 			objectId.writeTagged(os);
 		}
 		
-		// TODO JDWP Specification doesn't tell the value has to be tagged
-		// Eclipse expects a tagged value!
-		// Value is tagged by default - see TODO.txt
 		value.writeTagged(os);
 	}
 

@@ -41,7 +41,7 @@ public class MethodExitWithReturnValueEvent extends LocatableEvent implements Lo
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		value.write(os);
+		value.writeUntagged(os);
 	}
 
 }

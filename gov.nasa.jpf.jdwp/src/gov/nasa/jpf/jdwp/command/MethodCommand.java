@@ -28,9 +28,6 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 	LINETABLE(1) {
 		@Override
 		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			// TODO Has to be verified, that JPF has always sorted all
-			// instructions according to their index otherwise the specification
-			// is violated
 			LineTable lineTable = new LineTable(methodInfo);
 			lineTable.write(os);
 		}

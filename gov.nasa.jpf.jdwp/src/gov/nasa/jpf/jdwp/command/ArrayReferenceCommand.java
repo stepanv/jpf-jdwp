@@ -57,7 +57,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 				Value value = null;
 				if (componentClassInfo.isPrimitive()) {
 					value = Tag.arrayFieldToValue(array.getFields(), i);
-					value.write(os);
+					value.writeUntagged(os);
 				} else {
 					ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
 					value = JdwpObjectManager.getInstance().getObjectId(ei);
