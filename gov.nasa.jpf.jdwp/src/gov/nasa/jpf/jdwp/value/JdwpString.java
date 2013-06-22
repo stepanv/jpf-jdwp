@@ -42,6 +42,21 @@ public class JdwpString {
 	}
 
 	/**
+	 * Write data to the stream in a conformity with the specification.<br/>
+	 * If data is null, empty string &lt;""&gt; is sent.
+	 * 
+	 * @param data
+	 *            String or null to send across JDWP
+	 * @param os
+	 *            Output Stream
+	 * @throws IOException
+	 *             If I/O error occurs
+	 */
+	public static void writeNullAsEmpty(String data, DataOutputStream os) throws IOException {
+		write(data == null ? "" : data, os);
+	}
+
+	/**
 	 * Reads the string from in a conformity with the specification.
 	 * 
 	 * @param bytes
