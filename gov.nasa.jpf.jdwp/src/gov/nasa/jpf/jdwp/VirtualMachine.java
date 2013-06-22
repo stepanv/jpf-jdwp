@@ -109,7 +109,7 @@ public class VirtualMachine {
 	}
 
 	boolean allThreadsSuspended = false;
-	private List<EventRequest> requests = new CopyOnWriteArrayList<EventRequest>();
+	private List<EventRequest<?>> requests = new CopyOnWriteArrayList<EventRequest<?>>();
 
 	public void resumeAllThreads() {
 		synchronized (this) {
@@ -136,11 +136,11 @@ public class VirtualMachine {
 	public void suspendIfSuspended() {
 	}
 
-	public List<EventRequest> getRequests() {
+	public List<EventRequest<?>> getRequests() {
 		return requests;
 	}
 
-	public void registerEventRequest(EventRequest eventRequest) {
+	public void registerEventRequest(EventRequest<?> eventRequest) {
 		requests.add(eventRequest);
 	}
 
@@ -163,14 +163,14 @@ public class VirtualMachine {
 		public static final boolean CAN_WATCH_FIELD_ACCESS = true;
 
 		/** Can the VM get the bytecodes of a given method? */
-		public static final boolean CAN_GET_BYTECODES = false;
+		public static final boolean CAN_GET_BYTECODES = true;
 
 		/**
 		 * Can the VM determine whether a field or method is synthetic? (that
 		 * is, can the VM determine if the method or the field was invented by
 		 * the compiler?)
 		 */
-		public static final boolean CAN_GET_SYNTHETIC_ATTRIBUTE = false;
+		public static final boolean CAN_GET_SYNTHETIC_ATTRIBUTE = true;
 
 		/** Can the VM get the owned monitors information for a thread? */
 		public static final boolean CAN_GET_OWNED_MONITOR_INFO = true;
@@ -206,7 +206,7 @@ public class VirtualMachine {
 		 */
 		public static final boolean CAN_GET_SYNTHETIC_ATTRIBUTE = Capabilities.CAN_GET_SYNTHETIC_ATTRIBUTE;
 
-		/** Can the VM get the owned monitors infornation for a thread? */
+		/** Can the VM get the owned monitors information for a thread? */
 		public static final boolean CAN_GET_OWNED_MONITOR_INFO = Capabilities.CAN_GET_OWNED_MONITOR_INFO;
 
 		/** Can the VM get the current contended monitor of a thread? */
@@ -216,49 +216,50 @@ public class VirtualMachine {
 		public static final boolean CAN_GET_MONITOR_INFO = Capabilities.CAN_GET_MONITOR_INFO;
 
 		/** Can the VM redefine classes? */
-		public static final boolean CAN_REDEFINE_CLASSES = false;
+		public static final boolean CAN_REDEFINE_CLASSES = true;
 
 		/** Can the VM add methods when redefining classes? */
-		public static final boolean CAN_ADD_METHOD = false;
+		public static final boolean CAN_ADD_METHOD = true;
 
-		/** Can the VM redefine classesin arbitrary ways? */
-		public static final boolean CAN_UNRESTRICTEDLY_REDEFINE_CLASSES = false;
+		/** Can the VM redefine classes in arbitrary ways? */
+		public static final boolean CAN_UNRESTRICTEDLY_REDEFINE_CLASSES = true;
 
 		/** Can the VM pop stack frames? */
-		public static final boolean CAN_POP_FRAMES = false;
+		public static final boolean CAN_POP_FRAMES = true;
 
 		/** Can the VM filter events by specific object? */
-		public static final boolean CAN_USE_INSTANCE_FILTERS = false;
+		public static final boolean CAN_USE_INSTANCE_FILTERS = true;
 
 		/** Can the VM get the source debug extension? */
 		public static final boolean CAN_GET_SOURCE_DEBUG_EXTENSION = false;
+		// TODO seems there is nothing related in JPF
 
 		/** Can the VM request VM death events? */
-		public static final boolean CAN_REQUEST_V_M_DEATH_EVENT = false;
+		public static final boolean CAN_REQUEST_V_M_DEATH_EVENT = true;
 
 		/** Can the VM set a default stratum? */
-		public static final boolean CAN_SET_DEFAULT_STRATUM = false;
+		public static final boolean CAN_SET_DEFAULT_STRATUM = true;
 
 		/**
 		 * Can the VM return instances, counts of instances of classes and
 		 * referring objects?
 		 */
-		public static final boolean CAN_GET_INSTANCE_INFO = false;
+		public static final boolean CAN_GET_INSTANCE_INFO = true;
 
 		/** Can the VM request monitor events? */
-		public static final boolean CAN_REQUEST_MONITOR_EVENTS = false;
+		public static final boolean CAN_REQUEST_MONITOR_EVENTS = true;
 
 		/** Can the VM get monitors with frame depth info? */
-		public static final boolean CAN_GET_MONITOR_FRAME_INFO = false;
+		public static final boolean CAN_GET_MONITOR_FRAME_INFO = true;
 
 		/** Can the VM filter class prepare events by source name? */
-		public static final boolean CAN_USE_SOURCE_NAME_FILTERS = false;
+		public static final boolean CAN_USE_SOURCE_NAME_FILTERS = true;
 
 		/** Can the VM return the constant pool information? */
-		public static final boolean CAN_GET_CONSTANT_POOL = false;
+		public static final boolean CAN_GET_CONSTANT_POOL = true;
 
 		/** Can the VM force early return from a method? */
-		public static final boolean CAN_FORCE_EARLY_RETURN = false;
+		public static final boolean CAN_FORCE_EARLY_RETURN = true;
 	}
 
 	private List<ObjectId> disableCollectionObjects = new CopyOnWriteArrayList<ObjectId>();
