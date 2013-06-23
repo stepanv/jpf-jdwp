@@ -10,6 +10,25 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.ThreadInfo;
 
+/**
+ * This class implements the corresponding threadID common data type from the
+ * JDWP Specification.
+ * 
+ * <p>
+ * It's important to understand that even if a thread is represented by
+ * {@link ThreadInfo} in the JPF, the user (the debugger respectively) inspects
+ * an instance of {@link Thread} and therefore any thread during the debug
+ * operations is considered as an instance of {@link Thread} on the first place.
+ * </p>
+ * 
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * Uniquely identifies an object in the target VM that is known to be a thread.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
 public class ThreadId extends InfoObjectId<ThreadInfo> {
 
 	public static enum ThreadStatus implements ConvertibleEnum<Integer, ThreadStatus> {
@@ -52,11 +71,11 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 			return suspendStatusId;
 		}
 	}
-	
+
 	public ThreadId(long id, ThreadInfo threadInfo) {
 		this(id, threadInfo.getThreadObject(), threadInfo);
 	}
-	
+
 	private ThreadId(long id, ElementInfo elementInfo, ThreadInfo threadInfo) {
 		super(Tag.THREAD, id, elementInfo, threadInfo);
 	}
@@ -64,7 +83,7 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 	public ThreadId(long id, ElementInfo elementInfo) {
 		this(id, elementInfo, getThreadInfo(elementInfo));
 	}
-	
+
 	public ThreadInfo resolveInfoObject() throws InvalidObject {
 		return getThreadInfo(get());
 	}

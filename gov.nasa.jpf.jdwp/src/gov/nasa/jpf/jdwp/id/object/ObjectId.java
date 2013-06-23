@@ -1,8 +1,5 @@
 package gov.nasa.jpf.jdwp.id.object;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -20,7 +17,13 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
+ * This class implements the corresponding objectID common data type
+ * (tagged-objectID respectively) from the JDWP Specification.
+ * 
  * <p>
  * {@link ObjectId} class stands for all the elements in the JPF that are
  * accessible from the SUT.<br/>

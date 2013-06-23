@@ -7,6 +7,9 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.VM;
 
 /**
+ * This class implements the corresponding classObjectID common data type from
+ * the JDWP Specification.
+ * 
  * Class Object identifier representation.<br/>
  * Since every class object (e.g. SomeClass.class) is represented by a
  * {@link ClassInfo} instance this class was designed to store this relation by
@@ -27,10 +30,10 @@ public class ClassObjectId extends InfoObjectId<ClassInfo> {
 		this(id, classInfo.getClassObject(), classInfo);
 	}
 
-	private  ClassObjectId(long id, ElementInfo elementInfo, ClassInfo classInfo) {
+	private ClassObjectId(long id, ElementInfo elementInfo, ClassInfo classInfo) {
 		super(Tag.CLASS_OBJECT, id, elementInfo, classInfo);
 	}
-	
+
 	public ClassObjectId(long id, ElementInfo elementInfo) {
 		this(id, elementInfo, getClassInfo(elementInfo));
 	}
