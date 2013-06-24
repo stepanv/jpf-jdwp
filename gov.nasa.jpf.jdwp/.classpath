@@ -1,21 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="target/classes" path="vmref">
-		<attributes>
-			<attribute name="optional" value="true"/>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" path="srcgnu"/>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
-		<attributes>
-			<attribute name="maven.pomderived" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.7.5.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.7.5.jar"/>
-	<classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="src" output="build/main" path="src/main"/>
+  <classpathentry kind="src" output="build/peers" path="src/peers"/>
+  <classpathentry kind="src" output="build/classes" path="src/classes"/>
+  <classpathentry kind="src" output="build/examples" path="src/examples"/>
+  <classpathentry kind="src" output="build/tests" path="src/tests"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+
+  <!-- add dependencies to other JPF projects here -->
+  <classpathentry combineaccessrules="false" kind="src" path="/jpf-core"/>
+  
+  <!-- add dependencies to 3rd party jars here -->
+  <classpathentry kind="lib" path="lib/slf4j-api-1.7.5.jar"/>
+  <classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+  <classpathentry kind="lib" path="lib/slf4j-log4j12-1.7.5.jar"/>
+  <classpathentry kind="output" path="target/classes"/>
 </classpath>

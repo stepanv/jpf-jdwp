@@ -1,3 +1,9 @@
-target/*
-rmi/*
-bin/*
+syntax: glob
+
+build.properties
+nbproject/private/*
+build/*
+dist/*
+*.class
+*~
+*.DS_Store
