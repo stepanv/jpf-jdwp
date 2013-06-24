@@ -103,21 +103,18 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 
 	@Override
 	public void push(StackFrame frame) throws InvalidObject {
-		int ref = ((ElementInfo) this.get()).getObjectRef();
-		frame.pushRef(ref);
+		frame.pushRef(objectRef);
 	}
 
 	@Override
 	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
-		int ref = ((ElementInfo) this.get()).getObjectRef();
-		stackFrame.setLocalVariable(slotIndex, ref, true);
+		stackFrame.setLocalVariable(slotIndex, objectRef, true);
 
 	}
 
 	@Override
 	public void modify(Fields fields, int index) throws InvalidObject {
-		int ref = get().getObjectRef();
-		fields.setReferenceValue(index, ref);
+		fields.setReferenceValue(index, objectRef);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.IdManager.IdFactory;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
@@ -121,7 +122,11 @@ public class ObjectIdManager {
 
 	public synchronized ObjectId readIdentifier(ByteBuffer bytes) {
 		// TODO throw ErrorType.INVALID_OBJECT
-		return idMap.get(bytes.getLong());
+		Long id = bytes.getLong();
+		if (id == 0) {
+			return NullObjectId.getInstance();
+		}
+		return idMap.get(id);
 	}
 
 	public synchronized <I extends ObjectId> I readIdentifier(ByteBuffer bytes, Class<I> returnClazz) {
