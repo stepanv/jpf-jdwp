@@ -77,10 +77,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
 			Tag tag = Tag.classInfoToTag(fieldClassInfo);
-			Value valueToBe = tag.peekValue(topStackFrame);
 
 			Event event = new FieldModificationEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
-					fieldInstruction.getFieldInfo(), objectBeingAccessed, valueToBe);
+					fieldInstruction.getFieldInfo(), objectBeingAccessed, tag, topStackFrame);
 			dispatchEvent(event);
 		}
 
