@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JDWPListener extends ListenerAdapter implements VMListener {
 
 	private class FieldVisitor extends InstructionVisitorAdapter {
@@ -55,8 +58,8 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		private void fieldAccess(FieldInstruction fieldInstruction, ElementInfo objectBeingAccessed) {
 
 			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-			Event event = new FieldAccessEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
-					fieldInstruction.getFieldInfo(), objectBeingAccessed);
+			Event event = new FieldAccessEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo, fieldInstruction.getFieldInfo(),
+					objectBeingAccessed);
 			dispatchEvent(event);
 		}
 
@@ -129,17 +132,17 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 	@Override
 	public void threadStarted(VM vm, ThreadInfo startedThread) {
-		System.out.println(Arrays.toString(VM.getVM().getLiveThreads()));
+		logger.info("All threads: {}", Arrays.toString(VM.getVM().getLiveThreads()));
 
 		for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
-			System.out.println("threadInfo: " + threadInfo + " ... dynamic object: " + threadInfo.getThreadObject());
-			System.out.println(JdwpObjectManager.getInstance().getThreadId(threadInfo));
-			System.out.println(JdwpObjectManager.getInstance().getObjectId(threadInfo.getThreadObject()));
+			logger.debug("threadInfo: {} ... dynamic object: {}", threadInfo, threadInfo.getThreadObject());
+			logger.debug("ID by threadInfo: {}", JdwpObjectManager.getInstance().getThreadId(threadInfo));
+			logger.debug("ID by thread object: {}", JdwpObjectManager.getInstance().getObjectId(threadInfo.getThreadObject()));
 		}
 
 		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
 
-		System.out.println("STARTED THREAD: " + startedThread);
+		logger.info("Started thread: " + startedThread);
 
 		dispatchEvent(threadStartEvent);
 	}
@@ -172,10 +175,12 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
 			dispatchEvent(classPrepareEvent);
 		} else {
-			System.out.println("NOT NOTIFYING ABOUT: " + loadedClass);
+			logger.info("NOT NOTIFYING ABOUT: {}", loadedClass);
 			postponedLoadedClasses.add(loadedClass);
 		}
 	}
+	
+	final Logger logger = LoggerFactory.getLogger(JDWPListener.class);
 
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
@@ -185,13 +190,9 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 			// TODO Breakpoint events and step events are supposed to be in one
 			// composite event if occurred together!
 			if (instructionToExecute instanceof InvokeInstruction) {
-				// System.out.println("Instruction: '" + instructionToExecute +
-				// "' args: " +
-				// ((InvokeInstruction)instructionToExecute).arguments
-				// +" line: " + instructionToExecute.getFileLocation());
+				logger.debug("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments, instructionToExecute.getFileLocation());
 			} else {
-				// System.out.println("Instruction: '" + instructionToExecute +
-				// "' line: " + instructionToExecute.getFileLocation());
+				logger.debug("Instruction: '{}' line: {}", instructionToExecute, instructionToExecute.getFileLocation());
 			}
 			Location locationOfInstructionToExecute = Location.factory(instructionToExecute);
 
@@ -209,7 +210,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 
 	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-		System.out.println("EXCEPTOIN: UNCAUGHT THROWN");
 		Instruction instruction = vm.getInstruction();
 		if (instruction != null) {
 			ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), thrownException, null);
@@ -218,7 +218,6 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 	}
 
 	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
-		System.out.println("EXCEPTION: CAUGHT THROWN");
 		Instruction instruction = vm.getInstruction();
 		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
 		int handlerInstructionIndex = matchingHandler.getHandler();
@@ -232,12 +231,13 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		} else {
 			// TODO what if we get an exception without possibility to get a
 			// position?
+			throw new RuntimeException("NOT IMPLEMENTED");
 		}
 	}
 
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-		System.out.println("EXCEPTION: THROWN");
+		logger.debug("Exception thrown: {}", thrownException);
 		StackFrame handlerFrame = currentThread.getPendingExceptionHandlerFrame();
 		ExceptionHandler exceptionHandler = currentThread.getPendingExceptionMatchingHandler();
 
@@ -248,22 +248,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
-	@Override
-	public void exceptionBailout(VM vm, ThreadInfo currentThread) {
-		System.out.println("EXCEPTION: IN BAILOUT");
-	}
-
 	private void dispatchEvent(Event event) {
-		// for (EventRequest request : requests) {
-		// if (request.matches(event)) {
-		// try {
-		//
-		// Jdwp.sendEvent(request, event);
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
 		synchronized (virtualMachine) {
 			Jdwp.notify(event);
 		}

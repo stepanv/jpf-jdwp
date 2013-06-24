@@ -3,21 +3,24 @@ package gov.nasa.jpf.jdwp;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class JDWPRunner {
-	
+
 	public static VirtualMachine vm;
 
+	static final Logger logger = LoggerFactory.getLogger(JDWPRunner.class);
+
 	/**
+	 * The entry point of JPF JPDA implementation.
+	 * 
 	 * @param args
+	 *            Standard JPF application arguments
 	 */
 	public static void main(String[] args) {
-		System.out.println(VirtualMachineCommand.ALLCLASSES);
-		System.out.println(EventKind.BREAKPOINT);
-
 		// this initializes the JPF configuration from default.properties,
 		// site.properties
 		// configured extensions (jpf.properties), current directory
@@ -33,6 +36,8 @@ public class JDWPRunner {
 		String jdwpProperty = System.getProperty("jdwp");
 
 		if (jdwpProperty != null) {
+			logger.debug("Found JDWP property: {}", jdwpProperty);
+
 			Jdwp jdwp = new Jdwp();
 			jdwp.configure(jdwpProperty);
 
@@ -49,13 +54,14 @@ public class JDWPRunner {
 				}
 			}
 			jpf.run();
-			
+
 			synchronized (vm) {
 				Jdwp.notify(new VmDeathEvent());
 			}
 
 			jdwp.shutdown();
 		} else {
+			System.err.println("System property 'jdwp' not found. Running JPF without the JDWP agent.");
 			jpf.run();
 		}
 

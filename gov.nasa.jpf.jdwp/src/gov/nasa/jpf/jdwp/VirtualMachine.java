@@ -18,6 +18,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * <p>
  * <h3>Synchronization</h3>
@@ -49,6 +52,8 @@ public class VirtualMachine {
 	private JPF jpf;
 	private List<ClassInfo> loadedClases = new CopyOnWriteArrayList<ClassInfo>();
 	private boolean started;
+	
+	static final Logger logger = LoggerFactory.getLogger(VirtualMachine.class);
 
 	public boolean isStarted() {
 		return started;
@@ -61,7 +66,7 @@ public class VirtualMachine {
 	public void started(VM vm, List<ClassInfo> postponedLoadedClasses) {
 		if (!started) {
 			started = true;
-			System.out.println("About to send vm started event .. sending postponed class loads.");
+			logger.info("About to send vm started event .. sending postponed class loads.");
 			List<EventBase> events = new ArrayList<EventBase>();
 
 			for (ClassInfo classInfo : postponedLoadedClasses) {
@@ -77,9 +82,9 @@ public class VirtualMachine {
 			
 			synchronized (this) {
 				VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
-				System.out.println("Notifying about vm started");
+				logger.info("Notifying about vm started");
 				Jdwp.notify(vmInitEvent);
-				System.out.println(" not suspending after start");
+				logger.debug("Not suspending after start");
 			}
 			// suspendAllThreads();
 
@@ -113,7 +118,7 @@ public class VirtualMachine {
 
 	public void resumeAllThreads() {
 		synchronized (this) {
-			System.out.println("RESUMING ALL THREADS by: " + Thread.currentThread());
+			logger.debug("Resuming all threads by: {}", Thread.currentThread());
 			this.notify();
 		}
 	}
@@ -123,12 +128,12 @@ public class VirtualMachine {
 		synchronized (this) {
 			try {
 				allThreadsSuspended = true;
-				System.out.println("SUSPENDING ALL THREADS in: " + Thread.currentThread());
+				logger.debug("Suspending all threads in: {}", Thread.currentThread());
 				wait();
 			} catch (InterruptedException e) {
 			} finally {
 				allThreadsSuspended = false;
-				System.out.println("ALL THREADS RESUMED in: " + Thread.currentThread());
+				logger.debug("All threads resumed in: {}", Thread.currentThread());
 			}
 		}
 	}
