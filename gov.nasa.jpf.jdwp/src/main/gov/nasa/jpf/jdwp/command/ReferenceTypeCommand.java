@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, ReferenceTypeCommand> {
 
 	/**
@@ -44,8 +47,11 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 
+			
 			ClassLoaderInfo classLoaderInfo = classInfo.getClassLoaderInfo();
 
+			logger.debug("class info: {} has class loader: {}", classInfo, classLoaderInfo);
+			
 			if (classLoaderInfo == null) {
 				// TODO do this in a uniform way - object manager should return
 				// nullObjectId by itself...
@@ -242,6 +248,8 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			executeMethods(classInfo, bytes, os, contextProvider, true);
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ReferenceTypeCommand.class);
 
 	private byte commandId;
 
@@ -268,7 +276,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-		System.out.println("ReferenceType: " + refId.get());
+		logger.debug("ReferenceType: {}", refId.get());
 		execute(refId.get(), bytes, os, contextProvider);
 	}
 

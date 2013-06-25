@@ -179,7 +179,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 	
-	final Logger logger = LoggerFactory.getLogger(JDWPListener.class);
+	final static Logger logger = LoggerFactory.getLogger(JDWPListener.class);
 
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
@@ -189,10 +189,12 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 			// TODO Breakpoint events and step events are supposed to be in one
 			// composite event if occurred together!
-			if (instructionToExecute instanceof InvokeInstruction) {
-				logger.debug("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments, instructionToExecute.getFileLocation());
-			} else {
-				logger.debug("Instruction: '{}' line: {}", instructionToExecute, instructionToExecute.getFileLocation());
+			if (logger.isTraceEnabled()) {
+				if (instructionToExecute instanceof InvokeInstruction) {
+					logger.trace("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments, instructionToExecute.getFileLocation());
+				} else {
+					logger.trace("Instruction: '{}' line: {}", instructionToExecute, instructionToExecute.getFileLocation());
+				}
 			}
 			Location locationOfInstructionToExecute = Location.factory(instructionToExecute);
 

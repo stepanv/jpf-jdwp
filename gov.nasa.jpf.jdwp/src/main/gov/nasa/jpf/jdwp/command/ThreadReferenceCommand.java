@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadReferenceCommand> {
 	NAME(1) {
 		@Override
@@ -196,9 +199,15 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			os.writeInt(threadInfo.threadDataClone().getSuspendCount());
+			int suspendCount = threadInfo.threadDataClone().getSuspendCount();
+			
+			// TODO BUG - here, we have a problem because suspend count doesn't correspond with the way how JDWP thread suspension works
+			logger.debug("Suspend count: {}", suspendCount);
+			os.writeInt(suspendCount);
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ThreadReferenceCommand.class);
 	private byte commandId;
 
 	private ThreadReferenceCommand(int commandId) {
@@ -237,6 +246,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+		
+		logger.debug("Thread ID: {}, ThreadInfo: {}", threadId, threadId.getInfoObject());
 		execute(threadId.getInfoObject(), bytes, os, contextProvider);
 	}
 }

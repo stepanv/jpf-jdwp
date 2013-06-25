@@ -42,7 +42,6 @@ package gnu.classpath.jdwp.event;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
-import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -53,6 +52,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages event requests and filters event notifications.
@@ -75,6 +77,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class EventManager
 {
+  final static Logger logger = LoggerFactory.getLogger(EventManager.class);
+  
   // Single instance
   private static class EventManagerHolder {
 	  private static final EventManager _instance = new EventManager();
@@ -222,7 +226,7 @@ public class EventManager
     // Register the event with the VM
 //    VMVirtualMachine.vm.registerEventRequest (request);
     requests.put (new Integer (request.getId ()), request);
-    System.out.println("Registered event request: " + request);
+    logger.info("Registered event request: {}", request);
   }
 
   /**
@@ -252,7 +256,7 @@ public class EventManager
     	
         //VMVirtualMachine.unregisterEvent (request);
         requests.remove (iid);
-        System.out.println("Removed event request: " + request);
+        logger.info("Removed event request: {}", request);
       }
   }
 

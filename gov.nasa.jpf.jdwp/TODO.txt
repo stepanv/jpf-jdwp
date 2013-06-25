@@ -15,3 +15,4 @@ IN PROGRESS 5. Doplnovat javadoc
 9. U stepovani udelat podrobny rozbor (javadoc), jestli je implementace dostacuji a korektni (napriklad chovani u F5 vs F6 v Eclipse atd...)
 IN PROGRESS 10. Odbouravat TODOs
 11. Solve ObjectId#get() == null everywhere !!!
+12. With one thread processing all the requests, the VM might become unresponsive if it gets stuck in a command (it's not even possible to call virtualmachinecommand#exit)

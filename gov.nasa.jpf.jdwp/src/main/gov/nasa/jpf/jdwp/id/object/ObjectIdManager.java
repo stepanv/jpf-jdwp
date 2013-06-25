@@ -14,7 +14,12 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ObjectIdManager {
+	
+	final static Logger logger = LoggerFactory.getLogger(ObjectIdManager.class);
 
 	private IdFactory<ObjectId, ElementInfo> dynamicIdFactory;
 	
@@ -80,7 +85,7 @@ public class ObjectIdManager {
 			ObjectId objectId = idMap.get(id);
 			try {
 				if (!object.getClassInfo().equals(objectId.get().getClassInfo())) {
-					System.out.println("A PROBLEM 2");
+					logger.error("Object {} is not object {} for objectId {}", object, objectId.get(), objectId);
 					throw new RuntimeException(String.format("Object %s is not object %s for objectId %s", object, objectId.get(), objectId));
 				}
 			} catch (InvalidObject e) {
@@ -89,7 +94,7 @@ public class ObjectIdManager {
 		} else {
 			ObjectId objectId = dynamicIdFactory.create(id, object);
 			idMap.put(id, objectId);
-			System.out.println("CREATED OBJECT id: " + id + " (identifier: " + objectId + ") object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
+			logger.debug("Created object ID: {}, (identifier: {}) object: {}, class: {}, classInfo: {}", id, objectId, object, object.getClass(), ((ElementInfo)object).getClassInfo());
 			return objectId;
 		}
 	}

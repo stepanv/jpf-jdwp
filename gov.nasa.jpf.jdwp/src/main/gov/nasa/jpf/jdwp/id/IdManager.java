@@ -9,7 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class IdManager<I extends Identifier<T>, T> {
+	
+	final static Logger logger = LoggerFactory.getLogger(IdManager.class);
 	
 	public interface IdFactory<I, T> {
 		I create(long id, T object);
@@ -36,24 +41,24 @@ public class IdManager<I extends Identifier<T>, T> {
 			try {
 				T alternateObject = identifier.get();
 				if (!alternateObject.equals(object)) {
-					System.out.println("A BIG PROBLEM!");
-					System.out.println("BIG PROBLEM: " + object + " maps to: " + alternateObject);
+					logger.error("A BIG PROBLEM!");
+					logger.error("BIG PROBLEM: " + object + " maps to: " + alternateObject);
 					
-					System.out.println("Object hash code: " + object.hashCode());
-					System.out.println("Alternate hash code: " + alternateObject.hashCode());
+					logger.error("Object hash code: " + object.hashCode());
+					logger.error("Alternate hash code: " + alternateObject.hashCode());
 					
 					HashMap<T, I> testMap = new HashMap<T, I>();
 					testMap.put(alternateObject, identifier);
 					if (testMap.containsKey(object)) {
-						System.out.println("WEIRD FOR THE SECOND TIME!");
+						logger.error("WEIRD FOR THE SECOND TIME!");
 					}
 					
 					Map<T, I> testWeakMap = new WeakHashMap<T, I>();
 					testWeakMap.put(alternateObject, identifier);
 					if (testWeakMap.containsKey(object)) {
-						System.out.println("WEIRD FOR THE THIRD TIME!");
+						logger.error("WEIRD FOR THE THIRD TIME!");
 					}
-					System.out.println(objectToIdentifierMap.get(object));
+					logger.error("{}", objectToIdentifierMap.get(object));
 					
 					if (alternateObject instanceof ElementInfo && object instanceof ElementInfo) {
 						if (((ElementInfo)alternateObject).getObjectRef() == ((ElementInfo)object).getObjectRef()) {
@@ -73,10 +78,12 @@ public class IdManager<I extends Identifier<T>, T> {
 			objectToIdentifierMap.put(object, identifier);
 			idToIdentifierMap.put(id, identifier);
 			
-			if (object instanceof ElementInfo) {
-				System.out.println("CREATED OBJECT id: " + id + " (identifier: " + identifier + ") object:" + object + " class:" + object.getClass() + " classInfo: " + ((ElementInfo)object).getClassInfo());
-			} else {
-				System.out.println("CREATED OBJECT id: " + id + " (identifier: " + identifier + ") object:" + object + " class:" + object.getClass());
+			if (logger.isDebugEnabled()) {
+				if (object instanceof ElementInfo) {
+					logger.debug("Created ID: {}, (identifier: {}) object: {}, class: {}, classInfo: {}", id, identifier, object, object.getClass(), ((ElementInfo)object).getClassInfo());
+				} else {
+					logger.debug("Created ID: {}, (identifier: {}) object: {}, class: {}", id, identifier, object, object.getClass());
+				}
 			}
 			
 //			try {

@@ -46,6 +46,9 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A class representing a JDWP command packet.
  * This class adds command set and command to the packet header
@@ -56,6 +59,9 @@ import java.io.IOException;
  */
 public class JdwpCommandPacket extends JdwpPacket
 {
+	
+  final static Logger logger = LoggerFactory.getLogger(JdwpCommandPacket.class);
+	
   /**
    * Command set
    */
@@ -118,7 +124,7 @@ public class JdwpCommandPacket extends JdwpPacket
     _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
 	_command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
 	
-	System.out.println("Running: SET: " + _commandSet + " (" + _commandSet + "), CMD: " + _command + " (" + _command + ")");
+	logger.info("Running: SET: {}, CMD: {}", _commandSet, _command);
 	
     return i;
   }
