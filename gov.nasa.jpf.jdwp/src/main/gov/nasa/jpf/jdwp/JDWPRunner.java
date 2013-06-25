@@ -3,6 +3,7 @@ package gov.nasa.jpf.jdwp;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.JPF.ExitException;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 import org.slf4j.Logger;
@@ -53,7 +54,12 @@ public class JDWPRunner {
 				} catch (InterruptedException e) {
 				}
 			}
-			jpf.run();
+			
+			try {
+				jpf.run();
+			} catch (ExitException ee) {
+				logger.info("JPF was forcibly ended.");
+			}
 
 			synchronized (vm) {
 				Jdwp.notify(new VmDeathEvent());

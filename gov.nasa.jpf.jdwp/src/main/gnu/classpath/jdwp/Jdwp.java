@@ -384,12 +384,12 @@ public class Jdwp extends Thread {
 
 		case EVENT_THREAD:
 			// TODO how to solve just one thread suspension?
-			JDWPRunner.vm.suspendAllThreads();
+			JDWPRunner.vm.suspendAllThreadsAndSuspend();
 			// VMVirtualMachine.suspendThread (Thread.currentThread ());
 			break;
 
 		case ALL:
-			JDWPRunner.vm.suspendAllThreads();
+			JDWPRunner.vm.suspendAllThreadsAndSuspend();
 			break;
 		}
 	}

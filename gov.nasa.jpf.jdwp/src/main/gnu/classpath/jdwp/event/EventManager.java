@@ -144,7 +144,7 @@ public class EventManager
     try
       {
         SuspendPolicy sp = (Jdwp.suspendOnStartup()
-                   ? SuspendPolicy.EVENT_THREAD : SuspendPolicy.NONE);
+                   ? SuspendPolicy.ALL : SuspendPolicy.NONE);
         requestEvent (EventRequest.nullRequestIdFactory(EventKind.VM_INIT, sp, null));
         requestEvent (EventRequest.nullRequestIdFactory(EventKind.VM_DEATH,
         		SuspendPolicy.NONE, null));

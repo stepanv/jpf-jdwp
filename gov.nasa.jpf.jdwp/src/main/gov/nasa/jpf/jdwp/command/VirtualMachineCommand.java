@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gnu.classpath.jdwp.event.EventManager;
+import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
@@ -10,6 +11,7 @@ import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -23,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
 public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, VirtualMachineCommand> {
@@ -94,10 +97,35 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
 		}
 	},
+
+	/**
+	 * Returns all thread groups that do not have a parent. This command may be
+	 * used as the first step in building a tree (or trees) of the existing
+	 * thread groups.
+	 */
 	TOPLEVELTHREADGROUPS(5) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			List<ElementInfo> topLevelThreadGroups = new ArrayList<ElementInfo>();
+
+			for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
+				int group = threadInfo.getThreadGroupRef();
+				ElementInfo threadGroupElementInfo = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
+
+				int parentref = threadGroupElementInfo.getReferenceField("parent");
+				ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
+
+				if (parent == null) {
+					topLevelThreadGroups.add(threadGroupElementInfo);
+				}
+			}
+
+			os.writeInt(topLevelThreadGroups.size());
+
+			for (ElementInfo threadGroupElementInfo : topLevelThreadGroups) {
+				ThreadGroupId threadGroupId = contextProvider.getObjectManager().getThreadGroupId(threadGroupElementInfo);
+				threadGroupId.write(os);
+			}
 
 		}
 	},
@@ -105,18 +133,22 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 
-			// All event requests are cancelled. 
-			for (EventKind eventKind: EventKind.values()) {
+			// All event requests are cancelled.
+			for (EventKind eventKind : EventKind.values()) {
 				EventManager.getDefault().clearRequests(eventKind);
 			}
-			
-			// All threads suspended by the thread-level resume command or the VM-level resume command are resumed as many times as necessary for them to run. 
+
+			// All threads suspended by the thread-level resume command or the
+			// VM-level resume command are resumed as many times as necessary
+			// for them to run.
 			// TODO do the simulation for all threads
-			
-			// Garbage collection is re-enabled in all cases where it was ObjectReference
+
+			// Garbage collection is re-enabled in all cases where it was
+			// ObjectReference
 			contextProvider.getVirtualMachine().collectAllDisabledObjects();
-			
-			// TODO now, we need to get prepared for another connection .. this might be a problem with singletons...
+
+			// TODO now, we need to get prepared for another connection .. this
+			// might be a problem with singletons...
 		}
 	},
 	IDSIZES(7) {
@@ -129,10 +161,21 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			os.writeInt(TaggableIdentifier.SIZE);
 		}
 	},
+	/**
+	 * Suspends the execution of the application running in the target VM. All
+	 * Java threads currently running will be suspended. <br/>
+	 * Unlike java.lang.Thread.suspend, suspends of both the virtual machine and
+	 * individual threads are counted. Before a thread will run again, it must
+	 * be resumed through the VM-level resume command or the thread-level resume
+	 * command the same number of times it has been suspended.
+	 * 
+	 * TODO we don't count thread suspension count as stated above in the
+	 * specification
+	 */
 	SUSPEND(8) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			contextProvider.getVirtualMachine().suspendAllThreads();
 
 		}
 	},
@@ -142,11 +185,21 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			contextProvider.getVirtualMachine().resumeAllThreads();
 		}
 	},
+
+	/**
+	 * Terminates the target VM with the given exit code. On some platforms, the
+	 * exit code might be truncated, for example, to the low order 8 bits. All
+	 * ids previously returned from the target VM become invalid. Threads
+	 * running in the VM are abruptly terminated. A thread death exception is
+	 * not thrown and finally blocks are not run.
+	 */
 	EXIT(10) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+			int exitCode = bytes.getInt();
 
+			// TODO verify that in this case we're supposed to end this way
+			System.exit(exitCode);
 		}
 	},
 	CREATESTRING(11) {
@@ -155,9 +208,9 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			// is invoked when inspecting an array field for instance (TODO
 			// rewrite this method)
 			String string = JdwpString.read(bytes);
-			
+
 			// TODO [for PJA] which thread we should use?
-			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread()); 
+			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread());
 
 			ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
 

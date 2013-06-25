@@ -3,8 +3,8 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
+import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -18,7 +18,6 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.Monitor;
-import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -30,6 +29,11 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ElementInfo elementInfo = objectId.get();
+			
+			// TODO solve ObjectId#get() == null everywhere !!!
+			if (elementInfo == null) {
+				throw new InvalidObject("Object is null: " + objectId);
+			}
 			ClassInfo classInfo = elementInfo.getClassInfo();
 			
 			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(classInfo);

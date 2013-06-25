@@ -183,6 +183,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
+		virtualMachine.suspendIfSuspended();
 		virtualMachine.started(vm, postponedLoadedClasses);
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 

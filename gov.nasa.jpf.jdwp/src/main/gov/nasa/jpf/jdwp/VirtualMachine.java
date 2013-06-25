@@ -3,7 +3,7 @@ package gov.nasa.jpf.jdwp;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
-import gov.nasa.jpf.jdwp.event.EventBase;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.event.VmStartEvent;
@@ -12,7 +12,6 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.VM;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -52,7 +51,7 @@ public class VirtualMachine {
 	private JPF jpf;
 	private List<ClassInfo> loadedClases = new CopyOnWriteArrayList<ClassInfo>();
 	private boolean started;
-	
+
 	static final Logger logger = LoggerFactory.getLogger(VirtualMachine.class);
 
 	public boolean isStarted() {
@@ -67,24 +66,22 @@ public class VirtualMachine {
 		if (!started) {
 			started = true;
 			logger.info("About to send vm started event .. sending postponed class loads.");
-			List<EventBase> events = new ArrayList<EventBase>();
-
-			for (ClassInfo classInfo : postponedLoadedClasses) {
-				events.add(new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0));
-			}
-			postponedLoadedClasses.clear();
-
-			// TODO according to JDWP specs classprepare events can be in a
-			// composite event only if are for the same class
-			synchronized (this) {
-				Jdwp.notify(events.toArray(new EventBase[events.size()]));
-			}
 			
 			synchronized (this) {
 				VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
 				logger.info("Notifying about vm started");
 				Jdwp.notify(vmInitEvent);
 				logger.debug("Not suspending after start");
+			}
+			
+			synchronized (this) {
+				// TODO according to JDWP specs classprepare events can be in a
+				// composite event only if are for the same class
+				for (ClassInfo classInfo : postponedLoadedClasses) {
+					Event event = new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0);
+					Jdwp.notify(event);
+				}
+				postponedLoadedClasses.clear();
 			}
 			// suspendAllThreads();
 
@@ -116,29 +113,37 @@ public class VirtualMachine {
 	boolean allThreadsSuspended = false;
 	private List<EventRequest<?>> requests = new CopyOnWriteArrayList<EventRequest<?>>();
 
-	public void resumeAllThreads() {
-		synchronized (this) {
-			logger.debug("Resuming all threads by: {}", Thread.currentThread());
-			this.notify();
+	public synchronized void resumeAllThreads() {
+		logger.debug("Resuming all threads by: {}", Thread.currentThread());
+		allThreadsSuspended = false;
+		this.notify();
+	}
+
+	public synchronized void suspendAllThreads() {
+		allThreadsSuspended = true;
+	}
+
+	public synchronized void suspendAllThreadsAndSuspend() {
+		// TODO throw an exception if error occured
+		try {
+			allThreadsSuspended = true;
+			logger.debug("Suspending all threads in: {}", Thread.currentThread());
+			wait();
+		} catch (InterruptedException e) {
+		} finally {
+			allThreadsSuspended = false;
+			logger.debug("All threads resumed in: {}", Thread.currentThread());
 		}
 	}
 
-	public void suspendAllThreads() {
-		// TODO throw an exception if error occured
-		synchronized (this) {
+	public synchronized void suspendIfSuspended() {
+		while (allThreadsSuspended) {
 			try {
-				allThreadsSuspended = true;
 				logger.debug("Suspending all threads in: {}", Thread.currentThread());
 				wait();
 			} catch (InterruptedException e) {
-			} finally {
-				allThreadsSuspended = false;
-				logger.debug("All threads resumed in: {}", Thread.currentThread());
 			}
 		}
-	}
-
-	public void suspendIfSuspended() {
 	}
 
 	public List<EventRequest<?>> getRequests() {
@@ -301,6 +306,29 @@ public class VirtualMachine {
 				}
 				disableCollectionObjects.remove(objectId);
 			}
+		}
+	}
+
+	private int exitCode = 0;
+	private boolean inExit = false;
+	
+	/**
+	 * TODO finish this (it's not used)
+	 */
+	public void exit(int exitCode) {
+		this.exitCode = exitCode;
+		this.inExit = true;
+		
+		// notify the JPF thread if it is suspended
+		resumeAllThreads();
+	}
+
+	/**
+	 * TODO finish this
+	 */
+	public void exitIfInExit() {
+		if (inExit) {
+			JPF.exit();
 		}
 	}
 

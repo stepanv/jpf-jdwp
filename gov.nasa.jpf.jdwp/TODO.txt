@@ -14,3 +14,4 @@ IN PROGRESS 5. Doplnovat javadoc
 8. Mozna predelat enumy na nejaky standartnejsi command pattern (skonzultovat s profikama)
 9. U stepovani udelat podrobny rozbor (javadoc), jestli je implementace dostacuji a korektni (napriklad chovani u F5 vs F6 v Eclipse atd...)
 IN PROGRESS 10. Odbouravat TODOs
+11. Solve ObjectId#get() == null everywhere !!!
