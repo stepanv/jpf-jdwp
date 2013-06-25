@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte, ClassLoaderReferenceCommand> {
 	VISIBLECLASSES(1) {
 		@Override
@@ -30,7 +33,9 @@ public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte
 				classLoaderInfo = ThreadInfo.getCurrentThread().getSystemClassLoaderInfo();
 			}
 			
-			Iterator<ClassInfo> loadedClasses  = classLoaderInfo.iterator();
+			logger.debug("Using classloader: {}", classLoaderInfo);
+			
+			;
 			
 			// we need to write the number of classes first
 			ByteArrayOutputStream loadedClassesOutputBytes = new ByteArrayOutputStream(0);
@@ -38,18 +43,29 @@ public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte
 			
 			int classes = 0;
 			
-			for (ClassInfo classInfo = loadedClasses.next(); loadedClasses.hasNext(); ) {
+			for (Iterator<ClassInfo> loadedClasses  = classLoaderInfo.iterator(); loadedClasses.hasNext(); ) {
+				ClassInfo classInfo = loadedClasses.next();
 				// get the reference type for the class
 				ReferenceTypeId referenceTypeId = objectManager.getReferenceTypeId(classInfo);
 				referenceTypeId.writeTagged(loadedClassesOS);
 				
+				logger.debug("Class found: {}", referenceTypeId);
+				
 				// increase the number of classes
 				++classes; 
 			}
+			logger.trace("About to send classes (number: {}) as bytes: {}", classes, loadedClassesOutputBytes.toByteArray());
+			
 			os.writeInt(classes);
 			os.write(loadedClassesOutputBytes.toByteArray());
+			
+			logger.trace("Command end");
+			
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ClassLoaderReferenceCommand.class);
+	
 	private byte commandId;
 
 	private ClassLoaderReferenceCommand(int commandId) {
