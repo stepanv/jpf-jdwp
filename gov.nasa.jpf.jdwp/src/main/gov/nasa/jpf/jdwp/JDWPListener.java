@@ -69,17 +69,17 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		 * 
 		 * @param fieldInstruction
 		 *            Instruction that has to be investigated
-		 * @param objectBeingAccessed
-		 *            Object being accessed or null for statics
+		 * @param objectBeingModified
+		 *            Object being modified or null for statics
 		 */
-		private void fieldModification(FieldInstruction fieldInstruction, ElementInfo objectBeingAccessed) {
+		private void fieldModification(FieldInstruction fieldInstruction, ElementInfo objectBeingModified) {
 			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
 
 			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
 			Tag tag = Tag.classInfoToTag(fieldClassInfo);
 
 			Event event = new FieldModificationEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
-					fieldInstruction.getFieldInfo(), objectBeingAccessed, tag, topStackFrame);
+					fieldInstruction.getFieldInfo(), objectBeingModified, tag, topStackFrame);
 			dispatchEvent(event);
 		}
 

@@ -4,7 +4,6 @@ import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -13,7 +12,6 @@ import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
-import gov.nasa.jpf.vm.StaticElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
@@ -79,23 +77,19 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
 	@Override
 	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		ClassInfo fieldObjectClassInfo;
+		JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
 
 		// TODO this is not according the spec!
-		fieldObjectClassInfo = fieldInfo.getClassInfo();
+		 ClassInfo fieldObjectClassInfo = fieldInfo.getClassInfo();
 
-		ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
+		ReferenceTypeId referenceTypeId = objectManager.getReferenceTypeId(fieldObjectClassInfo);
 		referenceTypeId.writeTagged(os);
 
-		FieldId fieldId = JdwpObjectManager.getInstance().getFieldId(fieldInfo);
+		FieldId fieldId = objectManager.getFieldId(fieldInfo);
 		fieldId.write(os);
 
-		if (objectBeingModified instanceof StaticElementInfo) {
-			NullObjectId.instanceWriteTagged(os);
-		} else {
-			ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(objectBeingModified);
-			objectId.writeTagged(os);
-		}
+		ObjectId objectId = objectManager.getObjectId(objectBeingModified);
+		objectId.writeTagged(os);
 
 		// get the value now
 		// it wasn't needed sooner

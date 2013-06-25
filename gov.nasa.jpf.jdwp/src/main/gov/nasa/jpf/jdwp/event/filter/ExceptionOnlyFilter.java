@@ -54,7 +54,8 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 
 	@Override
 	public boolean matches(ExceptionOnlyFilterable event) {
-		if (exceptionOrNull.isNull()) {
+		// TODO need to finally decide whether nulls are allowed for Identifier instances - for ObjectIds we always get NullObjectId but this doesn't work for any Identifier (like here for ReferenceTypeId) 
+		if (exceptionOrNull == null || exceptionOrNull.isNull()) {
 			return true;
 		}
 		return event.visit(this);
