@@ -47,11 +47,10 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 
-			
 			ClassLoaderInfo classLoaderInfo = classInfo.getClassLoaderInfo();
 
 			logger.debug("class info: {} has class loader: {}", classInfo, classLoaderInfo);
-			
+
 			if (classLoaderInfo == null) {
 				// TODO do this in a uniform way - object manager should return
 				// nullObjectId by itself...
@@ -153,15 +152,22 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 
 		}
 	},
+
+	/**
+	 * Returns the interfaces declared as implemented by this class. Interfaces
+	 * indirectly implemented (extended by the implemented interface or
+	 * implemented by a superclass) are not included.
+	 */
 	INTERFACES(10) {
 		@Override
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			Set<ClassInfo> interfaces = classInfo.getAllInterfaceClassInfos();
+			Set<ClassInfo> interfaces = classInfo.getInterfaceClassInfos();
 			os.writeInt(interfaces.size());
 			for (Iterator<ClassInfo> i = interfaces.iterator(); i.hasNext();) {
 				ClassInfo interfaceClass = i.next();
 				ReferenceTypeId intId = contextProvider.getObjectManager().getReferenceTypeId(interfaceClass);
+				logger.debug("Found interface: {}", intId);
 				intId.write(os);
 			}
 
@@ -248,7 +254,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			executeMethods(classInfo, bytes, os, contextProvider, true);
 		}
 	};
-	
+
 	final static Logger logger = LoggerFactory.getLogger(ReferenceTypeCommand.class);
 
 	private byte commandId;
