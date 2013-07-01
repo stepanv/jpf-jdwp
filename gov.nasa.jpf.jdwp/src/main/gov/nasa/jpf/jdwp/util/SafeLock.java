@@ -16,43 +16,50 @@ import org.slf4j.LoggerFactory;
  */
 public class SafeLock {
 	
+	public SafeLock(String name) {
+		this.name = name;
+	}
+	
+	private String name;
+	
 	static final Logger logger = LoggerFactory.getLogger(SafeLock.class);
 
-	private Object lock = new Object();
 	private Thread threadOwner = null;
 
 	/**
 	 * Obtain the run lock.<br/>
 	 * 
 	 */
-	public void lock() {
-		synchronized (lock) {
-			while (threadOwner != null) {
-				try {
-					lock.wait();
-				} catch (InterruptedException e) {
-				}
+	public synchronized void lock() {
+		while (threadOwner != null) {
+			try {
+				this.wait();
+			} catch (InterruptedException e) {
 			}
-			threadOwner = Thread.currentThread();
 		}
-		logger.trace("RUN LOCK obtained");
+		threadOwner = Thread.currentThread();
+		logger.trace("[{}] RUN LOCK obtained", name);
 	}
 
 	/**
 	 * Unlocks the lock.<br/>
 	 * If unlocking not owned lock, {@link IllegalStateException} is thrown.
 	 * 
-	 * @see VirtualMachine#lock()
+	 * @see VirtualMachine#lockRunLock()
 	 */
-	public void unlock() {
-		synchronized (lock) {
-			if (threadOwner != Thread.currentThread()) {
-				throw new IllegalStateException("Trying to unlock not owned lock. Last owner: " + threadOwner);
-			}
-			threadOwner = null;
-			lock.notify();
+	public synchronized void unlock() {
+		if (threadOwner != Thread.currentThread()) {
+			throw new IllegalStateException("Trying to unlock not owned lock. Last owner: " + threadOwner);
 		}
-		logger.trace("RUN LOCK released");
+		threadOwner = null;
+		this.notify();
+	}
+	
+	public synchronized void unlockIfOwned() {
+		if (threadOwner == Thread.currentThread()) {
+			threadOwner = null;
+			this.notify();
+		}
 	}
 
 }
