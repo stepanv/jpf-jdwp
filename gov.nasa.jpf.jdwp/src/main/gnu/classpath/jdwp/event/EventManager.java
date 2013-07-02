@@ -112,6 +112,8 @@ public class EventManager
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.EXCEPTION,
                    new Hashtable<Integer, EventRequest> ());
+    _requests.put (EventKind.EXCEPTION_CATCH,
+            new Hashtable<Integer, EventRequest> ());
     _requests.put (EventKind.USER_DEFINED,
                    new Hashtable <Integer, EventRequest>());
     _requests.put (EventKind.THREAD_START,

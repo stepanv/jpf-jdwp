@@ -4,11 +4,13 @@ import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo.State;
 
 /**
  * This class implements the corresponding threadID common data type from the
@@ -31,8 +33,47 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class ThreadId extends InfoObjectId<ThreadInfo> {
 
+	/**
+	 * <p>
+	 * Constants in {@link ThreadStatus} are derived from JVMTI (Java VM Spec,
+	 * respectively). Whereas JVMTI introduces more constants only these are
+	 * interested (or supported) by the JDWP specification.<br/>
+	 * Moreover, the specification isn't even precise how the JVMTI thread
+	 * states (JNI thread states) should be mapped to JDWP thread states.
+	 * Therefore it's even more unclear how to map JPF thread states (
+	 * {@link State} to {@link ThreadStatus}.
+	 * </p>
+	 * <p>
+	 * JPF thread states mapping is implemented in accordance to Harmony and
+	 * OpenJDK implementations.
+	 * </p>
+	 * <p>
+	 * These thread states aren't related to the suspension status set from the
+	 * debugger. The suspension status is reflected by {@link SuspendStatus}.
+	 * </p>
+	 * 
+	 * @author stepan
+	 * 
+	 */
 	public static enum ThreadStatus implements ConvertibleEnum<Integer, ThreadStatus> {
-		ZOMBIE(0), RUNNING(1), SLEEPING(2), MONITOR(3), WAIT(4);
+
+		/** Thread is terminated */
+		ZOMBIE(0),
+
+		/**
+		 * Thread is running (doesn't mean it's instructions are executed - the
+		 * thread can be waiting to be scheduled.)<br/>
+		 */
+		RUNNING(1),
+
+		/** Thread is in {@link Thread#sleep(long)} and other alternate methods. */
+		SLEEPING(2),
+
+		/** Thread is blocked waiting for a monitor. */
+		MONITOR(3),
+
+		/** Thread is waiting for other reasons ... */
+		WAIT(4);
 
 		private int id;
 
@@ -84,8 +125,27 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 		this(id, elementInfo, getThreadInfo(elementInfo));
 	}
 
+	/**
+	 * Always resolves the info object because {@link ThreadInfo} instances do
+	 * change during the SuT execution.
+	 * 
+	 * @return Resolved Thread Info instance.
+	 */
+	@Override
+	public ThreadInfo getInfoObject() throws InvalidObject {
+		return resolveInfoObject();
+	}
+
 	public ThreadInfo resolveInfoObject() throws InvalidObject {
-		return getThreadInfo(get());
+		ElementInfo threadElementInfo = get();
+		if (threadElementInfo == null) {
+			throw new InvalidThreadException(this);
+		}
+		ThreadInfo threadInfo = getThreadInfo(threadElementInfo);
+		if (threadInfo == null) {
+			throw new InvalidThreadException(this);
+		}
+		return threadInfo;
 	}
 
 	/**

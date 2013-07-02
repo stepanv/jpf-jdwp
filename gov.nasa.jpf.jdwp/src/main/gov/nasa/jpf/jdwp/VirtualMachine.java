@@ -2,19 +2,25 @@ package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.JPF;
+import gov.nasa.jpf.JPF.ExitException;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
-import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
+import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 import gov.nasa.jpf.jdwp.event.VmStartEvent;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.util.SafeLock;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo.State;
 import gov.nasa.jpf.vm.VM;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
@@ -62,86 +68,154 @@ public class VirtualMachine {
 		this.jpf = jpf;
 	}
 
-	public void started(VM vm, List<ClassInfo> postponedLoadedClasses) {
-		if (!started) {
-			started = true;
-			logger.info("About to send vm started event .. sending postponed class loads.");
-			
-			synchronized (this) {
-				VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
-				logger.info("Notifying about vm started");
-				Jdwp.notify(vmInitEvent);
-				logger.debug("Not suspending after start");
-			}
-			
-			synchronized (this) {
-				// TODO according to JDWP specs classprepare events can be in a
-				// composite event only if are for the same class
-				for (ClassInfo classInfo : postponedLoadedClasses) {
-					Event event = new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0);
-					Jdwp.notify(event);
-				}
-				postponedLoadedClasses.clear();
-			}
-			// suspendAllThreads();
+	public synchronized void startHook(VM vm, List<ClassInfo> postponedLoadedClasses) {
+		logger.info("Notifying about vm started");
+		VmStartEvent vmInitEvent = new VmStartEvent(vm.getCurrentThread());
+		Jdwp.notify(vmInitEvent);
 
-			// we also need to send thread start event
-			// TODO [for PJA] is this a bug in JPF main thread start doesn't
-			// trigger threadStarted event in JPF listeners
-			synchronized (this) {
-				Jdwp.notify(new ThreadStartEvent(vm.getCurrentThread()));
-			}
-			// events.add(new ThreadStartEvent(vm.getCurrentThread()));
-
+		logger.info("Sending postponed class loads.");
+		for (ClassInfo classInfo : postponedLoadedClasses) {
+			Event event = new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0);
+			Jdwp.notify(event);
 		}
-
+		postponedLoadedClasses.clear();
+		logger.info("Sending postponed class loads... DONE");
 	}
 
 	public void notifyClassLoaded(ClassInfo lastClassInfo) {
 		loadedClases.add(lastClassInfo);
-
 	}
 
 	public Collection<ClassInfo> getAllLoadedClasses() {
 		return loadedClases;
 	}
 
-	public boolean isAllThreadsSuspended() {
-		return allThreadsSuspended;
-	}
-
-	boolean allThreadsSuspended = false;
 	private List<EventRequest<?>> requests = new CopyOnWriteArrayList<EventRequest<?>>();
 
-	public synchronized void resumeAllThreads() {
-		logger.debug("Resuming all threads by: {}", Thread.currentThread());
-		allThreadsSuspended = false;
-		this.notify();
-	}
+	private ExecutionManager executionManager = new ExecutionManager();
 
-	public synchronized void suspendAllThreads() {
-		allThreadsSuspended = true;
-	}
+	public class ExecutionManager {
+		boolean allThreadsSuspended = false;
 
-	public synchronized void suspendAllThreadsAndSuspend() {
-		// TODO throw an exception if error occured
-		try {
-			allThreadsSuspended = true;
-			logger.debug("Suspending all threads in: {}", Thread.currentThread());
-			wait();
-		} catch (InterruptedException e) {
-		} finally {
-			allThreadsSuspended = false;
-			logger.debug("All threads resumed in: {}", Thread.currentThread());
+		public boolean isAllThreadsSuspended() {
+			return allThreadsSuspended;
 		}
-	}
 
-	public synchronized void suspendIfSuspended() {
-		while (allThreadsSuspended) {
+		/**
+		 * Should be called when JPF is not in the middle of instruction
+		 * execution.<br/>
+		 * Should be called as often as possible so that JDWP commands can be
+		 * run by releasing the runlock.
+		 */
+		public void executionHook() {
+			suspendIfSuspended();
+			exitIfInExit();
+
+			// It is important to voluntarily let others to access and run JPF
+			runLock.unlock();
+			runLock.lock();
+		}
+
+		private synchronized void resumeAllThreads() {
+			logger.debug("Resuming all threads by: {}", Thread.currentThread());
+			allThreadsSuspended = false;
+			this.notify();
+		}
+
+		private synchronized void suspendAllThreads() {
+			allThreadsSuspended = true;
+		}
+
+		private ThreadManager threadManager = new ThreadManager();
+
+		/**
+		 * Marks the threadInfo as suspended by the JDWP agent. This doesn't
+		 * change the {@link State} of the thread.<br/>
+		 * Doesn't suspend the thread immediately since we need to be able to
+		 * finish current instruction execution.<br/>
+		 * Since JPF is single threaded by design the given thread will be
+		 * suspended but no other thread will continue it's execution.
+		 * 
+		 * @param threadInfo
+		 *            The thread to be marked as suspended.
+		 */
+		public synchronized void markThreadSuspended(ThreadInfo threadInfo) {
+			threadManager.suspensionCountInc(threadInfo);
+			suspendAllThreads();
+		}
+
+		/**
+		 * Marks the given <tt>threadInfo</tt> as resumed.<br/>
+		 * The JPF doesn't start it's execution immediately, but is notified and
+		 * will start the execution once all the locks can be acquired.
+		 * 
+		 * @param threadInfo
+		 */
+		public synchronized void markThreadResumed(ThreadInfo threadInfo) {
+			threadManager.suspensionCountDec(threadInfo);
+			resumeAllThreads();
+		}
+
+		/**
+		 * Marks the whole VM as suspended.<br/>
+		 * This effectively works the same as single thread suspensions.
+		 * 
+		 * @see VirtualMachine#markThreadSuspended(ThreadInfo)
+		 */
+		public synchronized void markVMSuspended() {
+			suspendAllThreads();
+			for (ThreadInfo threadInfo : jpf.getVM().getLiveThreads()) {
+				threadManager.suspensionCountInc(threadInfo);
+			}
+		}
+
+		/**
+		 * Marks the whole VM as resumed.<br/>
+		 * This effectively works the same as single thread resumption.
+		 * 
+		 * @see VirtualMachine#markThreadResumed(ThreadInfo)
+		 */
+		public synchronized void markVMResumed() {
+			for (ThreadInfo threadInfo : jpf.getVM().getLiveThreads()) {
+				threadManager.suspensionCountDec(threadInfo);
+			}
+			resumeAllThreads();
+		}
+
+		/**
+		 * Suspend count for a thread.
+		 * 
+		 * @param threadInfo
+		 *            The thread.
+		 * @return The number of suspension count
+		 */
+		public int suspendCount(ThreadInfo threadInfo) {
+			return threadManager.suspensionCount(threadInfo);
+		}
+
+		/**
+		 * Blocks the execution of JPF.<br/>
+		 * It is allowed to block only from the thread that runs JPF itself. If
+		 * violated, {@link IllegalStateException} is thrown.<br/>
+		 * Uses <tt>this</tt> object for waiting.
+		 */
+		public synchronized void blockVMExecution() {
+			accessThreadCheck();
 			try {
 				logger.debug("Suspending all threads in: {}", Thread.currentThread());
-				wait();
+				runLock.unlock();
+				this.wait();
 			} catch (InterruptedException e) {
+			} finally {
+				logger.debug("All threads resumed in: {}", Thread.currentThread());
+				runLock.lock();
+				exitIfInExit();
+			}
+		}
+
+		private synchronized void suspendIfSuspended() {
+			while (allThreadsSuspended) {
+				blockVMExecution();
 			}
 		}
 	}
@@ -226,13 +300,13 @@ public class VirtualMachine {
 		public static final boolean CAN_GET_MONITOR_INFO = Capabilities.CAN_GET_MONITOR_INFO;
 
 		/** Can the VM redefine classes? */
-		public static final boolean CAN_REDEFINE_CLASSES = true;
+		public static final boolean CAN_REDEFINE_CLASSES = false;
 
 		/** Can the VM add methods when redefining classes? */
-		public static final boolean CAN_ADD_METHOD = true;
+		public static final boolean CAN_ADD_METHOD = false;
 
 		/** Can the VM redefine classes in arbitrary ways? */
-		public static final boolean CAN_UNRESTRICTEDLY_REDEFINE_CLASSES = true;
+		public static final boolean CAN_UNRESTRICTEDLY_REDEFINE_CLASSES = false;
 
 		/** Can the VM pop stack frames? */
 		public static final boolean CAN_POP_FRAMES = true;
@@ -241,14 +315,19 @@ public class VirtualMachine {
 		public static final boolean CAN_USE_INSTANCE_FILTERS = true;
 
 		/** Can the VM get the source debug extension? */
-		public static final boolean CAN_GET_SOURCE_DEBUG_EXTENSION = false;
+		public static final boolean CAN_GET_SOURCE_DEBUG_EXTENSION = false; // TODO
+																			// maybe
+																			// this
+																			// might
+																			// be
+																			// handful
 		// TODO seems there is nothing related in JPF
 
 		/** Can the VM request VM death events? */
 		public static final boolean CAN_REQUEST_V_M_DEATH_EVENT = true;
 
 		/** Can the VM set a default stratum? */
-		public static final boolean CAN_SET_DEFAULT_STRATUM = true;
+		public static final boolean CAN_SET_DEFAULT_STRATUM = false;
 
 		/**
 		 * Can the VM return instances, counts of instances of classes and
@@ -311,25 +390,140 @@ public class VirtualMachine {
 
 	private int exitCode = 0;
 	private boolean inExit = false;
-	
-	/**
-	 * TODO finish this (it's not used)
-	 */
-	public void exit(int exitCode) {
-		this.exitCode = exitCode;
-		this.inExit = true;
-		
-		// notify the JPF thread if it is suspended
-		resumeAllThreads();
-	}
 
 	/**
-	 * TODO finish this
+	 * Checks whether a proper thread is running the code.
 	 */
-	public void exitIfInExit() {
-		if (inExit) {
-			JPF.exit();
+	private void accessThreadCheck() {
+		if (executionThread != Thread.currentThread()) {
+			throw new IllegalStateException("Access check violated from: " + Thread.currentThread());
 		}
 	}
 
+	public class ThreadManager {
+
+		private final Map<Integer, Integer> threadContextDataMap = new HashMap<Integer, Integer>();
+
+		public synchronized void suspensionCountInc(ThreadInfo threadInfo) {
+			int threadIntId = threadInfo.getId();
+			if (threadContextDataMap.containsKey(threadIntId)) {
+				int suspensionCount = threadContextDataMap.get(threadIntId);
+				threadContextDataMap.put(threadIntId, ++suspensionCount);
+			} else {
+				threadContextDataMap.put(threadIntId, 1);
+			}
+
+		}
+
+		public synchronized void suspensionCountDec(ThreadInfo threadInfo) {
+			int threadIntId = threadInfo.getId();
+			if (threadContextDataMap.containsKey(threadIntId)) {
+				int suspensionCount = threadContextDataMap.get(threadIntId);
+				threadContextDataMap.put(threadIntId, --suspensionCount);
+			} else {
+				threadContextDataMap.put(threadIntId, 0);
+
+				// TODO is this possible? - it is possible
+				// throw new RuntimeException("ThreadInfo : " + threadInfo +
+				// " not known!");
+			}
+		}
+
+		public synchronized int suspensionCount(ThreadInfo threadInfo) {
+			int threadIntId = threadInfo.getId();
+			if (threadContextDataMap.containsKey(threadIntId)) {
+				return threadContextDataMap.get(threadIntId);
+			} else {
+				return 0;
+			}
+		}
+
+	}
+
+	public int lastCreatedString = -1;
+
+	private SafeLock runLock = new SafeLock("run-lock");
+	private Thread executionThread;
+	private Jdwp jdwp;
+
+	public SafeLock getRunLock() {
+		return runLock;
+	}
+
+	/**
+	 * Instructs JPF and JDWP threads to exit. This method is only a trigger of
+	 * all shutdown sequences.
+	 * 
+	 * @see VirtualMachine#exitIfInExit()
+	 * @see VirtualMachine#run()
+	 */
+	public void exit(int exitCode) {
+		if (!inExit) {
+			this.exitCode = exitCode;
+			this.inExit = true;
+
+			// resume JPF so that it can exit
+			this.executionManager.resumeAllThreads();
+		}
+	}
+	
+	/**
+	 * Conditionally exits execution on JPF.<br/>
+	 * Must be called by JPF thread.<br/>
+	 * Currently JPF exit is implemented with throw of {@link ExitException}
+	 * which is caught in {@link VirtualMachine#run()} from where the exit code
+	 * from {@link VirtualMachine#exit(int)} is used.
+	 */
+	public void exitIfInExit() {
+		if (inExit) {
+			accessThreadCheck();
+
+			// TODO this will not print anything interesting ... what is a
+			// better way to exit the JPF thread?
+			JPF.exit();
+		}
+	}
+	
+	/**
+	 * Runs the virtual machine hence the JPF.
+	 * 
+	 * @return The exit code
+	 */
+	public int run() {
+		executionThread = Thread.currentThread();
+		try {
+			// Get the lock before the JPF starts.
+			// This lock is paired with unlock
+			runLock.lock();
+			jpf.run();
+			inExit = true;
+		} catch (ExitException ee) {
+			logger.warn("JPF was forcibly closed. Exiting...");
+		} catch (Throwable t) {
+			logger.error("An uncaught exception in JPF thrown. Exiting...", t);
+		} finally {
+			try {
+				Jdwp.notify(new VmDeathEvent());
+			} catch (Throwable t) {
+				// we're about to end anyway
+			}
+			
+			jdwp.shutdown();
+			
+			// the unlock here is just for packet processor to be able to finish
+			// if the lock is owned
+			// We cannot be sure whether the lock is owned or not since the
+			// Exception could have been thrown from both
+			runLock.unlockIfOwned();
+		}
+		return exitCode;
+	}
+
+	public ExecutionManager getExecutionManager() {
+		return executionManager;
+	}
+
+	public void setJdwp(Jdwp jdwp) {
+		this.jdwp = jdwp;
+	}
 }

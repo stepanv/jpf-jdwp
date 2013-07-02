@@ -1,7 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gnu.classpath.jdwp.event.EventManager;
-import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
@@ -26,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, VirtualMachineCommand> {
 
@@ -49,7 +50,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
 			Collection<ClassInfo> classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
 
-			log.finest("LOOKING FOR CLASS: " + signature);
+			logger.info("looking for class: " + signature);
 			for (ClassInfo classInfo : classes) {
 				if (signature.equals(classInfo.getSignature())) {
 					matchingClasses.add(classInfo);
@@ -58,7 +59,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
 			os.writeInt(matchingClasses.size());
 			for (ClassInfo classInfo : matchingClasses) {
-				log.finest("Sending classes by signature: " + classInfo + "");
+				logger.debug("Sending classes by signature: " + classInfo + "");
 				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(classInfo);
 				id.writeTagged(os);
 
@@ -91,8 +92,9 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			ThreadInfo[] threads = VM.getVM().getLiveThreads();
 			os.writeInt(threads.length);
 			for (ThreadInfo thread : threads) {
-
-				contextProvider.getObjectManager().getThreadId(thread).write(os);
+				if (thread.isAlive()) {
+					contextProvider.getObjectManager().getThreadId(thread).write(os);
+				}
 			}
 
 		}
@@ -135,6 +137,10 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
 			// All event requests are cancelled.
 			for (EventKind eventKind : EventKind.values()) {
+				
+				if (eventKind == EventKind.VM_DISCONNECTED) {
+					continue;
+				}
 				EventManager.getDefault().clearRequests(eventKind);
 			}
 
@@ -175,14 +181,14 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	SUSPEND(8) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			contextProvider.getVirtualMachine().suspendAllThreads();
+			contextProvider.getVirtualMachine().getExecutionManager().markVMSuspended();
 
 		}
 	},
 	RESUME(9) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			contextProvider.getVirtualMachine().resumeAllThreads();
+			contextProvider.getVirtualMachine().getExecutionManager().markVMResumed();
 		}
 	},
 
@@ -198,8 +204,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			int exitCode = bytes.getInt();
 
-			// TODO verify that in this case we're supposed to end this way
-			System.exit(exitCode);
+			contextProvider.getVirtualMachine().exit(exitCode);
 		}
 	},
 	CREATESTRING(11) {
@@ -210,14 +215,19 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			String string = JdwpString.read(bytes);
 
 			// TODO [for PJA] which thread we should use?
-			ElementInfo stringElementInfo = VM.getVM().getHeap().newString(string, VM.getVM().getCurrentThread());
+			ElementInfo stringElementInfo = VM.getVM().getHeap().newInternString(string, VM.getVM().getCurrentThread());
 
+			contextProvider.getVirtualMachine().lastCreatedString = stringElementInfo.getObjectRef();
+			
 			ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
 
 			// Since this string isn't referenced anywhere we'll disable garbage
 			// collection on it so it's still around when the debugger gets back
 			// to it.
+			
 			stringId.disableCollection();
+			logger.debug("Collection for: {} disabled (is this instance: {}).", stringId, stringId.get());
+			
 			stringId.write(os);
 
 		}
@@ -304,12 +314,12 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	ALLCLASSESWITHGENERIC(20) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			Collection classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
+			Collection<ClassInfo> classes = contextProvider.getVirtualMachine().getAllLoadedClasses();
 			os.writeInt(classes.size());
 
-			Iterator iter = classes.iterator();
+			Iterator<ClassInfo> iter = classes.iterator();
 			while (iter.hasNext()) {
-				ClassInfo clazz = (ClassInfo) iter.next();
+				ClassInfo clazz = iter.next();
 				ReferenceTypeId id = contextProvider.getObjectManager().getReferenceTypeId(clazz);
 				id.writeTagged(os);
 				JdwpString.write(clazz.getSignature(), os);
@@ -337,7 +347,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		this.commandId = (byte) commandId;
 	}
 
-	private static Logger log = Logger.getLogger(VirtualMachineCommand.class.getName());
+	final static Logger logger = LoggerFactory.getLogger(VirtualMachineCommand.class);
 
 	private static ReverseEnumMap<Byte, VirtualMachineCommand> map = new ReverseEnumMap<Byte, VirtualMachineCommand>(VirtualMachineCommand.class);
 

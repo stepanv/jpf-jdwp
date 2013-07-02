@@ -3,7 +3,6 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
-import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Heap;

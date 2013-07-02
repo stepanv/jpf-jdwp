@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;

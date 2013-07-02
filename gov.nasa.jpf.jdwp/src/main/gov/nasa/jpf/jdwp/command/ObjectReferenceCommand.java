@@ -24,16 +24,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, ObjectReferenceCommand> {
 	REFERENCETYPE(1) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ElementInfo elementInfo = objectId.get();
 			
-			// TODO solve ObjectId#get() == null everywhere !!!
-			if (elementInfo == null) {
-				throw new InvalidObject("Object is null: " + objectId);
-			}
 			ClassInfo classInfo = elementInfo.getClassInfo();
 			
 			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(classInfo);
@@ -164,9 +163,14 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	ISCOLLECTED(9) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			os.writeBoolean(objectId.isNull());
+			boolean isCollected = objectId.isNull();
+			logger.debug("Is collect: {}", isCollected);
+			os.writeBoolean(isCollected);
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ObjectReferenceCommand.class);
+	
 	private byte commandId;
 
 	private ObjectReferenceCommand(int commandId) {
@@ -188,6 +192,13 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
+		
+		logger.debug("Object ID: {}", objectId);
+		if (objectId.isNull()) {
+			// null means it's collected
+			// TODO solve ObjectId#get() == null everywhere !!!
+			throw new InvalidObject(objectId);
+		}
 		execute(objectId, bytes, os, contextProvider);
 	}
 

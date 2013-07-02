@@ -1,28 +1,22 @@
 package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
+import gnu.classpath.jdwp.event.EventManager;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
-import gov.nasa.jpf.jdwp.event.FieldAccessEvent;
-import gov.nasa.jpf.jdwp.event.FieldModificationEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
+import gov.nasa.jpf.jdwp.event.ThreadDeathEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.type.Location;
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.util.FieldVisitor;
 import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
-import gov.nasa.jpf.jvm.bytecode.GETFIELD;
-import gov.nasa.jpf.jvm.bytecode.GETSTATIC;
-import gov.nasa.jpf.jvm.bytecode.InstructionVisitorAdapter;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
-import gov.nasa.jpf.jvm.bytecode.PUTFIELD;
-import gov.nasa.jpf.jvm.bytecode.PUTSTATIC;
+import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
@@ -30,98 +24,34 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadInfo.State;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JDWPListener extends ListenerAdapter implements VMListener {
+public class JDWPListener extends JDWPSearchBase implements VMListener {
 
-	private class FieldVisitor extends InstructionVisitorAdapter {
-
-		private ThreadInfo threadInfo;
-
-		/**
-		 * Field access handler for standard instances and also statics of any
-		 * class.
-		 * 
-		 * @param fieldInstruction
-		 *            Instruction that has to be investigated
-		 * @param objectBeingAccessed
-		 *            Object being accessed or null for statics
-		 */
-		private void fieldAccess(FieldInstruction fieldInstruction, ElementInfo objectBeingAccessed) {
-
-			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-			Event event = new FieldAccessEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo, fieldInstruction.getFieldInfo(),
-					objectBeingAccessed);
-			dispatchEvent(event);
-		}
-
-		/**
-		 * Field modification handler for standard instances and also statics of
-		 * any class.
-		 * 
-		 * @param fieldInstruction
-		 *            Instruction that has to be investigated
-		 * @param objectBeingModified
-		 *            Object being modified or null for statics
-		 */
-		private void fieldModification(FieldInstruction fieldInstruction, ElementInfo objectBeingModified) {
-			StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
-
-			ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-			Tag tag = Tag.classInfoToTag(fieldClassInfo);
-
-			Event event = new FieldModificationEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
-					fieldInstruction.getFieldInfo(), objectBeingModified, tag, topStackFrame);
-			dispatchEvent(event);
-		}
-
-		@Override
-		public void visit(GETFIELD ins) {
-			fieldAccess(ins, ins.getLastElementInfo());
-		}
-
-		@Override
-		public void visit(PUTFIELD ins) {
-			fieldModification(ins, ins.getLastElementInfo());
-		}
-
-		@Override
-		public void visit(GETSTATIC ins) {
-			fieldAccess(ins, null);
-		}
-
-		@Override
-		public void visit(PUTSTATIC ins) {
-
-			fieldModification(ins, null);
-		}
-
-		public void initalize(ThreadInfo currentThread) {
-			this.threadInfo = currentThread;
-		}
-
+	@Override
+	public void objectReleased(VM vm, ThreadInfo currentThread, ElementInfo releasedObject) {
+		logger.debug("Object released: {} .. ID: {}", releasedObject, releasedObject.getObjectRef());
 	}
 
 	private VirtualMachine virtualMachine;
-	private FieldVisitor fieldVisitor;
+	private FieldVisitor fieldVisitor = new FieldVisitor();
 
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
 		this.virtualMachine = virtualMachine;
-		this.fieldVisitor = new FieldVisitor();
 	}
 
 	@Override
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
-		virtualMachine.started(vm, postponedLoadedClasses);
-
 		Instruction instruction = enteredMethod.getInstruction(0);
 		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
 			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(currentThread, Location.factory(instruction));
@@ -129,35 +59,59 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
+	/**
+	 * Thread start handler. <br/>
+	 * Thread starts work without any problems.
+	 * 
+	 * @see JDWPListener#threadTerminated(VM, ThreadInfo)
+	 */
 	@Override
 	public void threadStarted(VM vm, ThreadInfo startedThread) {
-		logger.info("All threads: {}", Arrays.toString(VM.getVM().getLiveThreads()));
-
-		for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
-			logger.debug("threadInfo: {} ... dynamic object: {}", threadInfo, threadInfo.getThreadObject());
-			logger.debug("ID by threadInfo: {}", JdwpObjectManager.getInstance().getThreadId(threadInfo));
-			logger.debug("ID by thread object: {}", JdwpObjectManager.getInstance().getObjectId(threadInfo.getThreadObject()));
-		}
-
-		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
-
+		// TODO [for PJA] I hate to say it but honestly startedThread should be
+		// alread in state State.RUNNING by now - which is not by design ...
+		// WHY???
+		lastKnownThreadStates.put(startedThread.getThreadObjectRef(), State.RUNNING);
 		logger.info("Started thread: " + startedThread);
 
+		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
 		dispatchEvent(threadStartEvent);
 	}
 
+	/**
+	 * Thread termination handler.<br/>
+	 * Note that there is not 1:1 relation between thread terminates and starts
+	 * if states are traversed by JPF. Because of that a custom behavior needs
+	 * to be implemented if not debugging a single trace.<br/>
+	 * <h2>Eclipse debugger</h2>
+	 * <ul>
+	 * <li>Thread starts are ok - doesn't matter how many times a thread start
+	 * is received (unless a race occurs which happens with Eclipse Juno for
+	 * instance). In that case a thread can be shown multiple times in the Debug
+	 * view.</li>
+	 * <li>Thread deaths are so not ok. Eclipse implements deferred thread
+	 * deaths handling if a thread is not known which makes thread disappear
+	 * right after it is created and thread start event is received. TODO needs
+	 * to be investigated more ... seems to be very tricky.<br/>
+	 * As a workaround for those weird deferred deaths handling, we're always
+	 * sending thread start event right before thread death event is sent - it
+	 * helps but doesn't avoid all the problems.</li>
+	 * </ul>
+	 * 
+	 * @see JDWPListener#threadStarted(VM, ThreadInfo)
+	 * 
+	 */
 	@Override
 	public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
-		// TODO [for PJA] there is not relation 1:1 between thread start and
-		// thread death events. (e.g. one thread can die multiple times) and JDI
-		// doesn't know what to do about that.
-		// if (vmJdi.getEventRequestManager().threadDeathRequests().size() > 0)
-		// {
-		// ThreadDeathEvent td = new ThreadDeathEventImpl(vmJdi,
-		// vm.getLastThreadInfo(),
-		// vmJdi.getEventRequestManager().threadDeathRequests().get(0));
-		// vmJdi.addEvent(td);
-		// }
+		// this is the workaround for Eclipse and it's deferred thread deaths
+		// handling
+		ThreadStartEvent ts = new ThreadStartEvent(terminatedThread);
+		dispatchEvent(ts);
+
+		lastKnownThreadStates.put(terminatedThread.getThreadObjectRef(), State.TERMINATED);
+		logger.debug("Thread terminated: {}", terminatedThread);
+
+		ThreadDeathEvent td = new ThreadDeathEvent(terminatedThread);
+		dispatchEvent(td);
 	}
 
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
@@ -171,47 +125,98 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		// (which caused class load before the main thread was executed) .. does
 		// it?
 		if (vm.getCurrentThread() != null && vm.isInitialized()) {
+			logger.debug("Class loaded: {}", loadedClass);
 			ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
 			dispatchEvent(classPrepareEvent);
 		} else {
-			logger.info("NOT NOTIFYING ABOUT: {}", loadedClass);
+			logger.info("Not notifying about class load: {}", loadedClass);
 			postponedLoadedClasses.add(loadedClass);
 		}
 	}
-	
+
 	final static Logger logger = LoggerFactory.getLogger(JDWPListener.class);
 
 	@Override
+	public void instructionExecuted(VM vm, ThreadInfo currentThread, Instruction nextInstruction, Instruction executedInstruction) {
+		// just to let the other thread run the jdwp commands
+		virtualMachine.getExecutionManager().executionHook();
+	}
+
+	@Override
+	public void vmInitialized(VM vm) {
+		virtualMachine.startHook(vm, postponedLoadedClasses);
+
+		// we also need to send thread start event
+		// TODO [for PJA] is this a bug in JPF main thread start doesn't
+		// trigger threadStarted event in JPF listeners
+		ThreadStartEvent threadStartEvent = new ThreadStartEvent(vm.getCurrentThread());
+		lastKnownThreadStates.put(vm.getCurrentThread().getThreadObjectRef(), State.RUNNING);
+		dispatchEvent(threadStartEvent);
+	}
+
+	@Override
 	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
-		virtualMachine.suspendIfSuspended();
-		virtualMachine.started(vm, postponedLoadedClasses);
+
+		virtualMachine.getExecutionManager().executionHook();
+
 		if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 
 			// TODO Breakpoint events and step events are supposed to be in one
 			// composite event if occurred together!
 			if (logger.isTraceEnabled()) {
 				if (instructionToExecute instanceof InvokeInstruction) {
-					logger.trace("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments, instructionToExecute.getFileLocation());
+					logger.trace("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments,
+							instructionToExecute.getFileLocation());
 				} else {
 					logger.trace("Instruction: '{}' line: {}", instructionToExecute, instructionToExecute.getFileLocation());
 				}
 			}
 			Location locationOfInstructionToExecute = Location.factory(instructionToExecute);
 
-			BreakpointEvent breakpointEvent = new BreakpointEvent(currentThread, locationOfInstructionToExecute);
-			dispatchEvent(breakpointEvent);
+			if (hasNonnullEventRequests(EventKind.BREAKPOINT)) {
+				BreakpointEvent breakpointEvent = new BreakpointEvent(currentThread, locationOfInstructionToExecute);
+				dispatchEvent(breakpointEvent);
+			}
 
-			if (instructionToExecute instanceof FieldInstruction) {
+			if (hasNonnullEventRequests(EventKind.FIELD_ACCESS, EventKind.FIELD_MODIFICATION) && instructionToExecute instanceof FieldInstruction) {
 				fieldVisitor.initalize(currentThread);
 				((FieldInstruction) instructionToExecute).accept(fieldVisitor);
 			}
 
-			SingleStepEvent singleStepEvent = new SingleStepEvent(currentThread, locationOfInstructionToExecute);
-			dispatchEvent(singleStepEvent);
+			if (hasNonnullEventRequests(EventKind.SINGLE_STEP)) {
+				SingleStepEvent singleStepEvent = new SingleStepEvent(currentThread, locationOfInstructionToExecute);
+				dispatchEvent(singleStepEvent);
+			}
 		}
 	}
 
-	public void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
+	/**
+	 * Whether the {@link EventManager} has registered more than 0 event
+	 * requests for the given event kind.
+	 * 
+	 * @param eventKind
+	 *            The event kind.
+	 * @return true or false
+	 */
+	private boolean hasNonnullEventRequests(EventKind eventKind) {
+		return EventManager.getDefault().getRequests(eventKind).size() > 0;
+	}
+
+	/**
+	 * Whether the {@link EventManager} has registered more than 0 event request
+	 * for at least one of the given event kinds.
+	 * 
+	 * @param firstEventKind
+	 *            The first event kind.
+	 * @param secondEventKind
+	 *            The second event kind.
+	 * @return true or false
+	 */
+	private boolean hasNonnullEventRequests(EventKind firstEventKind, EventKind secondEventKind) {
+		return hasNonnullEventRequests(firstEventKind) || hasNonnullEventRequests(secondEventKind);
+	}
+
+	private void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		Instruction instruction = vm.getInstruction();
 		if (instruction != null) {
 			ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), thrownException, null);
@@ -219,7 +224,7 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
-	public void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
+	private void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame, ExceptionHandler matchingHandler) {
 		Instruction instruction = vm.getInstruction();
 		MethodInfo handlerMethodInfo = handlerFrame.getMethodInfo();
 		int handlerInstructionIndex = matchingHandler.getHandler();
@@ -231,15 +236,14 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 					Location.factorySafe(catchInstruction, currentThread));
 			dispatchEvent(exceptionEvent);
 		} else {
-			// TODO what if we get an exception without possibility to get a
-			// position?
-			throw new RuntimeException("NOT IMPLEMENTED");
+			// We don't end here but for the sake of completeness...
+			uncaughtExceptionThrown(vm, currentThread, thrownException);
 		}
 	}
 
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
-		logger.debug("Exception thrown: {}", thrownException);
+		logger.trace("Exception thrown: {}", thrownException);
 		StackFrame handlerFrame = currentThread.getPendingExceptionHandlerFrame();
 		ExceptionHandler exceptionHandler = currentThread.getPendingExceptionMatchingHandler();
 
@@ -250,11 +254,104 @@ public class JDWPListener extends ListenerAdapter implements VMListener {
 		}
 	}
 
+	/**
+	 * A helper method for dispatching events.<br/>
+	 * Note that this is not the only point where events are dispatched.
+	 * 
+	 * @param event
+	 *            The event.
+	 */
 	private void dispatchEvent(Event event) {
-		synchronized (virtualMachine) {
-			Jdwp.notify(event);
+		Jdwp.notify(event);
+	}
+
+	Map<Integer, State> lastKnownThreadStates = new HashMap<Integer, ThreadInfo.State>();
+
+	public void fixThreadNotificationState() {
+		for (ThreadInfo threadInfo : VM.getVM().getThreadList().getThreads()) {
+
+			int threadObjectRef = threadInfo.getThreadObjectRef();
+			State lastKnownThreadState = lastKnownThreadStates.get(threadObjectRef);
+
+			if (lastKnownThreadState == null) {
+				// the debugger doesn't know the thread yet
+				continue;
+			}
+
+			if (threadInfo.isTerminated() && lastKnownThreadState != State.TERMINATED) {
+				logger.debug("Thread info isa already dead or new: {}", threadInfo);
+
+				// again as a workaround we're sending thread start event right
+				// before the thread death event to avoid deferred thread deaths
+				// handling
+				ThreadStartEvent ts = new ThreadStartEvent(threadInfo);
+				dispatchEvent(ts);
+
+				ThreadDeathEvent threadDeathEvent = new ThreadDeathEvent(threadInfo);
+				dispatchEvent(threadDeathEvent);
+
+				lastKnownThreadStates.put(threadObjectRef, threadInfo.getState());
+
+			} else if (!threadInfo.isTerminated() && lastKnownThreadState == State.TERMINATED) {
+				logger.debug("Thread info is back alive: {}", threadInfo);
+
+				ThreadStartEvent threadStartEvent = new ThreadStartEvent(threadInfo);
+				dispatchEvent(threadStartEvent);
+
+				lastKnownThreadStates.put(threadObjectRef, threadInfo.getState());
+
+			}
+
 		}
 
+	}
+
+	@Override
+	public void stateBacktracked(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void stateAdvanced(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void stateProcessed(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void statePurged(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void stateStored(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void stateRestored(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void searchStarted(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
+	}
+
+	@Override
+	public void searchFinished(Search search) {
+		logger.trace("Processing search");
+		fixThreadNotificationState();
 	}
 
 }

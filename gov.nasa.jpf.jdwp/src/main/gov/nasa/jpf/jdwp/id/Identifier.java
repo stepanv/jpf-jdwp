@@ -35,7 +35,7 @@ public class Identifier<T> {
 		T object = objectReference.get();
 
 		if (object == null) {
-			throw new InvalidObject();
+			throw new InvalidObject(this);
 		}
 		return object;
 	}

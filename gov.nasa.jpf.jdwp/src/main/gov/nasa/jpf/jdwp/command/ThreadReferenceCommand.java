@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
+import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FrameId;
@@ -23,6 +24,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadReferenceCommand> {
 	NAME(1) {
 		@Override
@@ -35,35 +39,20 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			threadInfo.suspend();
-			contextProvider.getVirtualMachine().suspendAllThreads(); // TODO
-																		// solve
-																		// this
-																		// -
-																		// just
-																		// for a
-																		// single
-																		// thread
+			contextProvider.getVirtualMachine().getExecutionManager().markThreadSuspended(threadInfo);
 		}
 	},
 	RESUME(3) {
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			contextProvider.getVirtualMachine().resumeAllThreads(); // TODO
-																	// solve
-																	// this -
-																	// just for
-																	// a single
-																	// thread
-
+			contextProvider.getVirtualMachine().getExecutionManager().markThreadResumed(threadInfo);
 		}
 	},
 	STATUS(4) {
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			// TODO not fully implemented
 			ThreadStatus threadStatus = threadStatus(threadInfo);
 
 			os.writeInt(threadStatus.identifier());
@@ -72,13 +61,13 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 			// suspended)
 			// Although the JDWP specification isn't clear about this
 			int suspendStatus = 0;
-			if (contextProvider.getVirtualMachine().isAllThreadsSuspended()) {
+			if (contextProvider.getVirtualMachine().getExecutionManager().suspendCount(threadInfo) > 0) {
 				// There's only one possible SuspendStatus...
 				suspendStatus = SuspendStatus.SUSPEND_STATUS_SUSPENDED.identifier();
 			}
 
 			os.writeInt(suspendStatus);
-			System.out.println("status: " + threadStatus + ", suspend status: " + suspendStatus);
+			logger.debug("status: {}, suspend status: {}", threadStatus, suspendStatus);
 
 		}
 	},
@@ -143,15 +132,14 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			// TODO verify the thread is suspended - we need to redesign thread
-			// suspension
-
+			// TODO verify the thread is suspended - we need to redesign thread suspension
+			
 			JdwpObjectManager objectManager = contextProvider.getObjectManager();
 			Heap heap = contextProvider.getVM().getHeap();
-
+			
 			// write number of owned monitors
 			os.writeInt(threadInfo.getLockedObjectReferences().length);
-
+			
 			for (int objRef : threadInfo.getLockedObjectReferences()) {
 				ElementInfo elementInfo = heap.get(objRef);
 				ObjectId objectId = objectManager.getObjectId(elementInfo);
@@ -171,9 +159,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			// TODO verify the thread is suspended - we need to redesign thread
-			// suspension
-
+			// TODO verify the thread is suspended - we need to redesign thread suspension
+			
 			ObjectId objectId = contextProvider.getObjectManager().getObjectId(threadInfo.getLockObject());
 			objectId.writeTagged(os);
 		}
@@ -198,10 +185,16 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
-			os.writeInt(threadInfo.threadDataClone().getSuspendCount());
+			
+			int suspendCount = contextProvider.getVirtualMachine().getExecutionManager().suspendCount(threadInfo);
+			logger.debug("Suspend count: {}", suspendCount);
+			os.writeInt(suspendCount);
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ThreadReferenceCommand.class);
 	private byte commandId;
+	
 
 	private ThreadReferenceCommand(int commandId) {
 		this.commandId = (byte) commandId;
@@ -219,32 +212,33 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		return map.get(val);
 	}
 
-	/**
+/**
 	 * JPF Thread statuses to JDWP Thread statuses mapping
 	 * 
 	 * @param threadInfo
 	 *            The thread
 	 * @return The JDWP status of the thread
 	 */
-	private static ThreadStatus threadStatus(ThreadInfo threadInfo) {
 
+	private static ThreadStatus threadStatus(ThreadInfo threadInfo) {
+		
 		switch (threadInfo.getState()) {
 		case BLOCKED:
 			return ThreadStatus.MONITOR;
-
+		
 		case TIMEOUT_WAITING:
 		case NOTIFIED:
 		case INTERRUPTED:
 		case TIMEDOUT:
 		case WAITING:
 			return ThreadStatus.WAIT;
-
+		
 		case TERMINATED:
 			return ThreadStatus.ZOMBIE;
-
+			
 		case SLEEPING:
 			return ThreadStatus.SLEEPING;
-
+		
 		case UNBLOCKED:
 		case RUNNING:
 		default:
@@ -258,6 +252,16 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
-		execute(threadId.getInfoObject(), bytes, os, contextProvider);
+		
+		ThreadInfo threadInfo = threadId.getInfoObject();
+		
+		logger.debug("Thread ID: {}, ThreadInfo: {}", threadId, threadInfo);
+		
+		if (threadInfo.isTerminated()) {
+			throw new InvalidThreadException(threadId);
+		}
+		
+		execute(threadInfo, bytes, os, contextProvider);
 	}
 }
+

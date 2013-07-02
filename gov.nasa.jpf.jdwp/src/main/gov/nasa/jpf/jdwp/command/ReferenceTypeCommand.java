@@ -304,15 +304,13 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			if (withGeneric) {
 				JdwpString.writeNullAsEmpty(field.getGenericSignature(), os);
 			}
-			System.out.println("Field: " + field.getName() + ", signature: " + field.getSignature() + ", generic signature: " + field.getGenericSignature()
-					+ ", fieldId: " + fieldId);
+			logger.debug("Field: {}, signature: {}, generic signature: {}, fieldId: {}", field.getName(), field.getSignature(), field.getGenericSignature(), fieldId);
 			os.writeInt(field.getModifiers());
 		}
 	}
 
 	protected void executeFields(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider, boolean withGeneric)
 			throws IOException, JdwpError {
-		System.out.println("Fields for: " + classInfo);
 		FieldInfo[] instanceFields = classInfo.getDeclaredInstanceFields();
 		FieldInfo[] staticFields = classInfo.getDeclaredStaticFields();
 		os.writeInt(instanceFields.length + staticFields.length);
@@ -325,17 +323,13 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 
 	protected void executeMethods(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider, boolean withGeneric)
 			throws IOException, JdwpError {
-		System.out.println("METHODS FOR CLASS: " + classInfo);
 		MethodInfo[] methods = classInfo.getDeclaredMethodInfos();
 		os.writeInt(methods.length);
 		for (int i = 0; i < methods.length; i++) {
 			MethodInfo method = methods[i];
 			os.writeLong(method.getGlobalId());
-			System.out.println("METHOD: '" + method.getName() + "', signature: " + method.getSignature() + ", generic signature: "
-					+ method.getGenericSignature() + " (global id: " + method.getGlobalId() + ")");
-			// method.writeId(os);
+			
 			JdwpString.write(method.getName(), os);
-
 			JdwpString.write(method.getSignature(), os);
 
 			if (withGeneric) {
@@ -343,6 +337,8 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			}
 
 			os.writeInt(method.getModifiers());
+			
+			logger.debug("Method: '{}', signature: {}, generic signature: {} (global id: {})", method.getName(), method.getSignature(), method.getGenericSignature(), method.getGlobalId());
 		}
 	}
 

@@ -124,8 +124,6 @@ public class JdwpCommandPacket extends JdwpPacket
     _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
 	_command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
 	
-	logger.info("Running: SET: {}, CMD: {}", _commandSet, _command);
-	
     return i;
   }
 

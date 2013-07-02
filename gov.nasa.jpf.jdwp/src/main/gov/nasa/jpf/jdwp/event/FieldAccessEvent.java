@@ -1,7 +1,6 @@
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;

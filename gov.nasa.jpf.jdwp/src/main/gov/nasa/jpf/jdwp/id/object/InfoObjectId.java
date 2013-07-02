@@ -18,7 +18,10 @@ import java.lang.ref.WeakReference;
  * SomeNameInfo object (like {@link ThreadInfo}). Therefore it is convenient to
  * keep such information at one place.<br/>
  * 
- * Supports lazy load of the infoObject in case it's null.
+ * Supports lazy load of the infoObject in case it's null.<br/>
+ * It's up to the programmer to decide whether the infoObject can be cached or
+ * not. Caching is not advisable for {@link ThreadInfo} instances for example
+ * since those do change during the SuT execution.
  * 
  * @author stepan
  * 
@@ -63,7 +66,7 @@ public abstract class InfoObjectId<T> extends ObjectId {
 			if (infoObject != null) {
 				infoObjectReference = new WeakReference<T>(infoObject);
 			} else {
-				throw new InvalidObject("ObjectId: " + this);
+				throw new InvalidObject(this);
 			}
 		}
 		return infoObject;

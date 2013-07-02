@@ -44,16 +44,16 @@ import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
-import gov.nasa.jpf.jdwp.JDWPRunner;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
+import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -100,13 +100,18 @@ public class Jdwp extends Thread {
 	private Object _initLock = new Object();
 	private int _initCount = 0;
 
+	private VirtualMachine vm;
+
 	/**
 	 * constructor
+	 * @param vm 
 	 */
-	public Jdwp() {
+	public Jdwp(VirtualMachine vm) {
 		super("JDWP-initializator");
 		_shutdown = false;
 		_instance = this;
+		
+		this.vm = vm;
 	}
 
 	/**
@@ -163,7 +168,15 @@ public class Jdwp extends Thread {
 
 	// A helper function to initialize the transport layer
 	private void _doInitialization() throws TransportException {
-		_group = new ThreadGroup("JDWP threads");
+		_group = new ThreadGroup("JDWP threads") {
+
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				System.err.println("Shutting down whole VM: " + e.getMessage());
+				System.exit(1);
+			}
+			
+		};
 		// initialize transport
 		ITransport transport = TransportFactory.newInstance(_properties);
 		_connection = new JdwpConnection(_group, transport);
@@ -201,10 +214,7 @@ public class Jdwp extends Thread {
 			_shutdown = true;
 			isDebugging = false;
 
-			/*
-			 * FIXME: probably need to check state of user's program -- if it is
-			 * suspended, we need to either resume or kill them.
-			 */
+			vm.exit(1);
 
 			interrupt();
 		}
@@ -383,13 +393,14 @@ public class Jdwp extends Thread {
 			break;
 
 		case EVENT_THREAD:
-			// TODO how to solve just one thread suspension?
-			JDWPRunner.vm.suspendAllThreadsAndSuspend();
-			// VMVirtualMachine.suspendThread (Thread.currentThread ());
+			ThreadInfo currentThread = VM.getVM().getCurrentThread();
+			vm.getExecutionManager().markThreadSuspended(currentThread);
+			vm.getExecutionManager().blockVMExecution();
 			break;
 
 		case ALL:
-			JDWPRunner.vm.suspendAllThreadsAndSuspend();
+			vm.getExecutionManager().markVMSuspended();
+			vm.getExecutionManager().blockVMExecution();
 			break;
 		}
 	}

@@ -97,7 +97,8 @@ public class VirtualMachineHelper {
 		private Value value;
 
 		public MethodResult(Value value, ObjectId exception) {
-			this.value = value;
+			// TODO use Null object pattern everywhere ...
+			this.value = value != null ? value : NullObjectId.getInstance();
 			this.exception = exception != null ? exception : NullObjectId.getInstance();
 		}
 
@@ -111,10 +112,17 @@ public class VirtualMachineHelper {
 	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
 		return invokeMethod(object, method, values, thread, options, false);
 	}
+
 	public static MethodResult invokeConstructor(MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
 		return invokeMethod(null, method, values, thread, options, true);
 	}
-	private static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor) throws InvalidObject {
+
+	private static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor)
+			throws InvalidObject {
+		// TODO (maybe this is not a TODO) we're supposed to resume all threads
+		// unless INVOKE_SINGLE_THREADED was specified - to prevent deadlocks
+		// we're not able to achieve this with JPF since JPF would inspect all
+		// states and report where the deadlock occurs
 
 		// TODO [for PJA] What is the best way to execute a method
 		// it's typical, we want to execute obj.toString() when generating a
@@ -126,37 +134,40 @@ public class VirtualMachineHelper {
 								// through this
 
 		DirectCallStackFrame frame = new DirectCallStackFrame(stub);
-		
+
 		ElementInfo constructedElementInfo = null;
-		
+
 		if (isConstructor) {
-			
+
 			Heap heap = thread.getHeap();
-		    ClassInfo ci = method.getClassInfo();
+			ClassInfo ci = method.getClassInfo();
 
-		    if (!ci.isRegistered()){
-		      ci.registerClass(thread);
-		    }
+			if (!ci.isRegistered()) {
+				ci.registerClass(thread);
+			}
 
-		    // since this is a NEW, we also have to pushClinit
-		    if (!ci.isInitialized()) {
-		      if (ci.initializeClass(thread)) {
-		    	  throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
-		        //TODO return thread.getPC();  // reexecute this instruction once we return from the clinits
-		      }
-		    }
+			// since this is a NEW, we also have to pushClinit
+			if (!ci.isInitialized()) {
+				if (ci.initializeClass(thread)) {
+					throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
+					// TODO return thread.getPC(); // reexecute this instruction
+					// once we return from the clinits
+				}
+			}
 
-		    if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
-		    	throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
-		      //TODO return ti.createAndThrowException("java.lang.OutOfMemoryError",
-		      //                                  "trying to allocate new " + cname);
-		    }
+			if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
+				throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
+				// TODO return
+				// ti.createAndThrowException("java.lang.OutOfMemoryError",
+				// "trying to allocate new " + cname);
+			}
 
-		    constructedElementInfo = heap.newObject(ci, thread);
-		    int objRef = constructedElementInfo.getObjectRef();
+			constructedElementInfo = heap.newObject(ci, thread);
+			int objRef = constructedElementInfo.getObjectRef();
 
-		    // pushes the object stub onto the stack so that it can be filled by the constructor
-		    frame.pushRef( objRef);
+			// pushes the object stub onto the stack so that it can be filled by
+			// the constructor
+			frame.pushRef(objRef);
 		}
 
 		// push this on a stack
@@ -171,21 +182,18 @@ public class VirtualMachineHelper {
 			value.push(frame);
 		}
 
-		ObjectId exception = null;
 		try {
 			thread.executeMethodHidden(frame);
 			// ti.advancePC();
 
 		} catch (UncaughtException ux) { // frame's method is firewalled
 			System.out.println("# hidden method execution failed, leaving nativeHiddenRoundtrip: " + ux);
-			thread.clearPendingException();
 			ExceptionInfo exceptionInfo = thread.getPendingException();
-			exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo.getException());
-			throw new RuntimeException("exceptions not yet implemented");
-			// methodResult = new MethodResult(null, exceptionInfo);
-			// thread.popFrame(); // this is still the DirectCallStackFrame,
-			// and we want to continue execution
-			// return -1;
+			thread.clearPendingException();
+			ObjectId exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo.getException());
+			thread.popFrame(); // this is still the DirectCallStackFrame, and we
+								// want to continue execution
+			return new MethodResult(null, exception);
 		}
 
 		Value returnValue;
@@ -195,9 +203,10 @@ public class VirtualMachineHelper {
 			ClassInfo returnedClassInfo = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
 			returnValue = Tag.classInfoToTag(returnedClassInfo).peekValue(frame);
 		}
-		
+
 		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);
-		return new MethodResult(returnValue, exception);
+
+		return new MethodResult(returnValue, null);
 
 	}
 

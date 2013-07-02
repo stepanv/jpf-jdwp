@@ -4,7 +4,6 @@ import gnu.classpath.jdwp.event.EventManager;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
