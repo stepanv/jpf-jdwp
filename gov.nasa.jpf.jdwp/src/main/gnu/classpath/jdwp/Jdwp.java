@@ -44,6 +44,8 @@ import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
+import gov.nasa.jpf.JPFException;
+import gov.nasa.jpf.JPF.ExitException;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase;
@@ -104,13 +106,14 @@ public class Jdwp extends Thread {
 
 	/**
 	 * constructor
-	 * @param vm 
+	 * 
+	 * @param vm
 	 */
 	public Jdwp(VirtualMachine vm) {
 		super("JDWP-initializator");
 		_shutdown = false;
 		_instance = this;
-		
+
 		this.vm = vm;
 	}
 
@@ -175,7 +178,7 @@ public class Jdwp extends Thread {
 				System.err.println("Shutting down whole VM: " + e.getMessage());
 				System.exit(1);
 			}
-			
+
 		};
 		// initialize transport
 		ITransport transport = TransportFactory.newInstance(_properties);
@@ -239,61 +242,68 @@ public class Jdwp extends Thread {
 				try {
 					sendEvent(requests[i], event);
 					jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
+				} catch (JPFException jpfe) {
+					/*
+					 * A JPF generated exception. Let's not pretend nothing
+					 * happened
+					 */
+					throw jpfe;
+				} catch (ExitException ee) {
+					/* Exit exception should be passed not modified. */
+					throw ee;
 				} catch (Exception e) {
 					/*
 					 * Really not much we can do. For now, just print out a
 					 * warning to the user.
 					 */
-					System.out.println("Jdwp.notify: caught exception: " + e);
-					e.printStackTrace();
+					throw new IllegalStateException("The execution happended to end in not predicted state.", e);
 				}
 			}
 		}
 	}
-	
-//	public static void notify2(EventBase[] events) {
-//		Jdwp jdwp = getDefault();
-//
-//		if (jdwp != null) {
-//			SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
-//			EventManager em = EventManager.getDefault();
-//			ArrayList allEvents = new ArrayList();
-//			ArrayList allRequests = new ArrayList();
-//			for (int i = 0; i < events.length; ++i) {
-//				EventRequest[] r = em.getEventRequests(events[i]);
-//				for (int j = 0; j < r.length; ++j) {
-//					/*
-//					 * This is hacky, but it's not clear whether this can really
-//					 * happen, and if it does, what should occur.
-//					 */
-//					allEvents.add(events[i]);
-//					allRequests.add(r[j]);
-//
-//					// Perhaps this is overkill?
-//					if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
-//						suspendPolicy = r[j].getSuspendPolicy();
-//					}
-//
-//				}
-//			}
-//
-//			try {
-//				EventBase[] e = new EventBase[allEvents.size()];
-//				allEvents.toArray(e);
-//				EventRequest[] r = new EventRequest[allRequests.size()];
-//				allRequests.toArray(r);
-//				sendEvents(r, e, suspendPolicy);
-//				jdwp._enforceSuspendPolicy(suspendPolicy);
-//			} catch (Exception e) {
-//				/*
-//				 * Really not much we can do. For now, just print out a warning
-//				 * to the user.
-//				 */
-//				System.out.println("Jdwp.notify: caught exception: " + e);
-//			}
-//		}
-//	}
 
+	// public static void notify2(EventBase[] events) {
+	// Jdwp jdwp = getDefault();
+	//
+	// if (jdwp != null) {
+	// SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
+	// EventManager em = EventManager.getDefault();
+	// ArrayList allEvents = new ArrayList();
+	// ArrayList allRequests = new ArrayList();
+	// for (int i = 0; i < events.length; ++i) {
+	// EventRequest[] r = em.getEventRequests(events[i]);
+	// for (int j = 0; j < r.length; ++j) {
+	// /*
+	// * This is hacky, but it's not clear whether this can really
+	// * happen, and if it does, what should occur.
+	// */
+	// allEvents.add(events[i]);
+	// allRequests.add(r[j]);
+	//
+	// // Perhaps this is overkill?
+	// if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
+	// suspendPolicy = r[j].getSuspendPolicy();
+	// }
+	//
+	// }
+	// }
+	//
+	// try {
+	// EventBase[] e = new EventBase[allEvents.size()];
+	// allEvents.toArray(e);
+	// EventRequest[] r = new EventRequest[allRequests.size()];
+	// allRequests.toArray(r);
+	// sendEvents(r, e, suspendPolicy);
+	// jdwp._enforceSuspendPolicy(suspendPolicy);
+	// } catch (Exception e) {
+	// /*
+	// * Really not much we can do. For now, just print out a warning
+	// * to the user.
+	// */
+	// System.out.println("Jdwp.notify: caught exception: " + e);
+	// }
+	// }
+	// }
 
 	/**
 	 * Notify the debugger of "co-located" events. This method should not be

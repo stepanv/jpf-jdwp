@@ -3,7 +3,6 @@ package gov.nasa.jpf.jdwp;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,17 +106,7 @@ public class JDWPRunner {
 				}
 			}
 
-			try {
-				vm.run();
-			} finally {
-				System.err.println("JPF ending.");
-				System.out.println("JPF ending.");
-
-				synchronized (vm) {
-					Jdwp.notify(new VmDeathEvent());
-				}
-				jdwp.shutdown();
-			}
+			vm.run();
 		} else {
 			System.err.println("System property 'jdwp' not found. Running JPF without the JDWP agent.");
 			jpf.run();

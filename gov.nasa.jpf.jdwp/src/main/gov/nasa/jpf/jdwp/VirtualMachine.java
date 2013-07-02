@@ -466,7 +466,7 @@ public class VirtualMachine {
 			this.executionManager.resumeAllThreads();
 		}
 	}
-	
+
 	/**
 	 * Conditionally exits execution on JPF.<br/>
 	 * Must be called by JPF thread.<br/>
@@ -483,7 +483,7 @@ public class VirtualMachine {
 			JPF.exit();
 		}
 	}
-	
+
 	/**
 	 * Runs the virtual machine hence the JPF.
 	 * 
@@ -493,12 +493,13 @@ public class VirtualMachine {
 		executionThread = Thread.currentThread();
 		try {
 			// Get the lock before the JPF starts.
-			// This lock is paired with unlock
+			// This lock is paired with unlock at the end of the finally block
+			// .. see a comment there for further detail
 			runLock.lock();
 			jpf.run();
 			inExit = true;
 		} catch (ExitException ee) {
-			logger.warn("JPF was forcibly closed. Exiting...");
+			logger.warn("JPF was forcibly closed. Exiting...", ee);
 		} catch (Throwable t) {
 			logger.error("An uncaught exception in JPF thrown. Exiting...", t);
 		} finally {
@@ -507,13 +508,14 @@ public class VirtualMachine {
 			} catch (Throwable t) {
 				// we're about to end anyway
 			}
-			
+
 			jdwp.shutdown();
-			
+
 			// the unlock here is just for packet processor to be able to finish
 			// if the lock is owned
 			// We cannot be sure whether the lock is owned or not since the
-			// Exception could have been thrown from both
+			// Exception could have been thrown from both locked and unlocked
+			// sections
 			runLock.unlockIfOwned();
 		}
 		return exitCode;
