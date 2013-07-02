@@ -19,17 +19,8 @@ Currently, two projects are located in this repo:
 
  1. JDWP (debugee-side) to JPF implementation in project ``gov.nasa.jpf.jdwp``
     
-    * still based on GNU Classpath JDWP project (mainly written by Keith Seitz) 
-      
-      with reimplemented JDWP-to-VM interface
+    * for the network related layer, I'm using a part of GNU Classpath JDWP project (mainly written by Keith Seitz) 
 
-    * following pending changes:
-       * complete redesign and 
-       * refactor and
-       * JDWP 7 specification implementation
-       * JDWP BE idea of working redesign
-
-      might lead to complete from GNU-Classpath-JDWP separation
  #. JDI (dubugger-side) to JPF implentation in project ``jdi-test``
     
     * meant as a proof of concept only
@@ -41,8 +32,8 @@ JDWP-to-JPF Building and Installing
 Eclipse workspace preparation:
 ------------------------------
 
- 1. clone ``jdwp`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
- #. clone this repository and import ``gov.nasa.jpf.jdwp`` into Eclipse
+ 1. clone ``jdwp-v7`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
+ #. clone this repository and import ``gov.nasa.jpf.jdwp`` into Eclipse (the ``default`` branch)
 
 Running:
 --------
@@ -53,9 +44,9 @@ Create new *Debug/Run Java Application* configuration:
  #. As Program arguments you're supposed to include standard JPF arguments so that JPF is able to run a main class.
     For example: ``+target=your.package.MainClass +classpath=+,/path/to/the/compiled/classes/bin``
  #. To enable JDWP, add VM property ``jdwp`` with standard JDWP arguments.
-    For example: ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=51255``
+    For example (to start JDWP agent at localhost:51255): ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=51255``
  #. Run or Debug it
- #. Attach the debugger (assuming you're running JPF as a jdwp server)
+ #. Attach the debugger (assuming you're running JPF as a jdwp server ) by using *Remote Java Application* from the *Debug Configuration* wizzard.
 
 Apparently, it's possible to run it without Eclipse, but there is no build system yet.
     
