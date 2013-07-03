@@ -60,5 +60,4 @@ public interface Value {
 	public void modify(Fields fields, int index) throws InvalidObject;
 
 	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject;
-
 }

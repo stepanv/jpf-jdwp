@@ -12,6 +12,7 @@ import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.ValueUtils;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -55,11 +56,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 
 			for (int i = 0; i < fields; i++) {
 				FieldInfo field = contextProvider.getObjectManager().readFieldId(bytes).get();
-				System.out.println(field);
-				// field.setAccessible(true); // Might be a private field
-				Object object = field.getValueObject(obj.getFields());
-				Value val = Tag.classInfoToTag(field.getTypeClassInfo()).value(object);
-				val.writeTagged(os);
+				Value value = ValueUtils.fieldToValue(obj, field);
+				value.writeTagged(os);
 			}
 
 		}

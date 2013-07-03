@@ -1,13 +1,12 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
-import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.ValueUtils;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -54,13 +53,10 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 			os.writeInt(length);
 
 			for (int i = first; i < first + length; i++) {
-				Value value = null;
+				Value value = ValueUtils.arrayIndexToValue(array, i);
 				if (componentClassInfo.isPrimitive()) {
-					value = Tag.arrayFieldToValue(array.getFields(), i);
 					value.writeUntagged(os);
 				} else {
-					ElementInfo ei = VM.getVM().getHeap().get(array.getReferenceElement(i));
-					value = JdwpObjectManager.getInstance().getObjectId(ei);
 					value.writeTagged(os);
 				}
 			}

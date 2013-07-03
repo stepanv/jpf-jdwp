@@ -132,7 +132,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 
 	public static void execute(Command command, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		try {
-			logger.debug("Running command: {} (class: {})", command, command.getClass());
+			logger.info("Running command: {} (class: {})", command, command.getClass());
 			contextProvider.getVirtualMachine().getRunLock().lock();
 			command.execute(bytes, os, contextProvider);
 		} finally {

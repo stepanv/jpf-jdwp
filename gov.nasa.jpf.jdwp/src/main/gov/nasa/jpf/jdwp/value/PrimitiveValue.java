@@ -1,7 +1,10 @@
 package gov.nasa.jpf.jdwp.value;
 
+import gov.nasa.jpf.jdwp.command.ArrayReferenceCommand;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
+import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
+import gov.nasa.jpf.jdwp.command.StackFrameCommand;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.vm.ArrayFields;
@@ -11,6 +14,7 @@ import gov.nasa.jpf.vm.CharArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DoubleArrayFields;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.FloatArrayFields;
 import gov.nasa.jpf.vm.IntArrayFields;
@@ -28,9 +32,20 @@ public abstract class PrimitiveValue implements Value {
 
 	public static enum Tag implements ConvertibleEnum<Byte, Tag> {
 		ARRAY(91, Object[].class), BYTE(66, byte.class, ByteArrayFields.class) {
+
+			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new ByteValue(elementInfo.getByteField(fieldInfo));
+			}
+
 			@Override
 			public Value value(Object object) {
 				return new ByteValue((Byte) object);
+			}
+
+			@Override
+			public Value value(ElementInfo array, int position) {
+				return new CharValue(array.getCharElement(position));
 			}
 
 			@Override
@@ -39,24 +54,25 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new ByteValue(fields.getByteValue(index));
-			}
-
-			@Override
 			public Value peekValue(StackFrame stackFrame) {
 				return new ByteValue((byte) stackFrame.peek());
 			}
 		},
 		CHAR(67, char.class, CharArrayFields.class) {
+
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new CharValue(fields.getCharValue(index));
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new CharValue(elementInfo.getCharField(fieldInfo));
 			}
 
 			@Override
 			public Value value(Object object) {
 				return new CharValue((Character) object);
+			}
+
+			@Override
+			public Value value(ElementInfo array, int position) {
+				return new CharValue(array.getCharElement(position));
 			}
 
 			@Override
@@ -71,9 +87,20 @@ public abstract class PrimitiveValue implements Value {
 
 		},
 		OBJECT(76, Object.class), FLOAT(70, float.class, FloatArrayFields.class) {
+
+			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new DoubleValue(elementInfo.getDoubleField(fieldInfo));
+			}
+
 			@Override
 			public Value value(Object object) {
 				return new FloatValue((Float) object);
+			}
+
+			@Override
+			public Value value(ElementInfo array, int position) {
+				return new FloatValue(array.getFloatElement(position));
 			}
 
 			@Override
@@ -81,8 +108,18 @@ public abstract class PrimitiveValue implements Value {
 				return new FloatValue(bytes.getFloat());
 			}
 
+			@Override
+			public Value peekValue(StackFrame stackFrame) {
+				return new FloatValue(stackFrame.peekFloat());
+			}
+
 		},
 		DOUBLE(68, double.class, DoubleArrayFields.class) {
+
+			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new DoubleValue(elementInfo.getDoubleField(fieldInfo));
+			}
 
 			@Override
 			public Value value(Object object) {
@@ -90,13 +127,13 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
-				return new DoubleValue(bytes.getDouble());
+			public Value value(ElementInfo array, int position) {
+				return new DoubleValue(array.getDoubleElement(position));
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new DoubleValue(fields.getDoubleValue(index));
+			public Value readValue(ByteBuffer bytes) throws JdwpError {
+				return new DoubleValue(bytes.getDouble());
 			}
 
 			@Override
@@ -108,18 +145,23 @@ public abstract class PrimitiveValue implements Value {
 		INT(73, int.class, IntArrayFields.class) {
 
 			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new IntegerValue(elementInfo.getIntField(fieldInfo));
+			}
+
+			@Override
 			public Value value(Object object) {
 				return new IntegerValue((Integer) object);
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
-				return new IntegerValue(bytes.getInt());
+			public Value value(ElementInfo array, int position) {
+				return new IntegerValue(array.getIntElement(position));
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new IntegerValue(fields.getIntValue(index));
+			public Value readValue(ByteBuffer bytes) throws JdwpError {
+				return new IntegerValue(bytes.getInt());
 			}
 
 			@Override
@@ -130,8 +172,18 @@ public abstract class PrimitiveValue implements Value {
 		LONG(74, long.class, LongArrayFields.class) {
 
 			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new LongValue(elementInfo.getLongField(fieldInfo));
+			}
+
+			@Override
 			public Value value(Object object) {
 				return new LongValue((Long) object);
+			}
+
+			@Override
+			public Value value(ElementInfo array, int position) {
+				return new LongValue(array.getLongElement(position));
 			}
 
 			@Override
@@ -140,16 +192,17 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new LongValue(fields.getLongValue(index));
-			}
-
-			@Override
 			public Value peekValue(StackFrame stackFrame) {
 				return new LongValue(stackFrame.peekLong());
 			}
+
 		},
 		SHORT(83, short.class, ShortArrayFields.class) {
+
+			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new ShortValue(elementInfo.getShortField(fieldInfo));
+			}
 
 			@Override
 			public Value value(Object object) {
@@ -157,13 +210,13 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
-				return new ShortValue(bytes.getShort());
+			public Value value(ElementInfo array, int position) {
+				return new ShortValue(array.getShortElement(position));
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new ShortValue(fields.getShortValue(index));
+			public Value readValue(ByteBuffer bytes) throws JdwpError {
+				return new ShortValue(bytes.getShort());
 			}
 
 			@Override
@@ -174,7 +227,17 @@ public abstract class PrimitiveValue implements Value {
 		VOID(86, void.class) {
 
 			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new VoidValue();
+			}
+
+			@Override
 			public Value value(Object object) {
+				return new VoidValue();
+			}
+
+			@Override
+			public Value value(ElementInfo array, int position) {
 				return new VoidValue();
 			}
 
@@ -191,18 +254,23 @@ public abstract class PrimitiveValue implements Value {
 		BOOLEAN(90, boolean.class, BooleanArrayFields.class) {
 
 			@Override
+			public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+				return new BooleanValue(elementInfo.getBooleanField(fieldInfo));
+			}
+
+			@Override
 			public Value value(Object object) {
 				return new BooleanValue((Boolean) object);
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
-				return new BooleanValue(bytes.get() != 0);
+			public Value value(ElementInfo array, int position) {
+				return new BooleanValue(array.getBooleanElement(position));
 			}
 
 			@Override
-			protected Value value(Fields fields, int index) {
-				return new BooleanValue(fields.getBooleanValue(index));
+			public Value readValue(ByteBuffer bytes) throws JdwpError {
+				return new BooleanValue(bytes.get() != 0);
 			}
 
 			@Override
@@ -230,9 +298,16 @@ public abstract class PrimitiveValue implements Value {
 		}
 
 		/**
+		 * <p>
 		 * Transforms an object into the {@link Value} instance. <br/>
 		 * Check out overridden methods in {@link Tag} for specific
 		 * implementations of primitive types.
+		 * </p>
+		 * <p>
+		 * This method is used to query values from object instances as in
+		 * {@link StackFrameCommand}.
+		 * TODO is there a better way how to get a value from a StackFrame?
+		 * </p>
 		 * 
 		 * @param object
 		 *            Object to transform.
@@ -240,6 +315,55 @@ public abstract class PrimitiveValue implements Value {
 		 */
 		public Value value(Object object) {
 			return JdwpObjectManager.getInstance().getObjectId((ElementInfo) object);
+		}
+
+		/**
+		 * <p>
+		 * Gets {@link Value} instance for the given {@link ElementInfo}
+		 * non-array instance for the given field.<br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * </p>
+		 * <p>
+		 * This method is used to query values from object instances as in
+		 * {@link ObjectReferenceCommand}.
+		 * </p>
+		 * 
+		 * @param elementInfo
+		 *            The instance of object to query.
+		 * @param fieldInfo
+		 *            The info object of the field.
+		 * @return The {@link Value} instance for the value of the given field.
+		 */
+		public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
+			return objRefToValue(elementInfo.getReferenceField(fieldInfo));
+		}
+
+		/**
+		 * <p>
+		 * Gets {@link Value} instance for the given {@link ElementInfo} array
+		 * instance at given position.<br/>
+		 * Check out overridden methods in {@link Tag} for specific
+		 * implementations of primitive types.
+		 * </p>
+		 * <p>
+		 * This method is used to query values from arrays as in
+		 * {@link ArrayReferenceCommand}.
+		 * </p>
+		 * 
+		 * @param array
+		 *            The array to get the value from.
+		 * @param position
+		 *            The position of the element in the array.
+		 * @return The {@link Value} instance for the given position.
+		 */
+		public Value value(ElementInfo array, int position) {
+			return objRefToValue(array.getReferenceElement(position));
+		}
+
+		private static Value objRefToValue(int objRef) {
+			ElementInfo fieldElementInfo = VM.getVM().getHeap().get(objRef);
+			return JdwpObjectManager.getInstance().getObjectId(fieldElementInfo);
 		}
 
 		/**
@@ -269,23 +393,6 @@ public abstract class PrimitiveValue implements Value {
 		 */
 		public Value readValue(ByteBuffer bytes) throws JdwpError {
 			return JdwpObjectManager.getInstance().readObjectId(bytes);
-		}
-
-		/**
-		 * Designed for primitive types only.<br/>
-		 * Gets {@link Value} instance of primitive type for given
-		 * {@link Fields} instance at given index.<br/>
-		 * Check out overridden methods in {@link Tag} for specific
-		 * implementations of primitive types.
-		 * 
-		 * @param fields
-		 *            The fields
-		 * @param index
-		 *            The index where to look for the primitive type
-		 * @return Value instance
-		 */
-		protected Value value(Fields fields, int index) {
-			throw new RuntimeException("value get for Fields instance: " + fields + " is not by design implemented. This shouldn't happened!");
 		}
 
 		private static final ReverseEnumMap<Byte, Tag> map = new ReverseEnumMap<Byte, Tag>(Tag.class);
@@ -332,9 +439,10 @@ public abstract class PrimitiveValue implements Value {
 			return map.get(val);
 		}
 
-		public static Value arrayFieldToValue(Fields fields, int position) {
-			return mapArrayClazz.get(fields.getClass()).value(fields, position);
+		public static Tag fieldToTag(FieldInfo field) {
+			return Tag.classInfoToTag(field.getTypeClassInfo());
 		}
+
 	}
 
 	private Tag tag;
