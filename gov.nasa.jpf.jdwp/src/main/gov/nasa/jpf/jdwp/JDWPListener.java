@@ -165,6 +165,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 			// composite event if occurred together!
 			if (logger.isTraceEnabled()) {
 				if (instructionToExecute instanceof InvokeInstruction) {
+					// FIXME .. this requires InvokeInstruction#arguments to be public .. since this is just for debugging it has to be removed TODO
 					logger.trace("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments,
 							instructionToExecute.getFileLocation());
 				} else {

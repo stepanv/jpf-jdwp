@@ -142,7 +142,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 			if (contextProvider.getJPF().getStatus() == Status.DONE) {
 				// If JVM has terminated we don't care about any other
 				// exceptions
-				throw new JdwpError(ErrorType.VM_DEAD);
+				throw new JdwpError(ErrorType.VM_DEAD, "JPF execution stopped while running command: " + command + " of set: " + command.getClass());
 			}
 		}
 	}
