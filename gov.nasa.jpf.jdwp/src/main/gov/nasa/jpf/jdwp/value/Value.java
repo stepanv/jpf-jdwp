@@ -2,6 +2,7 @@ package gov.nasa.jpf.jdwp.value;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -12,13 +13,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * This class implements corresponding value from the JDWP specification.<br/>
- * By default value is sent across JDWP including the {@link Tag} byte. To the
- * contrary, standard IDs are sent by default without the {@link Tag} byte. To
- * avoid confusion {@link Value} doesn't declare <tt>write</tt> method and thus
- * a developer must decide between {@link Value#writeTagged(DataOutputStream)}
- * and {@link Value#writeUntagged(DataOutputStream)} explicitly, according to
- * the specification.
+ * This class implements corresponding <i>value</i> common data type from the
+ * JDWP specification.<br/>
+ * By default the <i>value</i> is sent across JDWP including the {@link Tag}
+ * byte. To the contrary, standard IDs (subclasses of {@link Identifier}) are
+ * sent by default without the {@link Tag} byte. To avoid confusion
+ * {@link Value} doesn't declare <tt>write</tt> method and thus a developer must
+ * decide between {@link Value#writeTagged(DataOutputStream)} and
+ * {@link Value#writeUntagged(DataOutputStream)} explicitly, according to the
+ * specification, when writing the <i>value</i> to the stream.
  * 
  * <p>
  * <h2>JDWP Specification</h2>
@@ -26,9 +29,18 @@ import java.io.IOException;
  * which is used to identify the type. See {@link Tag} for the possible values
  * of this byte. It is followed immediately by the value itself. This value can
  * be an {@link ObjectId} (see Get ID Sizes (
- * {@link VirtualMachineCommand#IDSIZES})) or a primitive value (1 to 8 bytes).<br/>
+ * {@link VirtualMachineCommand#IDSIZES})) or a primitive value (1 to 8 bytes)
+ * {@link PrimitiveValue}.<br/>
  * More details about each value type can be found in the next table.
  * </p>
+ * 
+ * <p>
+ * Note that specification refers to "some next table" which sadly does not
+ * exist.
+ * </p>
+ * 
+ * @see PrimitiveValue
+ * @see ObjectId
  * 
  * @author stepan
  * 

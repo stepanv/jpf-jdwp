@@ -28,6 +28,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+/**
+ * The common abstract class for all primitive values that are a subset of
+ * common data type <i>value</i> according to the JDWP Specification as stated
+ * in the table of Detailed Command Information section.
+ * 
+ * @see Value
+ * 
+ * @author stepan
+ * 
+ */
 public abstract class PrimitiveValue implements Value {
 
 	public static enum Tag implements ConvertibleEnum<Byte, Tag> {
@@ -305,8 +315,8 @@ public abstract class PrimitiveValue implements Value {
 		 * </p>
 		 * <p>
 		 * This method is used to query values from object instances as in
-		 * {@link StackFrameCommand}.
-		 * TODO is there a better way how to get a value from a StackFrame?
+		 * {@link StackFrameCommand}. TODO is there a better way how to get a
+		 * value from a StackFrame?
 		 * </p>
 		 * 
 		 * @param object
