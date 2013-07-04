@@ -459,5 +459,4 @@ public abstract class PrimitiveValue implements Value {
 		os.writeByte(tag.tagId);
 		writeUntagged(os);
 	}
-
 }

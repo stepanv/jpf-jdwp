@@ -85,8 +85,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
 
 			for (int i = first; i < first + values; ++i) {
 				Value valueUntagged = tag.readValue(bytes);
-
-				valueUntagged.modify(array.getFields(), i);
+				valueUntagged.modify(array.getModifiableInstance(), i);
 			}
 		}
 	};

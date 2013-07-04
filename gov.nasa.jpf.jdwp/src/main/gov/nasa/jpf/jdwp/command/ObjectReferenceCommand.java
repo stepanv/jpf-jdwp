@@ -75,7 +75,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	SETVALUES(3) {
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			ElementInfo obj = (DynamicElementInfo) objectId.get();
+			ElementInfo obj = objectId.getModifiable();
 			int values = bytes.getInt();
 
 			for (int i = 0; i < values; ++i) {
@@ -84,9 +84,9 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);
-
-				valueUntagged.modify(obj.getFields(), fieldInfo.getFieldIndex());
-
+				
+				// set the value into the object's field
+				valueUntagged.modify(obj, fieldInfo);
 			}
 
 		}

@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.value;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -25,18 +25,19 @@ public class DoubleValue extends PrimitiveValue {
 	public void push(StackFrame frame) {
 		frame.pushDouble(value);
 	}
-	
-	@Override
-	public void modify(Fields fields, int index) throws InvalidObject {
-		fields.setDoubleValue(index, value);
-	}
 
 	@Override
-	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+	public void modify(StackFrame stackFrame, int slotIndex) {
 		stackFrame.setLongLocalVariable(slotIndex, Double.doubleToLongBits(value));
-		
 	}
 	
+	@Override
+	public void modify(ElementInfo instance, FieldInfo field) {
+		instance.setDoubleField(field, value);
+	}
 	
-
+	@Override
+	public void modify(ElementInfo arrayInstance, int index) {
+		arrayInstance.setDoubleElement(index, value);
+	}
 }

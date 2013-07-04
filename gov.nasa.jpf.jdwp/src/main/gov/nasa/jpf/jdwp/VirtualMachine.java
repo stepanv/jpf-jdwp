@@ -506,7 +506,8 @@ public class VirtualMachine {
 			try {
 				Jdwp.notify(new VmDeathEvent());
 			} catch (Throwable t) {
-				// we're about to end anyway
+				logger.info("VM Death event NOT successfully sent."); 
+				// we're about to end anyway, thus do nothing
 			}
 
 			jdwp.shutdown();

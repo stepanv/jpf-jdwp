@@ -18,6 +18,8 @@ IN PROGRESS 10. Odbouravat TODOs
 12. With one thread processing all the requests, the VM might become unresponsive if it gets stuck in a command (it's not even possible to call virtualmachinecommand#exit)
 13. Need to finally decide whether nulls are allowed for Identifier instances - for ObjectIds we always get NullObjectId but this doesn't work for any Identifier (like in ExceptionOnlyFilter (see TODO there) for ReferenceTypeId) - it works for instance in FieldModificationEvent with objectBeingModified which as ObjectId is NullObjectId if it is for statics.
 
+14. Nektere event requesty nejsou vubec v mape - napriklad METHOD_EXIT_WITH_RETURN_VALUE
+
 
 x.1 Nektere commandy vyzaduji zastavenou VM - *withGenerics - implementovat
 x.2 Nepouzivat Fields - v interface by melo byt ElementInfo a field index (namisto Fields)
@@ -27,3 +29,5 @@ x.4 Spousteni jdwp pres jpf propertu
 x.5 NullObjectId mit v mape - nepouzivat null tam kde je ObjectId
 x.6 use getModifiable - pro ElementInfo i pro StackFrame
 x.7 u modifikace - vyresit paralelismus (synchronizace)
+
+x.2.question Co s StackFrame - kdyz tam neco menim - narozdil od ElementInfo nemam modifiable instance - StackFrame.checkIsModifiable() metoda se nikde nepouziva - je to implementovany v JPF?

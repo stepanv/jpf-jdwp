@@ -11,7 +11,7 @@ import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -107,14 +107,18 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 	}
 
 	@Override
-	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+	public void modify(StackFrame stackFrame, int slotIndex) {
 		stackFrame.setLocalVariable(slotIndex, objectRef, true);
-
 	}
 
 	@Override
-	public void modify(Fields fields, int index) throws InvalidObject {
-		fields.setReferenceValue(index, objectRef);
+	public void modify(ElementInfo instance, FieldInfo field) {
+		instance.setReferenceField(field, objectRef);
+	}
+
+	@Override
+	public void modify(ElementInfo arrayInstance, int index) {
+		arrayInstance.setReferenceElement(index, objectRef);
 	}
 
 	@Override
@@ -189,5 +193,13 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 	@Override
 	public void writeUntagged(DataOutputStream os) throws IOException {
 		write(os);
+	}
+
+	public DynamicElementInfo getModifiable() {
+		Heap heap = VM.getVM().getHeap();
+		// TODO [for PJA] do we have StaticElementInfo in the heap?
+		// this cast sucks, but we always want DynamicElementInfo and we want to
+		// enforce it!
+		return (DynamicElementInfo) heap.getModifiable(objectRef);
 	}
 }

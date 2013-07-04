@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.value;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -25,15 +25,20 @@ public class BooleanValue extends PrimitiveValue {
 	public void push(StackFrame frame) {
 		frame.push(value ? 1 : 0);
 	}
-
+	
 	@Override
-	public void modify(Fields fields, int index) throws InvalidObject {
-		fields.setBooleanValue(index, value);
+	public void modify(StackFrame stackFrame, int slotIndex) {
+		stackFrame.setLocalVariable(slotIndex, value ? 1 : 0, false);
 	}
 	
 	@Override
-	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
-		stackFrame.setLocalVariable(slotIndex, value ? 1 : 0, false);
+	public void modify(ElementInfo instance, FieldInfo field) {
+		instance.setBooleanField(field, value);
+	}
+	
+	@Override
+	public void modify(ElementInfo arrayInstance, int index) {
+		arrayInstance.setBooleanElement(index, value);
 	}
 
 }

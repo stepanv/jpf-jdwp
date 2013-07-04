@@ -61,7 +61,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 		public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			int values = bytes.getInt();
 
-			ElementInfo staticElementInfo = classInfo.getStaticElementInfo();
+			ElementInfo staticElementInfo = classInfo.getModifiableStaticElementInfo();
 
 			for (int i = 0; i < values; ++i) {
 				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
@@ -69,8 +69,8 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);
-
-				valueUntagged.modify(staticElementInfo.getFields(), fieldInfo.getFieldIndex());
+				
+				valueUntagged.modify(staticElementInfo, fieldInfo);
 			}
 		}
 	},

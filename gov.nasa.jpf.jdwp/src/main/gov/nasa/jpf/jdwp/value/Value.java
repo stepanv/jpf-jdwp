@@ -4,7 +4,8 @@ import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -47,17 +48,63 @@ public interface Value {
 
 	/**
 	 * Writes the plain value to the output stream.<br/>
-	 * Values are written untagged rarely, as the JDWP specification states, if the
-	 * signature is known from the context as it is with arrays.
+	 * Values are written untagged rarely, as the JDWP specification states, if
+	 * the signature is known from the context as it is with arrays.
 	 * 
 	 * @param os
 	 * @throws IOException
 	 */
 	public void writeUntagged(DataOutputStream os) throws IOException;
 
+	/**
+	 * Pushes the current value (of this instance) to the given frame.
+	 * 
+	 * @param frame
+	 *            The stack frame where to push this value.
+	 * @throws InvalidObject
+	 */
 	public void push(StackFrame frame) throws InvalidObject;
 
-	public void modify(Fields fields, int index) throws InvalidObject;
+	/**
+	 * Modifies local variable at the given slot index of the given frame.
+	 * 
+	 * @param stackFrame
+	 *            The frame where to modify the local variable.
+	 * @param slotIndex
+	 *            The slot index of the local variable.
+	 */
+	public void modify(StackFrame stackFrame, int slotIndex);
 
-	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject;
+	/**
+	 * Modifies the field of given instance with its value.
+	 * <p>
+	 * Note that this method is not interchangeable with
+	 * {@link Value#modify(ElementInfo, int)} as it is designed for standard
+	 * object instances and NOT arrays!
+	 * 
+	 * @see Value#modify(ElementInfo, int)
+	 * 
+	 * @param instance
+	 *            The SuT instance to be modified
+	 * @param fieldInfo
+	 *            The field that is modified
+	 */
+	public void modify(ElementInfo instance, FieldInfo field);
+
+	/**
+	 * Modifies the given array at the given index.
+	 * <p>
+	 * Note that this method is not interchangeable with
+	 * {@link Value#modify(ElementInfo, FieldInfo)} as it is designed for arrays
+	 * only.<br/>
+	 * It is sad JPF doesn't make a difference between array and standard object
+	 * instances at the class design level.
+	 * </p>
+	 * 
+	 * @param arrayInstance
+	 *            The instance of an array to be modified.
+	 * @param index
+	 *            The index to the array where to modify its value.
+	 */
+	public void modify(ElementInfo arrayInstance, int index);
 }

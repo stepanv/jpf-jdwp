@@ -1,7 +1,7 @@
 package gov.nasa.jpf.jdwp.value;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.vm.Fields;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.io.DataOutputStream;
@@ -23,11 +23,14 @@ public class VoidValue extends PrimitiveValue {
 	}
 	
 	@Override
-	public void modify(Fields fields, int index) throws InvalidObject {
+	public void modify(StackFrame stackFrame, int slotIndex) {
 	}
-
+	
 	@Override
-	public void modify(StackFrame stackFrame, int slotIndex) throws InvalidObject {
+	public void modify(ElementInfo instance, FieldInfo field) {
 	}
-
+	
+	@Override
+	public void modify(ElementInfo arrayInstance, int index) {
+	}
 }
