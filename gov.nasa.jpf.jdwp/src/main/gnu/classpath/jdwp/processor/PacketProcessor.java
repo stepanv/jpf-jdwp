@@ -163,38 +163,8 @@ public class PacketProcessor
 			e.printStackTrace();
 			reply.setErrorCode(e.getErrorType().identifier());
 		}
-//        
-//        byte command = commandPkt.getCommand();
-//        byte commandSet = commandPkt.getCommandSet();
-//
-//        CommandSet set = null;
-//        try
-//          {
-//            // There is no command set with value 0
-//            if (commandSet > 0 && commandSet < _sets.length)
-//              {
-//                set = _sets[commandPkt.getCommandSet()];
-//              }
-//            if (set != null)
-//              {
-//                _shutdown = set.runCommandWithInfo(bb, _os, command);
-//                reply.setData(_outputBytes.toByteArray());
-//              }
-//            else
-//              {
-//                // This command set wasn't in our tree
-//                reply.setErrorCode(JdwpConstants.Error.NOT_IMPLEMENTED);
-//              }
-//          }
-//          catch (JdwpException ex)
-//            {
-//            reply.setErrorCode(ex.getErrorCode ());
-//            System.err.println(" ============================");
-//            System.err.println(" !!!!!!!! EXCEPTION !!!!!!!!!"); // TODO remove this ... just for debuggin purposes only
-//            ex.printStackTrace();
-//            System.err.println(" ============================");
-//            }
-          _connection.sendPacket (reply);
+        
+        _connection.sendPacket (reply);
       }
   }
 }

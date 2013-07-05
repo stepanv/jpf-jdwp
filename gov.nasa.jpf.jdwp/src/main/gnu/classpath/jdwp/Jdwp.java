@@ -38,26 +38,27 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp;
 
-import gnu.classpath.jdwp.event.EventManager;
 import gnu.classpath.jdwp.processor.PacketProcessor;
 import gnu.classpath.jdwp.transport.ITransport;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.TransportException;
 import gnu.classpath.jdwp.transport.TransportFactory;
-import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.JPF.ExitException;
+import gov.nasa.jpf.JPFException;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.event.EventBase;
-import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
-import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
+import gov.nasa.jpf.jdwp.event.EventRequestManager;
+import gov.nasa.jpf.jdwp.event.VmStartEvent;
 
 import java.io.IOException;
 import java.security.AccessController;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Main interface from the virtual machine to the JDWP back-end.
@@ -68,6 +69,9 @@ import java.util.Map;
  * @author Keith Seitz (keiths@redhat.com)
  */
 public class Jdwp extends Thread {
+
+	final static Logger logger = LoggerFactory.getLogger(Jdwp.class);
+
 	// The single instance of the back-end
 	private static Jdwp _instance = null;
 
@@ -135,24 +139,47 @@ public class Jdwp extends Thread {
 	}
 
 	/**
-	 * Should the virtual machine suspend on startup?
+	 * Whether the JDWP Agent should suspend the VM on its initialization.
+	 * 
+	 * <p>
+	 * <h2>JPDA Specification</h2>
+	 * If "suspend=y" (which is default), {@link VmStartEvent} has a
+	 * suspendPolicy of {@link SuspendPolicy#ALL}. If "suspend=n",
+	 * {@link VmStartEvent} has a suspendPolicy of {@link SuspendPolicy#NONE}.
+	 * </p>
+	 * 
+	 * @return True by default or False if "suspend=n" was specified.
 	 */
 	public static boolean suspendOnStartup() {
 		Jdwp jdwp = getDefault();
 		if (jdwp != null) {
 			String suspend = (String) jdwp._properties.get(_PROPERTY_SUSPEND);
-			if (suspend != null && suspend.equals("y"))
-				return true;
+			if (suspend != null && suspend.equals("n"))
+				return false;
 		}
 
-		return false;
+		return true;
 	}
 
+	/**
+	 * Whether the JDWP Agent should run in a server or client mode.
+	 * 
+	 * <p>
+	 * <h2>JPDA Specification</h2>
+	 * If "server=y", listen for a debugger application to attach; otherwise,
+	 * attach to the debugger application at the specified address. <br/>
+	 * If "server=y" and no address is specified, choose a transport address at
+	 * which to listen for a debugger application, and print the address to the
+	 * standard output stream.
+	 * </p>
+	 * 
+	 * @return False by default or True if "server=y" was specified.
+	 */
 	public boolean isServer() {
 		Jdwp jdwp = getDefault();
 		if (jdwp != null) {
-			String suspend = (String) jdwp._properties.get(_PROPERTY_SERVER);
-			if (suspend != null && suspend.equals("y"))
+			String server = (String) jdwp._properties.get(_PROPERTY_SERVER);
+			if (server != null && server.equals("y"))
 				return true;
 		}
 
@@ -223,87 +250,11 @@ public class Jdwp extends Thread {
 		}
 	}
 
-	/**
-	 * Notify the debugger of an event. This method should not be called if
-	 * debugging is not active (but it would not cause any harm). Places where
-	 * event notifications occur should check isDebugging before doing anything.
-	 * 
-	 * The event is filtered through the event manager before being sent.
-	 * 
-	 * @param event
-	 *            the event to report
-	 */
-	public static void notify(Event event) {
-		Jdwp jdwp = getDefault();
-		if (jdwp != null) {
-			EventManager em = EventManager.getDefault();
-			EventRequest[] requests = em.getEventRequests(event);
-			for (int i = 0; i < requests.length; ++i) {
-				try {
-					sendEvent(requests[i], event);
-					jdwp._enforceSuspendPolicy(requests[i].getSuspendPolicy());
-				} catch (JPFException jpfe) {
-					/*
-					 * A JPF generated exception. Let's not pretend nothing
-					 * happened
-					 */
-					throw jpfe;
-				} catch (ExitException ee) {
-					/* Exit exception should be passed not modified. */
-					throw ee;
-				} catch (Exception e) {
-					/*
-					 * Really not much we can do. For now, just print out a
-					 * warning to the user.
-					 */
-					throw new IllegalStateException("The execution happended to end in not predicted state.", e);
-				}
-			}
-		}
+	private static final EventRequestManager eventRequestManager = new EventRequestManager();
+	
+	public static EventRequestManager getEventRequestManager() {
+		return eventRequestManager;
 	}
-
-	// public static void notify2(EventBase[] events) {
-	// Jdwp jdwp = getDefault();
-	//
-	// if (jdwp != null) {
-	// SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
-	// EventManager em = EventManager.getDefault();
-	// ArrayList allEvents = new ArrayList();
-	// ArrayList allRequests = new ArrayList();
-	// for (int i = 0; i < events.length; ++i) {
-	// EventRequest[] r = em.getEventRequests(events[i]);
-	// for (int j = 0; j < r.length; ++j) {
-	// /*
-	// * This is hacky, but it's not clear whether this can really
-	// * happen, and if it does, what should occur.
-	// */
-	// allEvents.add(events[i]);
-	// allRequests.add(r[j]);
-	//
-	// // Perhaps this is overkill?
-	// if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
-	// suspendPolicy = r[j].getSuspendPolicy();
-	// }
-	//
-	// }
-	// }
-	//
-	// try {
-	// EventBase[] e = new EventBase[allEvents.size()];
-	// allEvents.toArray(e);
-	// EventRequest[] r = new EventRequest[allRequests.size()];
-	// allRequests.toArray(r);
-	// sendEvents(r, e, suspendPolicy);
-	// jdwp._enforceSuspendPolicy(suspendPolicy);
-	// } catch (Exception e) {
-	// /*
-	// * Really not much we can do. For now, just print out a warning
-	// * to the user.
-	// */
-	// System.out.println("Jdwp.notify: caught exception: " + e);
-	// }
-	// }
-	// }
 
 	/**
 	 * Notify the debugger of "co-located" events. This method should not be
@@ -316,60 +267,60 @@ public class Jdwp extends Thread {
 	 * @param events
 	 *            the events to report
 	 */
-	public static void notify(EventBase[] events) {
+	public static void notify(Event... events) {
+		SuspendPolicy resultSuspendPolicy = SuspendPolicy.NONE;
+		List<Event> matchedEvents = new LinkedList<Event>();
+
+		for (Event event : events) {
+			resultSuspendPolicy = eventRequestManager.populateMatchedEventsAndCalculateSuspension(event, matchedEvents, resultSuspendPolicy);
+		}
+
+		sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+	}
+
+	/**
+	 * Notify the debugger of an event. This method should not be called if
+	 * debugging is not active (but it would not cause any harm). Places where
+	 * event notifications occur should check isDebugging before doing anything.
+	 * 
+	 * The event is filtered through the event manager before being sent.
+	 * 
+	 * @param event
+	 *            the event to report
+	 */
+	public static void notify(Event event) {
+		SuspendPolicy resultSuspendPolicy = SuspendPolicy.NONE;
+		List<Event> matchedEvents = new LinkedList<Event>();
+
+		resultSuspendPolicy = eventRequestManager.populateMatchedEventsAndCalculateSuspension(event, matchedEvents, resultSuspendPolicy);
+
+		sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+	}
+
+	private static void sendEventsAndDoSuspend(List<Event> events, SuspendPolicy resultSuspendPolicy) {
 		Jdwp jdwp = getDefault();
 
-		if (jdwp != null) {
-			SuspendPolicy suspendPolicy = SuspendPolicy.NONE;
-			EventManager em = EventManager.getDefault();
-
-			Map<EventRequest<Event>, Event> requestToEventMap = new HashMap<EventRequest<Event>, Event>();
-			for (int i = 0; i < events.length; ++i) {
-				EventRequest[] r = em.getEventRequests(events[i]);
-				for (int j = 0; j < r.length; ++j) {
-					/*
-					 * This is hacky, but it's not clear whether this can really
-					 * happen, and if it does, what should occur.
-					 */
-					requestToEventMap.put(r[j], events[i]);
-
-					// Perhaps this is overkill?
-					if (suspendPolicy.compareTo(r[j].getSuspendPolicy()) < 0) {
-						suspendPolicy = r[j].getSuspendPolicy();
-					}
-
-				}
-			}
-
+		if (jdwp != null && events.size() > 0) {
 			try {
-				sendEvents(requestToEventMap, suspendPolicy);
-				jdwp._enforceSuspendPolicy(suspendPolicy);
+				sendEvents(events, resultSuspendPolicy);
+				resultSuspendPolicy.doSuspend(jdwp.vm);
+			} catch (JPFException jpfe) {
+				/*
+				 * A JPF generated an exception. Let's not pretend nothing
+				 * happened
+				 */
+				throw jpfe;
+			} catch (ExitException ee) {
+				/* Exit exception should be passed not modified. */
+				throw ee;
 			} catch (Exception e) {
 				/*
 				 * Really not much we can do. For now, just print out a warning
 				 * to the user.
 				 */
-				System.out.println("Jdwp.notify: caught exception: " + e);
+				throw new IllegalStateException("The execution happended to end in not predicted state.", e);
 			}
 		}
-	}
-
-	/**
-	 * Sends the event to the debugger.
-	 * 
-	 * This method bypasses the event manager's filtering.
-	 * 
-	 * @param request
-	 *            the debugger request for the event
-	 * @param event
-	 *            the event to send
-	 * @throws IOException
-	 *             if a communications failure occurs
-	 */
-	public static void sendEvent(EventRequest request, Event event) throws IOException {
-		Map<EventRequest<Event>, Event> requestToEventMap = new HashMap<EventRequest<Event>, Event>();
-		requestToEventMap.put(request, event);
-		sendEvents(requestToEventMap, request.getSuspendPolicy());
 	}
 
 	/**
@@ -377,8 +328,6 @@ public class Jdwp extends Thread {
 	 * 
 	 * This method bypasses the event manager's filtering.
 	 * 
-	 * @param requests
-	 *            list of debugger requests for the events
 	 * @param events
 	 *            the events to send
 	 * @param suspendPolicy
@@ -386,32 +335,12 @@ public class Jdwp extends Thread {
 	 * @throws IOException
 	 *             if a communications failure occurs
 	 */
-	public static void sendEvents(Map<EventRequest<Event>, Event> requestToEventMap, SuspendPolicy suspendPolicy) throws IOException {
+	public static void sendEvents(List<Event> events, SuspendPolicy suspendPolicy) throws IOException {
 		Jdwp jdwp = getDefault();
 		if (jdwp != null && isDebugging) {
 			synchronized (jdwp._connection) {
-				jdwp._connection.sendEvents(requestToEventMap, suspendPolicy);
+				jdwp._connection.sendEvents(events, suspendPolicy);
 			}
-		}
-	}
-
-	// Helper function to enforce suspend policies on event notification
-	private void _enforceSuspendPolicy(SuspendPolicy suspendPolicy) {
-		switch (suspendPolicy) {
-		case NONE:
-			// do nothing
-			break;
-
-		case EVENT_THREAD:
-			ThreadInfo currentThread = VM.getVM().getCurrentThread();
-			vm.getExecutionManager().markThreadSuspended(currentThread);
-			vm.getExecutionManager().blockVMExecution();
-			break;
-
-		case ALL:
-			vm.getExecutionManager().markVMSuspended();
-			vm.getExecutionManager().blockVMExecution();
-			break;
 		}
 	}
 
@@ -452,7 +381,7 @@ public class Jdwp extends Thread {
 		 * Jdwp.notify (which uses EventManager) while the EventManager is being
 		 * created (or at least this is a problem with gcj/gij).
 		 */
-		EventManager.getDefault();
+		//EventRequestManager.getDefault();
 
 		// Now we are finally ready and initialized
 		isDebugging = true;

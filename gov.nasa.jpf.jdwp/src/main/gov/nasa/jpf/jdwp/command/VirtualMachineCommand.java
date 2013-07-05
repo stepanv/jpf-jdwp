@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.event.EventManager;
+import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
@@ -141,7 +141,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 				if (eventKind == EventKind.VM_DISCONNECTED) {
 					continue;
 				}
-				EventManager.getDefault().clearRequests(eventKind);
+				Jdwp.getEventRequestManager().clearEventRequests(eventKind);
 			}
 
 			// All threads suspended by the thread-level resume command or the

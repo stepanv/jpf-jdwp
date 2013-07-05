@@ -3,6 +3,7 @@ syntax: glob
 build.properties
 nbproject/private/*
 build/*
+.git/*
 dist/*
 *.class
 *~

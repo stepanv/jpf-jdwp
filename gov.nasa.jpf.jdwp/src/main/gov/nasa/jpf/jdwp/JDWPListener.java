@@ -1,12 +1,12 @@
 package gov.nasa.jpf.jdwp;
 
 import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.event.EventManager;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.event.BreakpointEvent;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
+import gov.nasa.jpf.jdwp.event.EventRequestManager;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
@@ -191,7 +191,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	}
 
 	/**
-	 * Whether the {@link EventManager} has registered more than 0 event
+	 * Whether the {@link EventRequestManager} has registered more than 0 event
 	 * requests for the given event kind.
 	 * 
 	 * @param eventKind
@@ -199,11 +199,11 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	 * @return true or false
 	 */
 	private boolean hasNonnullEventRequests(EventKind eventKind) {
-		return EventManager.getDefault().getRequests(eventKind).size() > 0;
+		return Jdwp.getEventRequestManager().eventRequestCount(eventKind) > 0;
 	}
 
 	/**
-	 * Whether the {@link EventManager} has registered more than 0 event request
+	 * Whether the {@link EventRequestManager} has registered more than 0 event request
 	 * for at least one of the given event kinds.
 	 * 
 	 * @param firstEventKind

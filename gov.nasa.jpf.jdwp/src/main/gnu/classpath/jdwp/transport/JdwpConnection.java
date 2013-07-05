@@ -42,7 +42,6 @@ package gnu.classpath.jdwp.transport;
 import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase;
-import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 
 import java.io.ByteArrayOutputStream;
@@ -51,7 +50,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 
 /**
  * A connection via some transport to some JDWP-speaking entity.
@@ -280,11 +279,11 @@ public class JdwpConnection
    * method will only send out one notification: all the events
    * are passed in a single Event.COMPOSITE packet.
    *
-   * @param requestToEventMap  requests to events pair
+   * @param events  requests to events pair
    * @param suspendPolicy  the suspend policy enforced by the VM
    * @throws IOException
    */
-  public void sendEvents(Map<EventRequest<Event>, Event> requestToEventMap,
+  public void sendEvents(List<Event> events,
                          SuspendPolicy suspendPolicy)
     throws IOException
   {
@@ -293,7 +292,7 @@ public class JdwpConnection
     synchronized (_bytes)
       {
         _bytes.reset ();
-        pkt = EventBase.toPacket (_doStream, requestToEventMap, suspendPolicy);
+        pkt = EventBase.toPacket (_doStream, events, suspendPolicy);
         pkt.setData (_bytes.toByteArray ());
       }
 

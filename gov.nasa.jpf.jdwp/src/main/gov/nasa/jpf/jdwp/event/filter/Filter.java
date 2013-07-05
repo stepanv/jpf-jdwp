@@ -174,7 +174,7 @@ public abstract class Filter<T extends Event> {
 	public boolean matches(T event) throws InvalidObject {
 		return false;
 	}
-
+	
 	public String toString() {
 		return "class: " + this.getClass() + "; modKind: " + modKind.toString();
 	}

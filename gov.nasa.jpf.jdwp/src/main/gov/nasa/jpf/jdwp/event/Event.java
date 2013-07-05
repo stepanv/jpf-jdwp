@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.event.filter.Filter;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Event hierarchy root.
@@ -20,6 +21,11 @@ import java.io.IOException;
  */
 public interface Event {
 
+	/**
+	 * The event kind of this event.
+	 * 
+	 * @return The event kind.
+	 */
 	EventKind getEventKind();
 
 	/**
@@ -34,5 +40,26 @@ public interface Event {
 	 * @throws IOException
 	 */
 	void write(DataOutputStream dos, int requestId) throws IOException;
+
+	/**
+	 * Queries the given event request whether it matches this event. If
+	 * matched, the event request is added to the matching event requests.
+	 * 
+	 * @param eventRequest
+	 *            The event request against whom this event will be matched.
+	 * @return True if event request matched hence was added to the matching
+	 *         event requests, otherwise False.
+	 * 
+	 * @see Event#matchingEventRequests()
+	 */
+	<T extends Event> boolean addIfMatches(EventRequest<T> eventRequest);
+
+	/**
+	 * Gets the matching event requests that where queried throw the
+	 * {@link Event#addIfMatches(EventRequest)} mathod.
+	 * 
+	 * @return The list of matching event requests.
+	 */
+	List<EventRequest<? extends Event>> matchingEventRequests();
 
 }

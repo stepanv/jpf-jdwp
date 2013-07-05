@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gnu.classpath.jdwp.event.EventManager;
+import gnu.classpath.jdwp.Jdwp;
+import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -13,9 +14,9 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	SET(1) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			EventRequest<?> eventRequest = EventRequest.factory(bytes, contextProvider);
+			EventRequest<Event> eventRequest = EventRequest.factory(bytes, contextProvider);
 
-			EventManager.getDefault().requestEvent(eventRequest);
+			Jdwp.getEventRequestManager().requestEvent(eventRequest);
 			contextProvider.getVirtualMachine().registerEventRequest(eventRequest);
 
 			os.writeInt(eventRequest.getId());
@@ -32,14 +33,15 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
 	CLEAR(2) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			 EventManager.getDefault().deleteRequest(bytes.get(), bytes.getInt());
+			EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
+			Jdwp.getEventRequestManager().removeEventRequest(eventKind, bytes.getInt());
 
 		}
 	},
 	CLEARALLBREAKPOINTS(3) {
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			EventManager.getDefault().clearRequests(EventKind.BREAKPOINT);
+			Jdwp.getEventRequestManager().clearEventRequests(EventKind.BREAKPOINT);
 		}
 	};
 	private byte commandId;

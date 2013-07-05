@@ -10,15 +10,20 @@ import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class EventBase implements Event {
 
 	private EventKind eventKind;
-
+	private List<EventRequest<? extends Event>> matchingEventRequests = new LinkedList<EventRequest<? extends Event>>();
+	
 	public EventBase(EventKind eventKind) {
 		this.eventKind = eventKind;
 	}
@@ -28,6 +33,22 @@ public abstract class EventBase implements Event {
 		return eventKind;
 	}
 	
+	
+	@SuppressWarnings("unchecked")
+	public <T extends Event> boolean addIfMatches(EventRequest<T> eventRequest) {
+		// this casts sucks 
+		if (eventRequest.matches((T)this)) {
+			matchingEventRequests.add(eventRequest);
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public List<EventRequest<? extends Event>> matchingEventRequests() {
+		return matchingEventRequests;
+	}
+
 	@Override
 	public final void write(DataOutputStream os, int requestId) throws IOException {
 		os.writeByte(eventKind.identifier());
@@ -102,6 +123,8 @@ public abstract class EventBase implements Event {
 			return filter.getGenericClass().isAssignableFrom(eventClass);
 		}
 	}
+	
+	final static Logger logger = LoggerFactory.getLogger(EventBase.class);
 
 	/**
 	 * Converts the events into to a single JDWP {@link EventCommand#COMPOSITE}
@@ -117,18 +140,27 @@ public abstract class EventBase implements Event {
 	 *            the suspend policy enforced by the VM
 	 * @returns a <code>JdwpPacket</code> of the events
 	 */
-	public static JdwpPacket toPacket(DataOutputStream dos, Map<EventRequest<Event>, Event> requestToEventMap, SuspendPolicy suspendPolicy) {
+	public static JdwpPacket toPacket(DataOutputStream dos, List<? extends Event> matchedEvents, SuspendPolicy suspendPolicy) {
 		JdwpPacket pkt;
 		try {
 			dos.writeByte(suspendPolicy.identifier());
-			dos.writeInt(requestToEventMap.size());
-			for ( Entry<EventRequest<Event>, Event> eventPairRequest : requestToEventMap.entrySet()) {
-				Event event = eventPairRequest.getValue();
-				EventRequest<Event> eventRequest = eventPairRequest.getKey();
-				
-				System.out.println(" >>>>>>>>> Sending event: " + event + " for request: " + eventRequest);
-				event.write(dos, eventRequest.getId());
+			
+			// we need to write the number of events at first hence we're writing the events to a temporary stream 
+			ByteArrayOutputStream eventsOutputBytes = new ByteArrayOutputStream(0);
+			DataOutputStream eventsOutputStream = new DataOutputStream (eventsOutputBytes);
+			
+			int events = 0;
+			
+			for (Event event : matchedEvents) {
+				for (EventRequest<? extends Event> eventRequest : event.matchingEventRequests()) {
+					logger.info(" >>>>>>>>> Sending event: {} for request: {}", event, eventRequest);
+					event.write(eventsOutputStream, eventRequest.getId());
+					events++;
+				}
 			}
+			
+			dos.writeInt(events);
+			dos.write(eventsOutputBytes.toByteArray());
 
 			pkt = new JdwpCommandPacket(CommandSet.EVENT, EventCommand.COMPOSITE);
 		} catch (IOException ioe) {
