@@ -203,7 +203,7 @@ public class JdwpError extends Exception {
 	}
 	
 	public String toString() {
-		return "" + this.getClass() + " Error Type: " + errorType;
+		return "JDWP ERROR! Type: " + errorType + " ... " + super.toString();
 	}
 
 }

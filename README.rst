@@ -39,17 +39,34 @@ Running:
 --------
 Currently, only manual JDWP setup is working (e.g. you must start both processes (JPF with JDWP enabled + the debugger) manually.
 
-Create new *Debug/Run Java Application* configuration:
+Create new *Debug/Run - Java Application* configuration:
  1. Main class: ``gov.nasa.jpf.jdwp.JDWPRunner``
  #. As Program arguments you're supposed to include standard JPF arguments so that JPF is able to run a main class.
     For example: ``+target=your.package.MainClass +classpath=+,/path/to/the/compiled/classes/bin``
  #. To enable JDWP, add VM property ``jdwp`` with standard JDWP arguments.
     For example (to start JDWP agent at localhost:51255): ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=51255``
  #. Run or Debug it
- #. Attach the debugger (assuming you're running JPF as a jdwp server ) by using *Remote Java Application* from the *Debug Configuration* wizzard.
+
+Now, Attach the debugger (assuming you're running JPF as a jdwp server ) by using *Remote Java Application* from the *Debug Configuration* wizzard.
 
 Apparently, it's possible to run it without Eclipse, but there is no build system yet.
     
+Example:
+--------
+The first simple example is to run ``my.packagge.MainClass`` that is included in the JDWP project.
+
+Create new *Debug/Run - Java Application* configuration that will run JPF and the program in it:
+ 1. Main class: ``gov.nasa.jpf.jdwp.JDWPRunner``
+ #. As *Program arguments* set (do not substitute the placeholder/variable - Eclipse will do it for you automatically): ``+target=my.packagge.MainClass +classpath=+,${workspace_loc:jpf-jdwp/build/examples}``
+ #. Enable JDWP by adding *VM argument*: ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=8000`` 
+ #. Run it (you can also Debug it but that means you will debug JPF itself (including JDWP implementaion) too). It will stay suspended until you attach a debugger.
+
+Create new *Debug - Remote Java Application* configuration that will attach the debugger to the application that is about to start.
+ 1. Put a breakpoint into the ``my.packagge.MainClass`` so that it gets suspended when the breakpoint is hit
+ #. Connection Properties stay defualt: Host ``localhost`` and Port ``8000``
+ #. Debug it
+
+Apparently, it's possible to run it without Eclipse, but there is no build system yet.
 
 JDI-to-JPF Building and Installing
 ==================================

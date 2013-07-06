@@ -54,6 +54,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedAction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class is responsible for processing packets from the
  * debugger. It waits for an available packet from the connection
@@ -65,6 +68,8 @@ import java.security.PrivilegedAction;
 public class PacketProcessor
   implements PrivilegedAction
 {
+  final static Logger logger = LoggerFactory.getLogger(PacketProcessor.class);
+	
   // The connection to the debugger
   private JdwpConnection _connection;
 
@@ -108,14 +113,28 @@ public class PacketProcessor
 
     try
       {
+    	int ioErrorCounter = 10;
         while (!_shutdown)
           {
-            _processOnePacket ();
+            try {
+				_processOnePacket ();
+			} catch (IOException e) {
+				if (_shutdown) {
+					// normally when the debugger disconnects we end here
+					break;
+				}
+				
+				// let's try to recover for ioErrorCounter times 
+				if (--ioErrorCounter <= 0) {
+					logger.warn("I/O Error occurred: ", e.getMessage());
+					throw e;
+				}
+			}
           }
       }
     catch (Exception ex)
       {
-        ex.printStackTrace();
+        logger.error("Fatal error occurred while processing JDWP commands.", ex);
       }
     // Time to shutdown, tell Jdwp to shutdown
     Jdwp.getDefault().shutdown();
@@ -160,8 +179,10 @@ public class PacketProcessor
         try {
 			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommand(), bb, _os, ccp);
 			reply.setData(_outputBytes.toByteArray());
+        } catch (gov.nasa.jpf.jdwp.exception.VmDead e) {
+        	logger.debug("VM is dead. Will send VM_DEAD error code...", e);
 		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
-			e.printStackTrace();
+			logger.info("Command {} returns an error", commandPkt.getCommand(), e);
 			reply.setErrorCode(e.getErrorType().identifier());
 		}
         

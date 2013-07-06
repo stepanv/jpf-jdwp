@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.exception.AbsentInformationException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
@@ -134,6 +135,9 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
 			String sourceFileName = classInfo.getSourceFileName();
+			if (sourceFileName == null) {
+				throw new AbsentInformationException(classInfo + " has unknown source." );
+			}
 			JdwpString.write(SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst(""), os);
 		}
 	},
