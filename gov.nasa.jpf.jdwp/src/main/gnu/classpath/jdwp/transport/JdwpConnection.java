@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.transport;
 
 import gnu.classpath.jdwp.Jdwp;
+import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
@@ -93,19 +94,27 @@ public class JdwpConnection
   // A DataOutputStream for the byte buffer
   private DataOutputStream _doStream;
 
+private VirtualMachine vm;
+
   /**
    * Creates a new <code>JdwpConnection</code> instance
    *
    * @param transport  the transport to use for communications
+ * @param vm 
    */
-  public JdwpConnection (ThreadGroup group, ITransport transport)
+  public JdwpConnection (ThreadGroup group, ITransport transport, VirtualMachine vm)
   {
     super (group, "JDWP connection thread");
+    
+    this.setVm(vm);
+    
     _transport = transport;
     _commandQueue = new ArrayList ();
     _shutdown = false;
     _bytes = new ByteArrayOutputStream ();
     _doStream = new DataOutputStream (_bytes);
+    
+    
   }
 
   /**
@@ -311,4 +320,12 @@ public class JdwpConnection
         interrupt ();
       }
   }
+
+public VirtualMachine getVm() {
+	return vm;
+}
+
+public void setVm(VirtualMachine vm) {
+	this.vm = vm;
+}
 }
