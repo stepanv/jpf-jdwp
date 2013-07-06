@@ -209,7 +209,7 @@ public class Jdwp extends Thread {
 		};
 		// initialize transport
 		ITransport transport = TransportFactory.newInstance(_properties);
-		_connection = new JdwpConnection(_group, transport);
+		_connection = new JdwpConnection(_group, transport, vm);
 
 		// Get quiet {form: "y" or "n"} .. applies only when server=y
 		if (_properties.get(_PROPERTY_QUIET) == null || _properties.get(_PROPERTY_QUIET).toLowerCase().equals("y")) {

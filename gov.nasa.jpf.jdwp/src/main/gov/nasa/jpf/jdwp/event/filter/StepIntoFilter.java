@@ -25,8 +25,8 @@ public class StepIntoFilter extends StepFilter {
 		if (currentStackFrameSize > stackSnapshot.size()) {
 
 			/*
-			 * we're accepting only method very beginnings and we don't
-			 * step into native methods
+			 * we're accepting only method very beginnings and we don't step
+			 * into native methods
 			 */
 			if (currentInstruction.getInstructionIndex() == 0 && !(currentInstruction instanceof EXECUTENATIVE)) {
 				return true;
@@ -53,17 +53,25 @@ public class StepIntoFilter extends StepFilter {
 			}
 
 			/*
-			 * we're about to enter another method at the same line from
-			 * where our method was invoked
+			 * we're about to enter another method at the same line from where
+			 * our method was invoked
 			 */
 			if (currentInstruction instanceof InvokeInstruction) {
 
 				/*
-				 * this might be tricky because instance of
-				 * InvokeInstruction could also invoke just a native or
-				 * a synthetic method where we won't be able to step in.
+				 * this might be tricky because instance of InvokeInstruction
+				 * could also invoke just a native or a synthetic method where
+				 * we won't be able to step in.
 				 * 
 				 * Let's do not care about this...
+				 * 
+				 * That means the program will stop at the caller's method line
+				 * so that if user want's to step into some other method which
+				 * is about to be called user has a chance. If the method is
+				 * native, this will be impossible and the user will stay at the
+				 * line (will not step actually).
+				 * 
+				 * This behavior is imho acceptable.
 				 */
 				return true;
 			}

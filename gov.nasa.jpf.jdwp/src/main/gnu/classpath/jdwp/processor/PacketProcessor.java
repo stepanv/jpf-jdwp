@@ -45,7 +45,6 @@ import gnu.classpath.jdwp.transport.JdwpCommandPacket;
 import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
-import gov.nasa.jpf.jdwp.JDWPRunner;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 
@@ -88,6 +87,8 @@ public class PacketProcessor
   {
     _connection = con;
     _shutdown = false;
+    
+    ccp = new CommandContextProvider(con.getVm(), JdwpObjectManager.getInstance());
 
     // MAXIMUM is the value of the largest command set we may receive
     _outputBytes = new ByteArrayOutputStream();
@@ -121,7 +122,7 @@ public class PacketProcessor
     return null;
   }
   
-  private static CommandContextProvider ccp = new CommandContextProvider(JDWPRunner.vm, JdwpObjectManager.getInstance());
+  private CommandContextProvider ccp;
 
   /**
    * Shutdown the packet processor

@@ -46,6 +46,39 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	private VirtualMachine virtualMachine;
 	private FieldVisitor fieldVisitor = new FieldVisitor();
 
+	public JDWPListener() {
+		this.virtualMachine = new VirtualMachine(VM.getVM().getJPF(), Thread.currentThread());
+		
+		Jdwp jdwp = new Jdwp(virtualMachine);
+		
+		String jdwpProperty = VM.getVM().getConfig().getString("jpf-jdwp.jdwp");
+		
+		if (jdwpProperty == null) {
+			jdwpProperty = System.getProperty("jdwp");
+		}
+		
+		if (jdwpProperty == null) {
+			throw new IllegalStateException("Missing jdwp configuration!");
+		}
+		
+		jdwp.configure(jdwpProperty);
+		virtualMachine.setJdwp(jdwp);
+		jdwp.start();
+
+		while (Jdwp.suspendOnStartup() || !jdwp.isServer()) {
+			try {
+				jdwp.join();
+				break;
+			} catch (InterruptedException e) {
+			}
+		}
+		
+		// Get the lock before the JPF starts.
+		// This lock is paired with unlock at the end of the finally block
+		// .. see a comment there for further detail
+		virtualMachine.getRunLock().lock();
+	}
+	
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
 		this.virtualMachine = virtualMachine;
 	}

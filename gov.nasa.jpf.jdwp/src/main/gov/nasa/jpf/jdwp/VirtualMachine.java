@@ -64,6 +64,16 @@ public class VirtualMachine {
 		return started;
 	}
 
+	/**
+	 * Only for initialization from the listener
+	 * @param jpf
+	 * @param executionThread
+	 */
+	VirtualMachine(JPF jpf, Thread executionThread) {
+		this(jpf);
+		this.executionThread = executionThread;
+	}
+	
 	public VirtualMachine(JPF jpf) {
 		this.jpf = jpf;
 	}
