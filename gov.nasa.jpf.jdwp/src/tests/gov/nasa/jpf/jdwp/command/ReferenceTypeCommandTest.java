@@ -1,18 +1,13 @@
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
@@ -42,14 +37,11 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 	JdwpVerifier verifierNumber1 = new JdwpVerifier() {
 
 		@Override
-		public void verifyOutsideOfSuT() throws Throwable {
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
 			// Prepare arguments
 			ClassInfo classInfo = ClassInfo.getInitializedClassInfo("gov.nasa.jpf.jdwp.command.ReferenceTypeCommandTest$ReferenceClass",
 					ThreadInfo.getCurrentThread());
-			ByteArrayOutputStream dataOutputBytes = new ByteArrayOutputStream(0);
-			DataOutputStream dataOutputStream = new DataOutputStream(dataOutputBytes);
-			CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
 
 			// run the JDWP command
 			ReferenceTypeCommand.METHODS.execute(classInfo, null, dataOutputStream, contextProvider);
@@ -86,7 +78,7 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 		// This is just an example how to debug the SuT code
 		// Just put a breakpoint down there somewhere and check the console
 		// where to attach the debugger (port 8000 if using defaults from
-		// jpf.properties)
+		// jpf.properties file)
 		if (verifyNoPropertyViolation("+listener=.jdwp.JDWPListener")) {
 
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
