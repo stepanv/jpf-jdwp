@@ -5,6 +5,7 @@ import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.exception.ThreadNotSuspended;
 import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -92,6 +93,12 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
+			
+			if (contextProvider.getVirtualMachine().getExecutionManager().suspendCount(threadInfo) <= 0) {
+				// the specification isn't clear about this though
+				throw new ThreadNotSuspended();
+			}
+			
 			int startFrame = bytes.getInt();
 			int length = bytes.getInt();
 
@@ -106,7 +113,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 				Location location = Location.factorySafe(frame.getPC(), threadInfo);
 				location.write(os);
 
-				System.out.println("Frame: " + frameId + ", StackFrame" + frame + ", Location: " + location);
+				logger.debug("Frame: {}, StackFrame {}, Location: {}", frameId, frame, location);
 			}
 
 		}
@@ -115,10 +122,16 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
 		@Override
 		protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
 				JdwpError {
+			
+			if (contextProvider.getVirtualMachine().getExecutionManager().suspendCount(threadInfo) <= 0) {
+				// the specification isn't clear about this though
+				throw new ThreadNotSuspended();
+			}
+			
 			int frameCount = VirtualMachineHelper.getFrameCount(threadInfo);
 			os.writeInt(frameCount);
-
-			System.out.println("writing frame count: " + frameCount);
+			
+			logger.debug("writing frame count: {}", frameCount);
 
 		}
 	},

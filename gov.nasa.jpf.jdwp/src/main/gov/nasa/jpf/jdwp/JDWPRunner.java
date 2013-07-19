@@ -81,6 +81,8 @@ public class JDWPRunner {
 		// command line args ("+<key>=<value>" options and *.jpf)
 		Config conf = JPF.createConfig(args);
 
+		conf.printEntries();
+		
 		JPF jpf = new JPF(conf);
 
 		String jdwpProperty = System.getProperty("jdwp");

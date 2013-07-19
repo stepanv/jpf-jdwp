@@ -56,6 +56,8 @@ public class MainClass {
 		}
 
 		System.out.println("Returned primitive double: " + returnDouble);
+		
+		System.out.println(localDouble);
 
 		System.out.println("end");
 	}
