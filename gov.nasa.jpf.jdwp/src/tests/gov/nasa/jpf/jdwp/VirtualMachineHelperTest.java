@@ -5,7 +5,11 @@ import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
+import gov.nasa.jpf.jdwp.value.DoubleValue;
+import gov.nasa.jpf.jdwp.value.LongValue;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.jdwp.value.IntegerValue;
+import gov.nasa.jpf.jdwp.value.ShortValue;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
@@ -54,6 +58,10 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 		public static Integer computeStatic(Integer operand1, Integer operand2) {
 			return staticField + operand1 / operand2;
 		}
+		
+		public double computePrimitive(int operandInt, double operandDouble, short operandShort, long operandLong) {
+			return staticField + field + operandInt + operandDouble + operandShort + operandLong;
+		}
 	}
 	
 	JdwpVerifier verifyStaticMethodCall = new JdwpVerifier() {
@@ -85,6 +93,7 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
 			clazz.getStaticElementInfo().setReferenceField("staticObject", integerId.get().getObjectRef());
 			
+			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			assertEquals(0, bb.getLong());
 			
@@ -125,7 +134,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[2]); 
 
 			ClassInfo clazz = classInstance.getClassInfo();
-
 			MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
 			
 			MethodResult mr = VirtualMachineHelper.invokeMethod(classInstance, method, values, VM.getVM().getCurrentThread(), 0);
@@ -140,9 +148,10 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			
 			// pass the result through a well known field to the SuT so that it can be asserted there
-			ObjectId exceptionId = JdwpObjectManager.getInstance().readObjectId(bb);
-			classInstance.setReferenceField("object", exceptionId.get().getObjectRef());
+			ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
+			classInstance.setReferenceField("object", integerId.get().getObjectRef());
 			
+			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			assertEquals(0, bb.getLong());
 			
@@ -255,6 +264,7 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			ObjectId constructedObjectId = JdwpObjectManager.getInstance().readObjectId(bb);
 			clazz.getStaticElementInfo().setReferenceField("staticObject", constructedObjectId.get().getObjectRef());
 			
+			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			assertEquals(0, bb.getLong());
 			
@@ -280,6 +290,65 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			// the constructed object is in MethodCallReferenceClass.staticObject by a convention
 			assertTrue(MethodCallReferenceClass.staticObject instanceof MethodCallReferenceClass);
 			assertEquals(20, (int)((MethodCallReferenceClass)MethodCallReferenceClass.staticObject).field);
+		}
+	}
+	
+	JdwpVerifier verifyPrimitiveMethodCall = new JdwpVerifier() {
+
+		@Override
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+
+			// Prepare arguments
+			Value[] values = new Value[4];
+			
+			//public double computePrimitive(int operandInt, double operandDouble, short operandShort, long operandLong) {
+			values[0] = new IntegerValue(10);
+			values[1] = new DoubleValue(100.1);
+			values[2] = new ShortValue((short) 1);
+			values[3] = new LongValue(1000000000000L);
+			
+			DynamicElementInfo classInstance = (DynamicElementInfo) passedObjects[0];
+			ClassInfo clazz = classInstance.getClassInfo();
+			MethodInfo method = clazz.getMethod("computePrimitive(IDSJ)D", false);
+			
+			MethodResult mr = VirtualMachineHelper.invokeMethod(classInstance, method, values, VM.getVM().getCurrentThread(), 0);
+			mr.write(dataOutputStream);
+			
+			// verify the results
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+
+			/*
+			 * Test that the buffer contains appropriate values
+			 */
+			assertEquals(Tag.DOUBLE.identifier().byteValue(), bb.get());
+			// verify the primitive value result right in here since it's not that easy to pass primitives back to SuT
+			assertEquals(1.0000001011111E12, bb.getDouble());
+			
+			// no exception hence NullObject expected
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			assertEquals(0, bb.getLong());
+			
+			// verify there is nothing else left in the buffer
+			assertEquals(0, bb.remaining());
+		}
+
+	};
+	
+	@Test
+	public void primitiveMethodCallTest() throws SecurityException, NoSuchFieldException {
+		if (!isJPFRun()) {
+			initialize(verifyPrimitiveMethodCall);
+		}
+
+		if (verifyNoPropertyViolation()) {
+			// prepare and clear before the test
+			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100000);
+			MethodCallReferenceClass.staticField = 1000;
+			methodCallReferenceObject.object = null;
+			
+			verifyPrimitiveMethodCall.verify(methodCallReferenceObject);
+			
+			// all the assertions are done in the verifier
 		}
 	}
 
