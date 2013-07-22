@@ -8,6 +8,7 @@ import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -29,23 +30,86 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 	public VirtualMachineHelperTest() {
 	}
 	
+	/**
+	 * The reference class for method invocation test.
+	 * @author stepan
+	 *
+	 */
 	static class MethodCallReferenceClass {
 		
 		private Integer field;
 		private static Integer staticField;
 		
 		private Object object;
+		private static Object staticObject;
 		
 		MethodCallReferenceClass(Integer field) {
 			this.field = field;
 		}
 		
-		public int compute(Integer operand1, Integer operand2) {
+		public Integer compute(Integer operand1, Integer operand2) {
 			return field + staticField + operand1 / operand2;
 		}
 		
-		public static int computeStatic(Integer operand1, Integer operand2) {
+		public static Integer computeStatic(Integer operand1, Integer operand2) {
 			return staticField + operand1 / operand2;
+		}
+	}
+	
+	JdwpVerifier verifyStaticMethodCall = new JdwpVerifier() {
+
+		@Override
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+
+			// Prepare arguments
+			Value[] values = new Value[2];
+			values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[0]); 
+			values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[1]); 
+
+			ClassInfo clazz = ClassLoaderInfo.getSystemResolvedClassInfo("gov.nasa.jpf.jdwp.VirtualMachineHelperTest$MethodCallReferenceClass");
+
+			MethodInfo method = clazz.getMethod("computeStatic(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
+			MethodResult mr = VirtualMachineHelper.invokeMethod(null, method, values, VM.getVM().getCurrentThread(), 0);
+			
+			mr.write(dataOutputStream);
+			
+			// verify the results
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+
+			/*
+			 * Test that the buffer contains appropriate values
+			 */
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			
+			// pass the result through a well known field to the SuT so that it can be asserted there
+			ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
+			clazz.getStaticElementInfo().setReferenceField("staticObject", integerId.get().getObjectRef());
+			
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			assertEquals(0, bb.getLong());
+			
+			// verify there is nothing else left in the buffer
+			assertEquals(0, bb.remaining());
+		}
+
+	};
+
+	@Test
+	public void simpleStaticCallTest() throws SecurityException, NoSuchFieldException {
+		if (!isJPFRun()) {
+			initialize(verifyStaticMethodCall);
+		}
+
+		if (verifyNoPropertyViolation()) {
+
+			// prepare and clear before the test
+			MethodCallReferenceClass.staticField = 1111;
+			MethodCallReferenceClass.staticObject = null;
+			
+			verifyStaticMethodCall.verify(new Integer(10), new Integer(2));
+			
+			// the resulting object is in MethodCallReferenceClass.staticObject by a convention
+			assertEquals(1116, MethodCallReferenceClass.staticObject);
 		}
 	}
 	
@@ -62,42 +126,27 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 
 			ClassInfo clazz = classInstance.getClassInfo();
 
-			MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)I", false);
+			MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
 			
 			MethodResult mr = VirtualMachineHelper.invokeMethod(classInstance, method, values, VM.getVM().getCurrentThread(), 0);
-			
 			mr.write(dataOutputStream);
 			
 			// verify the results
 			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
 
 			/*
-			 * Test that the header contains appropriate values
+			 * Test that the buffer contains appropriate values
 			 */
-			assertEquals(Tag.INT.identifier().byteValue(), bb.get());
-			assertEquals(1105, bb.getInt());
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			
+			// pass the result through a well known field to the SuT so that it can be asserted there
+			ObjectId exceptionId = JdwpObjectManager.getInstance().readObjectId(bb);
+			classInstance.setReferenceField("object", exceptionId.get().getObjectRef());
+			
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			assertEquals(0, bb.getLong());
-			assertEquals(0, bb.remaining());
 			
-			reset();
-			
-			method = clazz.getMethod("computeStatic(Ljava/lang/Integer;Ljava/lang/Integer;)I", false);
-			
-			mr = VirtualMachineHelper.invokeMethod(null, method, values, VM.getVM().getCurrentThread(), 0);
-			
-			mr.write(dataOutputStream);
-			
-			// verify the results
-			bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-
-			/*
-			 * Test that the header contains appropriate values
-			 */
-			assertEquals(Tag.INT.identifier().byteValue(), bb.get());
-			assertEquals(1005, bb.getInt());
-			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
-			assertEquals(0, bb.getLong());
+			// verify there is nothing else left in the buffer
 			assertEquals(0, bb.remaining());
 		}
 
@@ -111,9 +160,15 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 
 		if (verifyNoPropertyViolation()) {
 
+			// prepare and clear before the test
 			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100);
 			MethodCallReferenceClass.staticField = 1000;
+			methodCallReferenceObject.object = null;
+			
 			verifyMethodCall.verify(methodCallReferenceObject, new Integer(10), new Integer(2));
+			
+			// the resulting object is in MethodCallReferenceClass.object by a convention
+			assertEquals(1105, methodCallReferenceObject.object);
 		}
 	}
 	
@@ -129,26 +184,26 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[2]); 
 
 			ClassInfo clazz = classInstance.getClassInfo();
-
-			MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)I", false);
+			MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
 			
 			MethodResult mr = VirtualMachineHelper.invokeMethod(classInstance, method, values, VM.getVM().getCurrentThread(), 0);
-			
 			mr.write(dataOutputStream);
 			
 			// verify the results
 			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
 
 			/*
-			 * Test that the header contains appropriate values
+			 * Test that the buffer contains appropriate values
 			 */
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			assertEquals(0, bb.getLong());
+			
+			// pass the result through a well known field to the SuT so that it can be asserted there
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
 			ObjectId exceptionId = JdwpObjectManager.getInstance().readObjectId(bb);
-			
 			classInstance.setReferenceField("object", exceptionId.get().getObjectRef());
 			
+			// verify there is nothing else left in the buffer
 			assertEquals(0, bb.remaining());
 		}
 
@@ -167,7 +222,64 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			methodCallReferenceObject.object = null;
 			
 			verifyMethodExceptionCall.verify(methodCallReferenceObject, new Integer(10), new Integer(0));
+			
+			// the thrown exception is in MethodCallReferenceClass.object by a convention
 			assertTrue(methodCallReferenceObject.object instanceof ArithmeticException);
+		}
+	}
+	
+	JdwpVerifier verifyConstructorCall = new JdwpVerifier() {
+
+		@Override
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+
+			// Prepare arguments
+			Value[] values = new Value[1];
+			values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[0]); 
+
+			ClassInfo clazz = ClassLoaderInfo.getSystemResolvedClassInfo("gov.nasa.jpf.jdwp.VirtualMachineHelperTest$MethodCallReferenceClass");
+			MethodInfo method = clazz.getMethod("<init>(Ljava/lang/Integer;)V", false);
+			
+			MethodResult mr = VirtualMachineHelper.invokeConstructor(method, values, VM.getVM().getCurrentThread(), 0);
+			mr.write(dataOutputStream);
+			
+			// verify the results
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+
+			/*
+			 * Test that the buffer contains appropriate values
+			 */
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			
+			// pass the result through a well known field to the SuT so that it can be asserted there
+			ObjectId constructedObjectId = JdwpObjectManager.getInstance().readObjectId(bb);
+			clazz.getStaticElementInfo().setReferenceField("staticObject", constructedObjectId.get().getObjectRef());
+			
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			assertEquals(0, bb.getLong());
+			
+			// verify there is nothing else left in the buffer
+			assertEquals(0, bb.remaining());
+		}
+
+	};
+	
+	@Test
+	public void constructorCallTest() throws SecurityException, NoSuchFieldException {
+		if (!isJPFRun()) {
+			initialize(verifyConstructorCall);
+		}
+
+		if (verifyNoPropertyViolation()) {
+
+			// prepare and clear before the test
+			MethodCallReferenceClass.staticObject = null;
+			
+			verifyConstructorCall.verify(new Integer(20));
+			
+			// the constructed object is in MethodCallReferenceClass.staticObject by a convention
+			assertTrue(MethodCallReferenceClass.staticObject instanceof MethodCallReferenceClass);
+			assertEquals(20, (int)((MethodCallReferenceClass)MethodCallReferenceClass.staticObject).field);
 		}
 	}
 
