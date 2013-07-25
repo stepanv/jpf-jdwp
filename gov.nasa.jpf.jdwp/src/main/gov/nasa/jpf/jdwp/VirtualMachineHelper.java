@@ -10,6 +10,7 @@ import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.Heap;
@@ -109,7 +110,7 @@ public class VirtualMachineHelper {
 
 	}
 
-	public static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
+	public static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
 		return invokeMethod(object, method, values, thread, options, false);
 	}
 
@@ -117,7 +118,7 @@ public class VirtualMachineHelper {
 		return invokeMethod(null, method, values, thread, options, true);
 	}
 
-	private static MethodResult invokeMethod(Object object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor)
+	private static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor)
 			throws InvalidObject {
 		// TODO (maybe this is not a TODO) we're supposed to resume all threads
 		// unless INVOKE_SINGLE_THREADED was specified - to prevent deadlocks
@@ -129,11 +130,8 @@ public class VirtualMachineHelper {
 		// popup of a hover info when inspecting an object
 		System.out.println("Executing method: " + method + " of object instance: " + object);
 
-		MethodInfo stub = method.createDirectCallStub("[jdwp-method-invocation]" + method.getClassInfo() + "." + method.getName());
-		stub.setFirewall(true); // we don't want to let exceptions pass
-								// through this
-
-		DirectCallStackFrame frame = new DirectCallStackFrame(stub);
+		DirectCallStackFrame frame = method.createDirectCallStackFrame(thread, values.length);
+		frame.setFireWall();
 
 		ElementInfo constructedElementInfo = null;
 
@@ -173,12 +171,13 @@ public class VirtualMachineHelper {
 		// push this on a stack
 		if (object != null) { // when obj == null then method is static (and we
 								// don't need to push this on a stack)
-			frame.pushRef(((ElementInfo) object).getObjectRef());
+			frame.pushRef(object.getObjectRef());
 		}
 
 		for (Value value : values) {
 			System.out.println(value);
-
+			
+			// TODO we should probably call rather frame.setArgument() as in JPF_gov_nasa_jpf_test_basic_MJITest#nativeHiddenRoundtrip__I__I
 			value.push(frame);
 		}
 

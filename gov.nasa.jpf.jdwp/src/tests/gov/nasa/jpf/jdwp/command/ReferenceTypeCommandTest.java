@@ -79,7 +79,7 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 		// Just put a breakpoint down there somewhere and check the console
 		// where to attach the debugger (port 8000 if using defaults from
 		// jpf.properties file)
-		if (verifyNoPropertyViolation("+listener=.jdwp.JDWPListener")) {
+		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
 
 			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			// !!! This code is run in SuT !!!
