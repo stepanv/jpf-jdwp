@@ -20,6 +20,7 @@ import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
+import gov.nasa.jpf.vm.HandlerContext;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -278,8 +279,11 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		logger.trace("Exception thrown: {}", thrownException);
-		StackFrame handlerFrame = currentThread.getPendingExceptionHandlerFrame();
-		ExceptionHandler exceptionHandler = currentThread.getPendingExceptionMatchingHandler();
+		
+		HandlerContext handlerContext = currentThread.getHandlerContextFor(thrownException.getClassInfo());
+		
+		StackFrame handlerFrame = handlerContext.getFrame();
+		ExceptionHandler exceptionHandler = handlerContext.getHandler();
 
 		if (handlerFrame != null && exceptionHandler != null) {
 			caughtExceptionThrown(vm, currentThread, thrownException, handlerFrame, exceptionHandler);
