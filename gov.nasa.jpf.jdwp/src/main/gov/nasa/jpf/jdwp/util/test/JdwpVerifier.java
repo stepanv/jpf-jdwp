@@ -82,7 +82,7 @@ public abstract class JdwpVerifier {
 	protected void init() {
 		dataOutputBytes = new ByteArrayOutputStream(0);
 		dataOutputStream = new DataOutputStream(dataOutputBytes);
-		bytes = ByteBuffer.allocate(100); // This "might" be enough 
+		bytes = ByteBuffer.allocate(200); // This "might" be enough 
 		contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
 	}
 	

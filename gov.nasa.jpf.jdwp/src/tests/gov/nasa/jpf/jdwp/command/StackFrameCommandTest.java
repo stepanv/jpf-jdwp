@@ -28,7 +28,7 @@ public class StackFrameCommandTest extends TestJdwp {
 		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
 			// Prepare arguments
-			bytes.putInt(8); // changing 6 vars
+			bytes.putInt(11); // changing 6 vars
 
 			ElementInfo stringElementInfo = VM.getVM().getHeap().newString("ModifiedStringValue2", ThreadInfo.getCurrentThread());
 			// we need to create an association for this string instance in the
@@ -96,6 +96,26 @@ public class StackFrameCommandTest extends TestJdwp {
 			bytes.putInt(localBase + 15);
 			bytes.put(Tag.SHORT.identifier());
 			bytes.putShort((short) 2);
+			
+			// localBase+16: unmodifiedShort stays unmodified
+			
+			bytes.putInt(localBase + 17);
+			bytes.put(Tag.FLOAT.identifier());
+			bytes.putFloat(83.8E2F);
+			
+			// localBase+18: unmodifiedFloat stays unmodified
+			
+			bytes.putInt(localBase + 19);
+			bytes.put(Tag.BYTE.identifier());
+			bytes.put((byte)3);
+			
+			// localBase+20: unmodifiedByte stays unmodified
+			
+			bytes.putInt(localBase + 21);
+			bytes.put(Tag.CHAR.identifier());
+			bytes.putChar('3');
+			
+			// localBase+21: unmodifiedChar stays unmodified
 
 			bytes.rewind();
 
@@ -123,6 +143,12 @@ public class StackFrameCommandTest extends TestJdwp {
 		double unmodifiedDouble = 3.4E34;
 		short modifiedShort = (short) 3;
 		short unmodifiedShort = (short) 45;
+		float modifiedFloat = 2.3E18F;
+		float unmodifiedFloat = 2.3E2F;
+		byte modifiedByte = 1;
+		byte unmodifiedByte = 2;
+		char modifiedChar = '1';
+		char unmodifiedChar = '2';
 		Object lastObject = "last";
 
 		verifierSetValues.verify();
@@ -143,15 +169,18 @@ public class StackFrameCommandTest extends TestJdwp {
 		assertEquals(3.4E34, unmodifiedDouble);
 		assertEquals((short) 2, modifiedShort);
 		assertEquals((short) 45, unmodifiedShort);
+		assertEquals(83.8E2F, modifiedFloat);
+		assertEquals(2.3E2F, unmodifiedFloat);
+		assertEquals(3, modifiedByte);
+		assertEquals(2, unmodifiedByte);
+		assertEquals('3', modifiedChar);
+		assertEquals('2', unmodifiedChar);
+		
 		assertEquals("last", lastObject);
 	}
 
 	@Test
 	public void setValuesTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			//initialize(verifierSetValues);
-		}
-
 		if (verifyNoPropertyViolation()) {
 			setValuesInnerMethod("paramString", "paramStringUnmodified", 5L, 6L);
 		}
