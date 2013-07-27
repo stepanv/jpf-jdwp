@@ -74,11 +74,13 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 		public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpError {
 			int slotValues = bytes.getInt();
 			
+			StackFrame stackFrameModifiable = threadInfo.getModifiableFrame(stackFrame);
+			
 			for (int i = 0; i < slotValues; ++i) {
 				int slot = bytes.getInt();
 				
 				Value value = Tag.bytesToValue(bytes);
-				value.modify(stackFrame, slot);
+				value.modify(stackFrameModifiable, slot);
 			}
 		}
 	},
