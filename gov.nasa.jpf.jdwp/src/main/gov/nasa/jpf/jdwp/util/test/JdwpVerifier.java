@@ -34,7 +34,7 @@ public abstract class JdwpVerifier {
 		try {
 			// this is how we defend against method "verify" rename
 			System.out.println(JdwpVerifier.class.getMethods());
-			VERIFY_METHOD_NAME = JdwpVerifier.class.getMethod("verify", Object[].class).getName();
+			VERIFY_METHOD_NAME = JdwpVerifier.class.getDeclaredMethod("verify", Object[].class).getName();
 		} catch (SecurityException e) {
 			throw new RuntimeException(e);
 		} catch (NoSuchMethodException e) {
@@ -58,10 +58,6 @@ public abstract class JdwpVerifier {
 	 */
 	abstract protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable;
 
-	public void verify(Object passedObject) {
-		verify(new Object[] {passedObject});
-	}
-	
 	/**
 	 * Call this method from SuT to trigger synchronous call of this method
 	 * outside of SuT. It sounds tricky but this is how it is.
@@ -88,7 +84,6 @@ public abstract class JdwpVerifier {
 		dataOutputStream = new DataOutputStream(dataOutputBytes);
 		bytes = ByteBuffer.allocate(100); // This "might" be enough 
 		contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
-
 	}
 	
 	protected void reset() {

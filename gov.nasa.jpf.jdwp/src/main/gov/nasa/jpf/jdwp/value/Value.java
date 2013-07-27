@@ -81,7 +81,7 @@ public interface Value {
 	 * Modifies local variable at the given slot index of the given frame.
 	 * 
 	 * @param stackFrame
-	 *            The frame where to modify the local variable.
+	 *            The frame where to modify the local variable. Must be modifiable!
 	 * @param slotIndex
 	 *            The slot index of the local variable.
 	 */
@@ -97,7 +97,7 @@ public interface Value {
 	 * @see Value#modify(ElementInfo, int)
 	 * 
 	 * @param instance
-	 *            The SuT instance to be modified
+	 *            The SuT instance to be modified. Must be modifiable!
 	 * @param fieldInfo
 	 *            The field that is modified
 	 */
@@ -114,7 +114,7 @@ public interface Value {
 	 * </p>
 	 * 
 	 * @param arrayInstance
-	 *            The instance of an array to be modified.
+	 *            The instance of an array to be modified. Must be modifiable!
 	 * @param index
 	 *            The index to the array where to modify its value.
 	 */

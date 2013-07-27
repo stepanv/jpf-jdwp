@@ -67,10 +67,6 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
 	@Test
 	public void lenghtTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierNumber1);
-		}
-
 		if (verifyNoPropertyViolation()) {
 			
 			ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();
@@ -119,10 +115,6 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
 	@Test
 	public void getValuesTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierNumber2);
-		}
-
 		if (verifyNoPropertyViolation()) {
 			
 			ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();
@@ -162,10 +154,6 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
 	@Test
 	public void setValuesTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierNumber3);
-		}
-
 		if (verifyNoPropertyViolation()) {
 			
 			ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();

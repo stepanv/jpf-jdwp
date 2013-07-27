@@ -1,11 +1,13 @@
 package gov.nasa.jpf.jdwp.util.test;
 
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -40,9 +42,34 @@ public class JdwpTestListener extends ListenerAdapter implements VMListener {
 					passedObjects.add(vm.getHeap().get(objRef));
 				}
 
-				// TODO use reflection to get the right verifier instance (now,
-				// only one is supported)
-				TestJdwp.currentVerificator().verify(passedObjects.toArray());
+				int verifierRef = currentThread.getTopFrame().getThis();
+				int testRef = currentThread.getTopFrame().getPrevious().getThis();
+				ElementInfo testEi = vm.getHeap().get(testRef);
+				
+				ClassInfo testCi = testEi.getClassInfo();
+				
+				String verifierName = null;
+				
+				for (FieldInfo fieldInfo : testCi.getDeclaredInstanceFields()) {
+					if (testEi.getReferenceField(fieldInfo) == verifierRef) {
+						verifierName = fieldInfo.getName();
+						break;
+					}
+				}
+				
+				if (verifierName == null) {
+					throw new RuntimeException("Verifier id: '" + verifierRef + "' not found in class: " + testCi);
+				}
+				
+				try {
+					Field verifierField = Class.forName(testCi.getName()).getDeclaredField(verifierName);
+					verifierField.setAccessible(true);
+					JdwpVerifier verifier = (JdwpVerifier)verifierField.get(TestJdwp.verifierTest);
+					verifier.verify(passedObjects.toArray());
+				} catch (Exception e) {
+					throw new TestInError(e);
+				}
+				
 			}
 		}
 

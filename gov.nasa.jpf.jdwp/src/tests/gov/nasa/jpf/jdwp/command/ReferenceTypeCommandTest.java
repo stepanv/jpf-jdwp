@@ -67,13 +67,6 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 
 	@Test
 	public void methodsTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) { // run this outside of JPF
-
-			// right now only 1 verifier is supported
-			// TODO get rid of this and use full reflection to find which
-			// verifier to execute
-			initialize(verifierNumber1);
-		}
 
 		// This is just an example how to debug the SuT code
 		// Just put a breakpoint down there somewhere and check the console

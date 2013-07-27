@@ -90,10 +90,6 @@ public class LocationTest extends TestJdwp {
 
 	@Test
 	public void simpleLocationTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierOneLocation);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			LocationReferenceClass locationClassObject = new LocationReferenceClass();

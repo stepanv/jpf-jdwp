@@ -105,10 +105,6 @@ public class LineTableTest extends TestJdwp {
 
 	@Test
 	public void everyLineHasEntryTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierAllLines);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			LineTableReferenceClass arrayObject = new LineTableReferenceClass();
@@ -176,10 +172,6 @@ public class LineTableTest extends TestJdwp {
 
 	@Test
 	public void linesGoUpAndDownTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierUpAndDown);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			LineTableReferenceClass arrayObject = new LineTableReferenceClass();
@@ -220,10 +212,6 @@ public class LineTableTest extends TestJdwp {
 
 	@Test
 	public void nativeMethodTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifierNativeMethod);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			LineTableReferenceClass arrayObject = new LineTableReferenceClass();

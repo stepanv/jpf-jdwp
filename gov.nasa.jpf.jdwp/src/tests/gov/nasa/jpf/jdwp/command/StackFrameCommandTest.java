@@ -102,6 +102,7 @@ public class StackFrameCommandTest extends TestJdwp {
 			ThreadInfo currentThread = ThreadInfo.getCurrentThread();
 
 			// run the JDWP command
+			
 			StackFrameCommand.SETVALUES.execute(currentThread, currentThread.getTopFrame().getPrevious(), bytes, dataOutputStream, contextProvider);
 
 			// results are verified in SuT
@@ -148,7 +149,7 @@ public class StackFrameCommandTest extends TestJdwp {
 	@Test
 	public void setValuesTest() throws SecurityException, NoSuchFieldException {
 		if (!isJPFRun()) {
-			initialize(verifierSetValues);
+			//initialize(verifierSetValues);
 		}
 
 		if (verifyNoPropertyViolation()) {

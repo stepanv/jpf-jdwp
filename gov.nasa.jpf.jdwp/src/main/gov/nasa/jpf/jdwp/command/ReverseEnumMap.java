@@ -22,7 +22,7 @@ public class ReverseEnumMap<T, V extends Enum<V> & IdentifiableEnum<T>> {
 		if (value != null) {
 			return value;
 		}
-		throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+		throw new JdwpError(ErrorType.NOT_IMPLEMENTED, "Mapping doesn't exist for: " + num);
 	}
 
 }

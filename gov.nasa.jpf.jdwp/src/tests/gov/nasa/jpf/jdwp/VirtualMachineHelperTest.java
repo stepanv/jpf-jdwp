@@ -105,10 +105,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 
 	@Test
 	public void simpleStaticCallTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifyStaticMethodCall);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			// prepare and clear before the test
@@ -163,10 +159,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 
 	@Test
 	public void simpleCallTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifyMethodCall);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			// prepare and clear before the test
@@ -220,10 +212,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 	
 	@Test
 	public void exceptionCallTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifyMethodExceptionCall);
-		}
-
 		if (verifyNoPropertyViolation()) {
 
 			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100);
@@ -276,9 +264,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 	
 	@Test
 	public void constructorCallTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifyConstructorCall);
-		}
 
 		if (verifyNoPropertyViolation()) {
 
@@ -336,10 +321,6 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 	
 	@Test
 	public void primitiveMethodCallTest() throws SecurityException, NoSuchFieldException {
-		if (!isJPFRun()) {
-			initialize(verifyPrimitiveMethodCall);
-		}
-
 		if (verifyNoPropertyViolation()) {
 			// prepare and clear before the test
 			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100000);
