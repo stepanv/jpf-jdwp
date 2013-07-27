@@ -50,7 +50,7 @@ public class ByteValue extends PrimitiveValue {
 
 	@Override
 	public void modify(ElementInfo arrayInstance, int index) {
-		arrayInstance.setIntElement(index, value);
+		arrayInstance.setByteElement(index, value);
 	}
 
 }
