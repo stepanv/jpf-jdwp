@@ -66,6 +66,7 @@ public class VirtualMachine {
 
 	/**
 	 * Only for initialization from the listener
+	 * 
 	 * @param jpf
 	 * @param executionThread
 	 */
@@ -73,7 +74,7 @@ public class VirtualMachine {
 		this(jpf);
 		this.executionThread = executionThread;
 	}
-	
+
 	public VirtualMachine(JPF jpf) {
 		this.jpf = jpf;
 	}
@@ -126,6 +127,34 @@ public class VirtualMachine {
 			runLock.lock();
 		}
 
+		/**
+		 * Conditionally resumes execution of JPF.<br/>
+		 * JPF is resumed only and only if all the threads are marked as
+		 * resumed.<br/>
+		 * As a consequence, JPF doesn't continue its execution unless user
+		 * manually resumes all the threads from the debugger.<br/>
+		 * 
+		 * Note that {@link ExecutionManager#markThreadResumed(ThreadInfo)}
+		 * marks given thread as resumed meanwhile
+		 * {@link ExecutionManager#markVMResumed()} marks all threads as resumed
+		 * yet it doesn't mean JPF will run since the number of resumptions of
+		 * given thread must be higher than its number of suspensions.
+		 */
+		private synchronized void conditionallyResumeVM() {
+			boolean resume = true;
+
+			for (ThreadInfo liveThreadInfo : jpf.getVM().getLiveThreads()) {
+				if (threadManager.suspensionCount(liveThreadInfo) > 0) {
+					resume = false;
+					logger.debug("Not resuming because of thread: {}", liveThreadInfo);
+				}
+			}
+
+			if (resume) {
+				resumeAllThreads();
+			}
+		}
+
 		private synchronized void resumeAllThreads() {
 			logger.debug("Resuming all threads by: {}", Thread.currentThread());
 			allThreadsSuspended = false;
@@ -163,7 +192,7 @@ public class VirtualMachine {
 		 */
 		public synchronized void markThreadResumed(ThreadInfo threadInfo) {
 			threadManager.suspensionCountDec(threadInfo);
-			resumeAllThreads();
+			conditionallyResumeVM();
 		}
 
 		/**
@@ -189,7 +218,7 @@ public class VirtualMachine {
 			for (ThreadInfo threadInfo : jpf.getVM().getLiveThreads()) {
 				threadManager.suspensionCountDec(threadInfo);
 			}
-			resumeAllThreads();
+			conditionallyResumeVM();
 		}
 
 		/**
@@ -429,7 +458,9 @@ public class VirtualMachine {
 			int threadIntId = threadInfo.getId();
 			if (threadContextDataMap.containsKey(threadIntId)) {
 				int suspensionCount = threadContextDataMap.get(threadIntId);
-				threadContextDataMap.put(threadIntId, --suspensionCount);
+				if (suspensionCount > 0) {
+					threadContextDataMap.put(threadIntId, --suspensionCount);
+				}
 			} else {
 				threadContextDataMap.put(threadIntId, 0);
 
@@ -516,7 +547,7 @@ public class VirtualMachine {
 			try {
 				Jdwp.notify(new VmDeathEvent());
 			} catch (Throwable t) {
-				logger.info("VM Death event NOT successfully sent."); 
+				logger.info("VM Death event NOT successfully sent.");
 				// we're about to end anyway, thus do nothing
 			}
 
