@@ -1,12 +1,12 @@
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 
-public class Identifier<T> {
+public abstract class Identifier<T> {
 
 	public static int SIZE = 8;
 	private long id;
@@ -30,12 +30,14 @@ public class Identifier<T> {
 	public boolean isNull() {
 		return objectReference.get() == null;
 	}
+	
+	public abstract T nullObjectHandler() throws InvalidIdentifier;
 
-	public T get() throws InvalidObject {
+	public T get() throws InvalidIdentifier {
 		T object = objectReference.get();
 
 		if (object == null) {
-			throw new InvalidObject(this);
+			return nullObjectHandler();
 		}
 		return object;
 	}
@@ -47,7 +49,7 @@ public class Identifier<T> {
 	public String toString() {
 		try {
 			return super.toString() + ", reference: " + get() + ", id: " + id;
-		} catch (InvalidObject e) {
+		} catch (InvalidIdentifier e) {
 			return "invalid reference, id: " + id;
 		}
 	}

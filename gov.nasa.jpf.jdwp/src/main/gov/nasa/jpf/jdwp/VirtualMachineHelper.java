@@ -4,6 +4,7 @@ import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -90,7 +91,7 @@ public class VirtualMachineHelper {
 		if (clazz.getSuperClass() != null) {
 			return getClassMethod(clazz.getSuperClass(), id);
 		}
-		throw new InvalidMethodId(id);
+		throw new InvalidMethodId(new MethodId(id));
 	}
 
 	public static class MethodResult {

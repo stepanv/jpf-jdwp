@@ -1,9 +1,16 @@
 package gov.nasa.jpf.jdwp.exception;
 
-public class InvalidMethodId extends JdwpError {
+import gov.nasa.jpf.jdwp.id.MethodId;
 
-	public InvalidMethodId(long id) {
-		super(ErrorType.INVALID_METHODID);
+public class InvalidMethodId extends InvalidIdentifier {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1467080209913560977L;
+
+	public InvalidMethodId(MethodId methodId) {
+		super(ErrorType.INVALID_METHODID, methodId);
 	}
 
 }

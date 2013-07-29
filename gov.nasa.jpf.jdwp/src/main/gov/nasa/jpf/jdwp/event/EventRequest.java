@@ -8,7 +8,7 @@ import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
@@ -169,7 +169,9 @@ public class EventRequest<T extends Event> {
 				if (!filter.matches(event)) {
 					return false;
 				}
-			} catch (InvalidObject e) {
+			} catch (InvalidIdentifier e) {
+				// if any invalid identifier problem occurred return false since
+				// this filter is not applicable
 				return false;
 			}
 		}

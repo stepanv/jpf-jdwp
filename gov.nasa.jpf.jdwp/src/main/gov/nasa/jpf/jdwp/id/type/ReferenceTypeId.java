@@ -4,6 +4,8 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.InvalidReferenceType;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -99,6 +101,11 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 	@Override
 	public IdentifiableEnum<Byte> getIdentifier() {
 		return typeTag;
+	}
+
+	@Override
+	public ClassInfo nullObjectHandler() throws InvalidIdentifier {
+		throw new InvalidReferenceType(this);
 	}
 
 }

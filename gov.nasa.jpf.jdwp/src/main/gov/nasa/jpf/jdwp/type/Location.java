@@ -8,6 +8,7 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -116,7 +117,7 @@ public class Location {
 		if (classInfo.getSuperClass() != null) {
 			return methodInfoLookup(classInfo.getSuperClass(), id);
 		}
-		throw new InvalidMethodId(id);
+		throw new InvalidMethodId(new MethodId(id));
 	}
 
 	public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {

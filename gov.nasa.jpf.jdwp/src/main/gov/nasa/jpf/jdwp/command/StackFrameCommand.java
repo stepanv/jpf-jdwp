@@ -43,7 +43,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				Object object = null;
 
 				LocalVarInfo localVarInfo = stackFrame.getLocalVarInfo(slot);
-				
+
 				// object will remain as null (if it really is null)
 				object = stackFrame.getLocalValueObject(localVarInfo);
 
@@ -71,14 +71,15 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 	 */
 	SETVALUES(2) {
 		@Override
-		public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpError {
+		public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+				throws JdwpError {
 			int slotValues = bytes.getInt();
-			
+
 			StackFrame stackFrameModifiable = threadInfo.getModifiableFrame(stackFrame);
-			
+
 			for (int i = 0; i < slotValues; ++i) {
 				int slot = bytes.getInt();
-				
+
 				Value value = Tag.bytesToValue(bytes);
 				value.modify(stackFrameModifiable, slot);
 			}
@@ -126,11 +127,11 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 	POPFRAMES(4) {
 		@Override
 		public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) {
-			
+
 			for (StackFrame frame = threadInfo.getTopFrame(); (frame != null) && (frame != stackFrame); frame = frame.getPrevious()) {
 				threadInfo.leave(); // that takes care of releasing locks
 				threadInfo.popFrame();
-			    }
+			}
 		}
 	};
 
@@ -157,7 +158,8 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 		ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
 		FrameId frameId = contextProvider.getObjectManager().readFrameId(bytes);
 
-		// TODO frameId.get() should return InvalidFrame instead of InvalidObject
+		// TODO frameId.get() should return InvalidFrame instead of
+		// InvalidObject
 		execute(threadId.getInfoObject(), frameId.get(), bytes, os, contextProvider);
 	}
 

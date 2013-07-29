@@ -2,7 +2,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -88,7 +88,7 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 			// restricts the reported exception events to exceptions of the
 			// given type or any of its !!subtypes!!
 			return exceptionClassInfo.isInstanceOf(exceptionOrNull.get());
-		} catch (InvalidObject e) {
+		} catch (InvalidIdentifier e) {
 			// exceptionOrNull stands for not known (GCed) type hence is ineffective
 			return false;
 		}

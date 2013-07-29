@@ -1,11 +1,13 @@
 package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -201,5 +203,16 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 		// this cast sucks, but we always want DynamicElementInfo and we want to
 		// enforce it!
 		return (DynamicElementInfo) heap.getModifiable(objectRef);
+	}
+
+	@Override
+	public DynamicElementInfo nullObjectHandler() throws InvalidIdentifier {
+
+		// TODO this is not used since ObjectId#get() completely overrides
+		// Identifier#get()
+		// solve nullobject pattern and also take advantage of this class
+		// structure .. now it's kind of masked
+		// since ObjectId overrides almost everything ...
+		return NullObjectId.getInstance().get();
 	}
 }

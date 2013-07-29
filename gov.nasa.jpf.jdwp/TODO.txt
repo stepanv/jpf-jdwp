@@ -31,3 +31,5 @@ x.6 use getModifiable - pro ElementInfo i pro StackFrame
 x.7 u modifikace - vyresit paralelismus (synchronizace)
 
 x.2.question Co s StackFrame - kdyz tam neco menim - narozdil od ElementInfo nemam modifiable instance - StackFrame.checkIsModifiable() metoda se nikde nepouziva - je to implementovany v JPF?
+
+15. Cleanup exception structure - use the same name convention everywhere

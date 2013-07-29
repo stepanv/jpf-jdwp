@@ -1,22 +1,16 @@
 package gov.nasa.jpf.jdwp.exception;
 
-public class InvalidFrameId extends JdwpError {
+import gov.nasa.jpf.jdwp.id.FrameId;
+
+public class InvalidFrameId extends InvalidIdentifier {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6672423422452261216L;
 
-	public InvalidFrameId(long frameId) {
-		super(ErrorType.INVALID_FRAMEID, "Invalid frame ID: '" + frameId + "'");
-	}
-
-	public InvalidFrameId(Throwable cause) {
-		super(ErrorType.INVALID_FRAMEID, cause);
-	}
-
-	public InvalidFrameId(long frameId, Throwable cause) {
-		super(ErrorType.INVALID_FRAMEID, "Invalid frame ID: '" + frameId + "'", cause);
+	public InvalidFrameId(FrameId frameId) {
+		super(ErrorType.INVALID_FRAMEID, frameId);
 	}
 
 }

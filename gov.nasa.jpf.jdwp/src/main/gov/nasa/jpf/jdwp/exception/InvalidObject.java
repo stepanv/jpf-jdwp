@@ -1,28 +1,20 @@
 package gov.nasa.jpf.jdwp.exception;
 
-import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
-public class InvalidObject extends JdwpError {
+public class InvalidObject extends InvalidIdentifier {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3401121682523839373L;
-	private Identifier<?> identifier;
+	
 
-	public InvalidObject(Identifier<?> identifier) {
-		super(ErrorType.INVALID_OBJECT);
-		this.identifier = identifier;
+	public InvalidObject(ObjectId objectId) {
+		super(ErrorType.INVALID_OBJECT, objectId);
 	}
 	
 	protected InvalidObject(ErrorType errorType, ObjectId objectId) {
-		super(errorType);
-		this.identifier = objectId;
-	}
-
-
-	public String toString() {
-		return super.toString() + " (Identifier: " + identifier + ")";
+		super(errorType, objectId);
 	}
 }
