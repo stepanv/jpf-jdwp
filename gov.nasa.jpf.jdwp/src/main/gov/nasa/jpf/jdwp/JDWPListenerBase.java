@@ -107,7 +107,7 @@ public class JDWPListenerBase implements VMListener {
 
 	@Override
 	public void objectReleased(VM vm, ThreadInfo currentThread, ElementInfo releasedObject) {
-		logger.trace("Processing listener");
+		logger.trace("Processing listener: {}", releasedObject);
 
 	}
 

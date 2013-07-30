@@ -281,12 +281,9 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 		logger.trace("Exception thrown: {}", thrownException);
 		
 		HandlerContext handlerContext = currentThread.getHandlerContextFor(thrownException.getClassInfo());
-		
-		StackFrame handlerFrame = handlerContext.getFrame();
-		ExceptionHandler exceptionHandler = handlerContext.getHandler();
 
-		if (handlerFrame != null && exceptionHandler != null) {
-			caughtExceptionThrown(vm, currentThread, thrownException, handlerFrame, exceptionHandler);
+		if (handlerContext != null) {
+			caughtExceptionThrown(vm, currentThread, thrownException, handlerContext.getFrame(), handlerContext.getHandler());
 		} else {
 			uncaughtExceptionThrown(vm, currentThread, thrownException);
 		}

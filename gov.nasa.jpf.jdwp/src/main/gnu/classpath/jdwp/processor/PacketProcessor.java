@@ -181,6 +181,7 @@ public class PacketProcessor
 			reply.setData(_outputBytes.toByteArray());
         } catch (gov.nasa.jpf.jdwp.exception.VmDead e) {
         	logger.debug("VM is dead. Will send VM_DEAD error code...", e);
+        	reply.setErrorCode(e.getErrorType().identifier());
 		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
 			logger.info("Command {} returns an error", commandPkt.getCommand(), e);
 			reply.setErrorCode(e.getErrorType().identifier());

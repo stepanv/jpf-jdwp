@@ -1,6 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.JPF.Status;
+import gov.nasa.jpf.jdwp.exception.InternalException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.VmDead;
 
@@ -132,7 +133,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 
 	public static void execute(Command command, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 
-		// this will help to not mask the eventual exception throw in the try
+		// this will help to not mask the eventual exception thrown in the try
 		// block
 		Throwable chainError = null;
 
@@ -140,8 +141,14 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 			logger.info("Running command: {} (class: {})", command, command.getClass());
 			contextProvider.getVirtualMachine().getRunLock().lock();
 			command.execute(bytes, os, contextProvider);
-		} catch (Throwable t) {
-			chainError = t;
+		} catch (RuntimeException e) {
+			logger.error("Fatal error occured during the execution of command: {} (class: {})", command, command.getClass(), e);
+			chainError = e;
+		} catch (Error e) {
+			logger.error("Fatal error occured during the execution of command: {} (class: {})", command, command.getClass(), e);
+			chainError = e;
+		} catch (JdwpError e) {
+			chainError = e;
 		} finally {
 			contextProvider.getVirtualMachine().getRunLock().unlock();
 
@@ -149,13 +156,18 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 			if (contextProvider.getJPF().getStatus() == Status.DONE) {
 
 				String errorString = "JPF execution stopped while running command: " + command + " of set: " + command.getClass();
-				// If JVM has terminated we want to return VM_DEAD error code at
-				// first
+				// If JVM has terminated we want to return VM_DEAD error code
+				// rather than anything else
 				if (chainError != null) {
+					// we still want to keep track of the error
 					throw new VmDead(errorString, chainError);
 				} else {
 					throw new VmDead(errorString);
 				}
+			}
+
+			if (chainError != null) {
+				throw new InternalException(chainError);
 			}
 		}
 	}
