@@ -9,11 +9,15 @@ import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventRequestManager;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.MethodEntryEvent;
+import gov.nasa.jpf.jdwp.event.MethodExitEvent;
+import gov.nasa.jpf.jdwp.event.MethodExitWithReturnValueEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadDeathEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.util.FieldVisitor;
+import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.ValueUtils;
 import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.search.Search;
@@ -49,19 +53,19 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
 	public JDWPListener() {
 		this.virtualMachine = new VirtualMachine(VM.getVM().getJPF(), Thread.currentThread());
-		
+
 		Jdwp jdwp = new Jdwp(virtualMachine);
-		
+
 		String jdwpProperty = VM.getVM().getConfig().getString("jpf-jdwp.jdwp");
-		
+
 		if (jdwpProperty == null) {
 			jdwpProperty = System.getProperty("jdwp");
 		}
-		
+
 		if (jdwpProperty == null) {
 			throw new IllegalStateException("Missing jdwp configuration!");
 		}
-		
+
 		jdwp.configure(jdwpProperty);
 		virtualMachine.setJdwp(jdwp);
 		jdwp.start();
@@ -73,23 +77,61 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 			} catch (InterruptedException e) {
 			}
 		}
-		
+
 		// Get the lock before the JPF starts.
 		// This lock is paired with unlock at the end of the finally block
 		// .. see a comment there for further detail
 		virtualMachine.getRunLock().lock();
 	}
-	
+
 	public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
 		this.virtualMachine = virtualMachine;
 	}
 
 	@Override
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
-		Instruction instruction = enteredMethod.getInstruction(0);
-		if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
-			MethodEntryEvent methodEntryEvent = new MethodEntryEvent(currentThread, Location.factory(instruction));
-			dispatchEvent(methodEntryEvent);
+		if (hasNonnullEventRequests(EventKind.METHOD_ENTRY)) {
+			Instruction instruction = enteredMethod.getInstruction(0);
+			if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
+				MethodEntryEvent methodEntryEvent = new MethodEntryEvent(currentThread, Location.factory(instruction));
+				dispatchEvent(methodEntryEvent);
+			}
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see gov.nasa.jpf.jdwp.JDWPListenerBase#methodExited(gov.nasa.jpf.vm.VM,
+	 * gov.nasa.jpf.vm.ThreadInfo, gov.nasa.jpf.vm.MethodInfo)
+	 */
+	@Override
+	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
+		if (hasNonnullEventRequests(EventKind.METHOD_EXIT, EventKind.METHOD_EXIT_WITH_RETURN_VALUE)) {
+			if (currentThread.getPendingException() != null) {
+				// according to the specification, if exception is thrown, no
+				// method exit events are generated
+				return;
+			}
+			Instruction instruction = exitedMethod.getInstruction(0);
+			if (instruction.getMethodInfo() != null && instruction.getMethodInfo().getClassInfo() != null) {
+				Event methodExitEvent;
+
+				// The specification isn't clear whether these two events are
+				// exclusive or not and thus we let decide the debugger which
+				// ones are requested.
+				
+				if (hasNonnullEventRequests(EventKind.METHOD_EXIT_WITH_RETURN_VALUE)) {
+					Value returnValue = ValueUtils.methodReturnValue(exitedMethod, currentThread.getTopFrame());
+					methodExitEvent = new MethodExitWithReturnValueEvent(currentThread, Location.factory(instruction), returnValue);
+					dispatchEvent(methodExitEvent);
+				}
+
+				if (hasNonnullEventRequests(EventKind.METHOD_EXIT)) {
+					methodExitEvent = new MethodExitEvent(currentThread, Location.factory(instruction));
+					dispatchEvent(methodExitEvent);
+				}
+			}
 		}
 	}
 
@@ -101,14 +143,17 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	 */
 	@Override
 	public void threadStarted(VM vm, ThreadInfo startedThread) {
-		// TODO [for PJA] I hate to say it but honestly startedThread should be
-		// alread in state State.RUNNING by now - which is not by design ...
-		// WHY???
-		lastKnownThreadStates.put(startedThread.getThreadObjectRef(), State.RUNNING);
-		logger.info("Started thread: " + startedThread);
+		if (hasNonnullEventRequests(EventKind.THREAD_START)) {
+			// TODO [for PJA] I hate to say it but honestly startedThread should
+			// be
+			// alread in state State.RUNNING by now - which is not by design ...
+			// WHY???
+			lastKnownThreadStates.put(startedThread.getThreadObjectRef(), State.RUNNING);
+			logger.info("Started thread: " + startedThread);
 
-		ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
-		dispatchEvent(threadStartEvent);
+			ThreadStartEvent threadStartEvent = new ThreadStartEvent(startedThread);
+			dispatchEvent(threadStartEvent);
+		}
 	}
 
 	/**
@@ -136,16 +181,18 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	 */
 	@Override
 	public void threadTerminated(VM vm, ThreadInfo terminatedThread) {
-		// this is the workaround for Eclipse and it's deferred thread deaths
-		// handling
-		ThreadStartEvent ts = new ThreadStartEvent(terminatedThread);
-		dispatchEvent(ts);
+		if (hasNonnullEventRequests(EventKind.THREAD_DEATH)) {
+			// this is the workaround for Eclipse and it's deferred thread
+			// deaths handling
+			ThreadStartEvent ts = new ThreadStartEvent(terminatedThread);
+			dispatchEvent(ts);
 
-		lastKnownThreadStates.put(terminatedThread.getThreadObjectRef(), State.TERMINATED);
-		logger.debug("Thread terminated: {}", terminatedThread);
+			lastKnownThreadStates.put(terminatedThread.getThreadObjectRef(), State.TERMINATED);
+			logger.debug("Thread terminated: {}", terminatedThread);
 
-		ThreadDeathEvent td = new ThreadDeathEvent(terminatedThread);
-		dispatchEvent(td);
+			ThreadDeathEvent td = new ThreadDeathEvent(terminatedThread);
+			dispatchEvent(td);
+		}
 	}
 
 	List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
@@ -199,9 +246,13 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 			// composite event if occurred together!
 			if (logger.isTraceEnabled()) {
 				if (instructionToExecute instanceof InvokeInstruction) {
-					// FIXME .. this requires InvokeInstruction#arguments to be public .. since this is just for debugging it has to be removed TODO
-//					logger.trace("Instruction: '{}' args: {} line: {}", instructionToExecute, ((InvokeInstruction) instructionToExecute).arguments,
-//							instructionToExecute.getFileLocation());
+					// FIXME .. this requires InvokeInstruction#arguments to be
+					// public .. since this is just for debugging it has to be
+					// removed TODO
+					// logger.trace("Instruction: '{}' args: {} line: {}",
+					// instructionToExecute, ((InvokeInstruction)
+					// instructionToExecute).arguments,
+					// instructionToExecute.getFileLocation());
 				} else {
 					logger.trace("Instruction: '{}' line: {}", instructionToExecute, instructionToExecute.getFileLocation());
 				}
@@ -238,8 +289,8 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	}
 
 	/**
-	 * Whether the {@link EventRequestManager} has registered more than 0 event request
-	 * for at least one of the given event kinds.
+	 * Whether the {@link EventRequestManager} has registered more than 0 event
+	 * request for at least one of the given event kinds.
 	 * 
 	 * @param firstEventKind
 	 *            The first event kind.
@@ -279,7 +330,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	@Override
 	public void exceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
 		logger.trace("Exception thrown: {}", thrownException);
-		
+
 		HandlerContext handlerContext = currentThread.getHandlerContextFor(thrownException.getClassInfo());
 
 		if (handlerContext != null) {

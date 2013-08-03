@@ -7,8 +7,8 @@ import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
+import gov.nasa.jpf.jdwp.value.ValueUtils;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
 import gov.nasa.jpf.vm.DynamicElementInfo;
@@ -18,7 +18,6 @@ import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.UncaughtException;
 
 import java.io.DataOutputStream;
@@ -200,8 +199,7 @@ public class VirtualMachineHelper {
 		if (isConstructor) {
 			returnValue = JdwpObjectManager.getInstance().getObjectId(constructedElementInfo);
 		} else {
-			ClassInfo returnedClassInfo = ClassInfo.getInitializedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()), thread);
-			returnValue = Tag.classInfoToTag(returnedClassInfo).peekValue(frame);
+			returnValue = ValueUtils.methodReturnValue(method, frame);
 		}
 
 		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);

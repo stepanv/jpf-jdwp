@@ -324,7 +324,13 @@ public abstract class PrimitiveValue implements Value {
 		 * @return Value instance.
 		 */
 		public Value value(Object object) {
-			return JdwpObjectManager.getInstance().getObjectId((ElementInfo) object);
+			ElementInfo elementInfo;
+			if (object instanceof Number) {
+				elementInfo = VM.getVM().getHeap().get((Integer)object);
+			} else {
+				elementInfo = (ElementInfo)object;
+			}
+			return JdwpObjectManager.getInstance().getObjectId(elementInfo);
 		}
 
 		/**

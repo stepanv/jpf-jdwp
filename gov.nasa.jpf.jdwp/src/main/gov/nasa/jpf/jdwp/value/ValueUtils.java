@@ -2,8 +2,13 @@ package gov.nasa.jpf.jdwp.value;
 
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.NativeStackFrame;
+import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.Types;
 
 /**
  * Utility class for {@link Value} interface.
@@ -49,6 +54,16 @@ public class ValueUtils {
 		ClassInfo arrayClassInfo = array.getClassInfo().getComponentClassInfo();
 		Tag tag = Tag.classInfoToTag(arrayClassInfo);
 		return tag.value(array, position);
+	}
+
+	public static Value methodReturnValue(MethodInfo method, StackFrame frame) {
+		ClassInfo returnedClassInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()));
+		Tag returnTag =  Tag.classInfoToTag(returnedClassInfo);
+		if (frame instanceof NativeStackFrame) {
+			return returnTag.value(((NativeStackFrame)frame).getReturnValue());
+		} else {
+			return returnTag.peekValue(frame);
+		}
 	}
 
 }
