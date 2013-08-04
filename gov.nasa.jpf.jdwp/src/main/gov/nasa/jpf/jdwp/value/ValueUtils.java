@@ -56,11 +56,24 @@ public class ValueUtils {
 		return tag.value(array, position);
 	}
 
+	/**
+	 * Gets the {@link Value} instance of the method return value.<br/>
+	 * No checks whether the method really ended or whether the given frame
+	 * belongs to the given method execution.
+	 * 
+	 * @param method
+	 *            The method of which return value is requested.
+	 * @param frame
+	 *            The frame that was used for the method execution.
+	 * @return Value (including void) instance of the method return valuef.
+	 */
 	public static Value methodReturnValue(MethodInfo method, StackFrame frame) {
 		ClassInfo returnedClassInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(Types.getClassNameFromTypeName(method.getReturnTypeName()));
-		Tag returnTag =  Tag.classInfoToTag(returnedClassInfo);
+		Tag returnTag = Tag.classInfoToTag(returnedClassInfo);
 		if (frame instanceof NativeStackFrame) {
-			return returnTag.value(((NativeStackFrame)frame).getReturnValue());
+			// this is very special case for a subset of native methods where
+			// frame is not used to store arguments and return values.
+			return returnTag.value(((NativeStackFrame) frame).getReturnValue());
 		} else {
 			return returnTag.peekValue(frame);
 		}

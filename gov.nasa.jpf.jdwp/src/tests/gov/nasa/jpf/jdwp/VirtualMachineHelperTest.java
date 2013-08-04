@@ -6,9 +6,9 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.jdwp.value.DoubleValue;
+import gov.nasa.jpf.jdwp.value.IntegerValue;
 import gov.nasa.jpf.jdwp.value.LongValue;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.jdwp.value.IntegerValue;
 import gov.nasa.jpf.jdwp.value.ShortValue;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -46,6 +46,7 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 		
 		private Object object;
 		private static Object staticObject;
+		private static Throwable staticThrowable;
 		
 		MethodCallReferenceClass(Integer field) {
 			this.field = field;
@@ -91,7 +92,7 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			
 			// pass the result through a well known field to the SuT so that it can be asserted there
 			ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
-			clazz.getStaticElementInfo().setReferenceField("staticObject", integerId.get().getObjectRef());
+			clazz.getModifiableStaticElementInfo().setReferenceField("staticObject", integerId.get().getObjectRef());
 			
 			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
@@ -250,7 +251,7 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			
 			// pass the result through a well known field to the SuT so that it can be asserted there
 			ObjectId constructedObjectId = JdwpObjectManager.getInstance().readObjectId(bb);
-			clazz.getStaticElementInfo().setReferenceField("staticObject", constructedObjectId.get().getObjectRef());
+			clazz.getModifiableStaticElementInfo().setReferenceField("staticObject", constructedObjectId.get().getObjectRef());
 			
 			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
@@ -330,6 +331,128 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			verifyPrimitiveMethodCall.verify(methodCallReferenceObject);
 			
 			// all the assertions are done in the verifier
+		}
+	}
+	
+	JdwpVerifier verifyNativeMethodCall = new JdwpVerifier() {
+
+		@Override
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+
+			DynamicElementInfo classInstance = (DynamicElementInfo) passedObjects[0];
+			
+			// Prepare arguments
+			Value[] values = new Value[0];
+		
+			ClassInfo clazz = classInstance.getClassInfo();
+			MethodInfo method = clazz.getMethod("intern()Ljava/lang/String;", false);
+			
+			MethodResult mr = VirtualMachineHelper.invokeMethod(classInstance, method, values, VM.getVM().getCurrentThread(), 0);
+			mr.write(dataOutputStream);
+			
+			// verify the results
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+
+			/*
+			 * Test that the buffer contains appropriate values
+			 */
+			assertEquals(Tag.DOUBLE.identifier().byteValue(), bb.get());
+			// verify the primitive value result right in here since it's not that easy to pass primitives back to SuT
+			assertEquals(1.0000001011111E12, bb.getDouble());
+			
+			// no exception hence NullObject expected
+			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
+			assertEquals(0, bb.getLong());
+			
+			// verify there is nothing else left in the buffer
+			assertEquals(0, bb.remaining());
+		}
+
+	};
+	
+	@Test
+	public void nativeMethodCallTest() throws SecurityException, NoSuchFieldException {
+		if (verifyNoPropertyViolation()) {
+			// prepare and clear before the test
+			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100000);
+			MethodCallReferenceClass.staticField = 1000;
+			methodCallReferenceObject.object = null;
+			
+			String string = "ahoj";
+			
+			verifyNativeMethodCall.verify(string, "oj");
+			
+			// all the assertions are done in the verifier
+		}
+	}
+	
+	JdwpVerifier verifyNativeStaticMethodCall = new JdwpVerifier() {
+
+		@Override
+		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+
+			// Prepare arguments
+			Value[] values = new Value[1];
+			values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo)passedObjects[0]); 
+			
+			DynamicElementInfo classReturnInstance = (DynamicElementInfo) passedObjects[1];
+			ClassInfo returnClazz = classReturnInstance.getClassInfo();
+		
+			ClassInfo clazz = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.Class");
+			MethodInfo method = clazz.getMethod("getPrimitiveClass(Ljava/lang/String;)Ljava/lang/Class;", false);
+			
+			MethodResult mr = VirtualMachineHelper.invokeMethod(null, method, values, VM.getVM().getCurrentThread(), 0);
+			mr.write(dataOutputStream);
+			
+			// verify the results
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+
+			/*
+			 * Test that the buffer contains appropriate values
+			 */
+			
+			// tag byte is checked in the SuT
+			bb.get();
+			
+			// pass the result through a well known field to the SuT so that it can be asserted there
+			ObjectId objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+			ElementInfo elementInfo = objectId.get();
+			returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", elementInfo == null ? -1 : elementInfo.getObjectRef());
+						
+			// tag byte is checked in the SuT
+			bb.get();
+			objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+			elementInfo = objectId.get();
+			returnClazz.getModifiableStaticElementInfo().setReferenceField("staticThrowable", elementInfo == null ? -1 : elementInfo.getObjectRef());
+			
+			// verify there is nothing else left in the buffer
+			assertEquals(0, bb.remaining());
+		}
+
+	};
+	
+	@Test
+	public void nativeStaticMethodCallTest() throws SecurityException, NoSuchFieldException {
+		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+			// prepare and clear before the test
+			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100000);
+			
+			MethodCallReferenceClass.staticObject = null;
+			MethodCallReferenceClass.staticThrowable = new Exception();
+			
+			verifyNativeStaticMethodCall.verify("long", methodCallReferenceObject);
+			
+			assertTrue(MethodCallReferenceClass.staticObject instanceof Class);
+			assertEquals("long", ((Class<?>)MethodCallReferenceClass.staticObject).getName());
+			assertEquals(null, MethodCallReferenceClass.staticThrowable);
+			
+			MethodCallReferenceClass.staticObject = new Object();
+			MethodCallReferenceClass.staticThrowable = null;
+			
+			verifyNativeStaticMethodCall.verify("nonexistent", methodCallReferenceObject);
+			
+			assertEquals(null, MethodCallReferenceClass.staticObject);
+			assertTrue(MethodCallReferenceClass.staticThrowable instanceof ClassNotFoundException);
 		}
 	}
 

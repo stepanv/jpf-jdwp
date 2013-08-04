@@ -71,6 +71,8 @@ public abstract class JdwpVerifier {
 				verifyOutsideOfSuT(passedObjects);
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
+			} finally {
+				clear();
 			}
 		} else {
 			// this is just notification in SuT - this is how we get into
@@ -84,6 +86,15 @@ public abstract class JdwpVerifier {
 		dataOutputStream = new DataOutputStream(dataOutputBytes);
 		bytes = ByteBuffer.allocate(200); // This "might" be enough 
 		contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
+	}
+	
+	protected void clear() {
+		try {
+			dataOutputBytes.close(); // has no effect
+			dataOutputStream.close();
+		} catch (IOException e) {
+			// we don't care let's try to go further
+		}
 	}
 	
 	protected void reset() {

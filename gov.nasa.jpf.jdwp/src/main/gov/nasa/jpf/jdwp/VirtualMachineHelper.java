@@ -1,7 +1,6 @@
 package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
@@ -110,16 +109,49 @@ public class VirtualMachineHelper {
 
 	}
 
-	public static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
+	/**
+	 * Invoke the method on the given object instance using given values as
+	 * parameters in a context of the given thread with provided options.
+	 * 
+	 * @param object
+	 *            The object instance to invoke the method on or
+	 *            <code>null</code> for statics
+	 * @param method
+	 *            The method to invoke
+	 * @param values
+	 *            The parameters of the method
+	 * @param thread
+	 *            The thread which executes the method
+	 * @param options
+	 *            JVM specific options
+	 * @return Instance of {@link MethodResult} where the exception or the
+	 *         result is stored.
+	 */
+	public static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options) {
 		return invokeMethod(object, method, values, thread, options, false);
 	}
 
-	public static MethodResult invokeConstructor(MethodInfo method, Value[] values, ThreadInfo thread, int options) throws InvalidObject {
+	/**
+	 * Invoke the constructor provided as a method using given values as
+	 * parameters in a context of the given thread with provided options.
+	 * 
+	 * @param method
+	 *            The constructor to invoke. No checks whether provided method
+	 *            really is a constructor are run.
+	 * @param values
+	 *            The parameters of the method
+	 * @param thread
+	 *            The thread which executes the method
+	 * @param options
+	 *            JVM specific options
+	 * @return Instance of {@link MethodResult} where the exception or the
+	 *         result is stored.
+	 */
+	public static MethodResult invokeConstructor(MethodInfo method, Value[] values, ThreadInfo thread, int options) {
 		return invokeMethod(null, method, values, thread, options, true);
 	}
 
-	private static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor)
-			throws InvalidObject {
+	private static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options, boolean isConstructor) {
 		// TODO (maybe this is not a TODO) we're supposed to resume all threads
 		// unless INVOKE_SINGLE_THREADED was specified - to prevent deadlocks
 		// we're not able to achieve this with JPF since JPF would inspect all
@@ -176,8 +208,9 @@ public class VirtualMachineHelper {
 
 		for (Value value : values) {
 			System.out.println(value);
-			
-			// TODO we should probably call rather frame.setArgument() as in JPF_gov_nasa_jpf_test_basic_MJITest#nativeHiddenRoundtrip__I__I
+
+			// TODO we should probably call rather frame.setArgument() as in
+			// JPF_gov_nasa_jpf_test_basic_MJITest#nativeHiddenRoundtrip__I__I
 			value.push(frame);
 		}
 

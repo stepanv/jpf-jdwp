@@ -104,7 +104,7 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 	}
 
 	@Override
-	public void push(StackFrame frame) throws InvalidObject {
+	public void push(StackFrame frame) {
 		frame.pushRef(objectRef);
 	}
 

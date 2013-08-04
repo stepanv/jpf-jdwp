@@ -75,7 +75,7 @@ public interface Value {
 	 *            The stack frame where to push this value.
 	 * @throws InvalidObject
 	 */
-	public void push(StackFrame frame) throws InvalidObject;
+	public void push(StackFrame frame);
 
 	/**
 	 * Modifies local variable at the given slot index of the given frame.

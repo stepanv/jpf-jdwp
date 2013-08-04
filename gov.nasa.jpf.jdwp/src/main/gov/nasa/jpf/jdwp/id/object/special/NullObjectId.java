@@ -1,12 +1,11 @@
 package gov.nasa.jpf.jdwp.id.object.special;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.StackFrame;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * A special object used to represent null in SuT.<br/>
@@ -55,7 +54,7 @@ public class NullObjectId extends ObjectId {
 	private static final NullObjectId instance = new NullObjectId();
 
 	@Override
-	public void push(StackFrame frame) throws InvalidObject {
+	public void push(StackFrame frame) {
 		frame.pushRef(-1);
 	}
 
