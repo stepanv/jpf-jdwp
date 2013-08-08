@@ -10,6 +10,7 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.LocalVarInfo;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
@@ -43,7 +44,15 @@ public class JdwpTestListener extends ListenerAdapter implements VMListener {
 				}
 
 				int verifierRef = currentThread.getTopFrame().getThis();
-				int testRef = currentThread.getTopFrame().getPrevious().getThis();
+
+				StackFrame testedFrame = currentThread.getTopFrame().getPrevious();
+				String testClassName = TestJdwp.verifierTest.getClass().getName();
+
+				while (!testClassName.equals(testedFrame.getMethodInfo().getClassName())) {
+					testedFrame = testedFrame.getPrevious();
+				}
+
+				int testRef = testedFrame.getThis();
 				ElementInfo testEi = vm.getHeap().get(testRef);
 				
 				ClassInfo testCi = testEi.getClassInfo();
