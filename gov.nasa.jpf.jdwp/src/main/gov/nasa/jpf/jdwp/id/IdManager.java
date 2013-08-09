@@ -21,8 +21,8 @@ public class IdManager<I extends Identifier<T>, T> {
 
 	// TODO when an identifier doesn't contain mapping to an object it should
 	// remove itself from here (to prevent memory leaking)
-	private Map<Long, I> idToIdentifierMap = new HashMap<Long, I>();
-	private Map<T, I> objectToIdentifierMap = new HashMap<T, I>();
+	private Map<Long, I> idToIdentifierMap = new WeakHashMap<Long, I>();
+	private Map<T, I> objectToIdentifierMap = new WeakHashMap<T, I>();
 	private Long idGenerator = (long) 1;
 	private IdFactory<I, T> idFactory;
 

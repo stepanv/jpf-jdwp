@@ -4,13 +4,13 @@ import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 
 public abstract class Identifier<T> {
 
 	public static int SIZE = 8;
 	private long id;
-	private SoftReference<T> objectReference;
+	private WeakReference<T> objectReference;
 
 	/**
 	 * This is here to keep the reference in case we don't want a garbage
@@ -23,7 +23,7 @@ public abstract class Identifier<T> {
 	private T object;
 
 	public Identifier(long id, T object) {
-		this.objectReference = new SoftReference<T>(object);
+		this.objectReference = new WeakReference<T>(object);
 		this.id = id;
 	}
 
