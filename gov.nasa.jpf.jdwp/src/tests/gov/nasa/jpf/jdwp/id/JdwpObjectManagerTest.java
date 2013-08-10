@@ -12,6 +12,7 @@ import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.lang.ref.WeakReference;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,9 +86,11 @@ public class JdwpObjectManagerTest extends TestJdwp {
 		assertTrue("Memory leak", fieldId.isNull());
 		fieldId.get();
 	}
-
+	
 	private WeakReference<StackFrame> weaklyStoredFrame;
 	private FrameId testedFrameId;
+	private long testedFrameIdAsLong;
+	private long testedFrameIdStoredAsLongOnly;
 	private JdwpVerifier storeFrameVerifier = new JdwpVerifier() {
 
 		@Override
@@ -103,10 +106,59 @@ public class JdwpObjectManagerTest extends TestJdwp {
 			assertEquals("methodXyd34itSjfWithSpecialId", secondFrame.getMethodName());
 
 			testedFrameId = contextProvider.getObjectManager().getFrameId(secondFrame);
+			FrameId onlyAsIdStoredFrameId = contextProvider.getObjectManager().getFrameId(firstFrame);
 			weaklyStoredFrame = new WeakReference<StackFrame>(nullFrame);
+			
+			testedFrameId.write(dataOutputStream);
+			onlyAsIdStoredFrameId.write(dataOutputStream);
+			
+			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+			testedFrameIdAsLong = bb.getLong();
+			testedFrameIdStoredAsLongOnly = bb.getLong();
+			
+			FrameId frameId;
+			bb.rewind();
+			frameId = contextProvider.getObjectManager().readFrameId(bb);
+			assertTrue(frameId == testedFrameId);
+			assertEquals(frameId.get(), testedFrameId.get());
+			
+			frameId = contextProvider.getObjectManager().readFrameId(bb);
+			assertTrue(frameId == onlyAsIdStoredFrameId);
+			assertEquals(frameId.get(), onlyAsIdStoredFrameId.get());
+			
 		}
 	};
-
+	
+	/**
+	 * An assertion helper class for thrown exceptions.<br/>
+	 * 
+	 * Typical usage:
+	 * <pre>
+	 * new AssertExceptionThrown() {
+	 *     {@literal @}Override
+	 *     public void execute() throws Exception {
+	 *         /{@literal *} a code that throws an exception {@literal *}/
+	 *     }
+	 * }.doAssert("Assertion message", InvalidIdentifier.class);
+	 * </pre>
+	 * 
+	 * @author stepan
+	 *
+	 */
+	private abstract class AssertExceptionThrown {
+		public abstract void execute() throws Exception;
+		
+		public void doAssert(String message, Class<? extends Exception> exceptionClass) {
+			Exception e = null;
+			try {
+				execute();
+			} catch (Exception ee) {
+				e = ee;
+			}
+			assertTrue(message, exceptionClass.isInstance(e));
+		}
+	}
+	
 	private JdwpVerifier frameGcedVerifier = new JdwpVerifier() {
 
 		@Override
@@ -117,17 +169,43 @@ public class JdwpObjectManagerTest extends TestJdwp {
 				// GC done
 			}
 
+			/*
+			 * If objects in this test don't assert to be null it doesn't necessarily mean there is a real problem.
+			 * Following aspects need to be considered:
+			 * [1] Does your JVM do GC as it is expected in this test?
+			 * [2] Is it possible the objects were pinned down by the JVM because of a debugger request
+			 *     (Eclipse 4.2 debugger can prevent JDK1.7 from garbage collecting of these objects)
+			 * [3] And maybe other aspects 
+			 */
 			assertTrue("Java VM should have removed this frame if not JPF implementation probably changed.", weaklyStoredFrame.get() == null);
 			assertTrue("Memory leak detected", testedFrameId.isNull());
 
 			// also testing the exception itself
-			Exception e = null;
-			try {
-				testedFrameId.get();
-			} catch (InvalidIdentifier ii) {
-				e = ii;
-			}
-			assertNotNull("If the exception wasn't thrown a potential memory leak is detected.", e);
+			new AssertExceptionThrown() {
+				@Override
+				public void execute() throws Exception {
+					testedFrameId.get();
+				}
+			}.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifier.class);
+			
+			// Now, we also want to test other related objects
+			dataOutputStream.writeLong(testedFrameIdAsLong);
+			dataOutputStream.writeLong(testedFrameIdStoredAsLongOnly);
+			final ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+			
+			FrameId frameId;
+			bb.rewind();
+			frameId = contextProvider.getObjectManager().readFrameId(bb);
+			assertTrue(frameId == testedFrameId);
+			
+			
+			// TODO this should throw an exception otherwise the FrameId is leaking
+			new AssertExceptionThrown() {
+				@Override
+				public void execute() throws Exception {
+					contextProvider.getObjectManager().readFrameId(bb);
+				}
+			}.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifier.class);
 		}
 	};
 
