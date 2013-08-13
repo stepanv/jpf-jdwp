@@ -4,7 +4,8 @@ import gov.nasa.jpf.vm.ClassInfo;
 
 /**
  * This class implements the corresponding <code>interfaceID</code> common data
- * type from the JDWP Specification.
+ * type from the JDWP Specification.<br/>
+ * 
  * 
  * <p>
  * <h2>JDWP Specification:</h2>
@@ -16,6 +17,14 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public class InterfaceTypeReferenceId extends ReferenceTypeId {
 
+	/**
+	 * Interface Type ID constructor.
+	 * 
+	 * @param id
+	 *            The numerical ID of this identifier.
+	 * @param classInfo
+	 *            The {@link ClassInfo} that stands for the desired interface type.
+	 */
 	public InterfaceTypeReferenceId(long id, ClassInfo classInfo) {
 		super(TypeTag.INTERFACE, id, classInfo);
 	}

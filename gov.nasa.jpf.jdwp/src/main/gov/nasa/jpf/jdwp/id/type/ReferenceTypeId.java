@@ -79,6 +79,14 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
 	private TypeTag typeTag;
 
+	/**
+	 * Reference Type ID constructor.
+	 * 
+	 * @param id
+	 *            The numerical ID of this identifier.
+	 * @param classInfo
+	 *            The {@link ClassInfo} that stands for the desired reference type.
+	 */
 	public ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
 		super(id, classInfo);
 		this.typeTag = typeTag;
