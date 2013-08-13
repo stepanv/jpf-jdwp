@@ -13,9 +13,11 @@ import gov.nasa.jpf.vm.ClassInfo;
 import java.nio.ByteBuffer;
 
 /**
+ * This class implements the corresponding <code>referenceTypeID</code> common
+ * data type from the JDWP Specification.
  * 
- * <strong>JDWP Specification:</strong>
  * <p>
+ * <h2>JDWP Specification:</h2>
  * Uniquely identifies a reference type in the target VM. It should not be
  * assumed that for a particular class, the <tt>classObjectID</tt> and the
  * <tt>referenceTypeID</tt> are the same. A particular reference type will be
