@@ -4,8 +4,8 @@ import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 
 /**
- * This class implements the corresponding threadGroupID common data type from
- * the JDWP Specification.
+ * This class implements the corresponding <code>threadGroupID</code> common
+ * data type from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification</h2>

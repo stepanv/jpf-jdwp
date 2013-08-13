@@ -23,8 +23,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * This class implements the corresponding objectID common data type
- * (tagged-objectID respectively) from the JDWP Specification.
+ * This class implements the corresponding <code>objectID</code> common data
+ * type (tagged-objectID respectively) from the JDWP Specification.
  * 
  * <p>
  * {@link ObjectId} class stands for all the elements in the JPF that are

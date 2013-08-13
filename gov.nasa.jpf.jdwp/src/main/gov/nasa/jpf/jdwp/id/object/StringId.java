@@ -6,8 +6,8 @@ import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ElementInfo;
 
 /**
- * This class implements the corresponding stringID common data type from the
- * JDWP Specification.
+ * This class implements the corresponding <code>stringID</code> common data
+ * type from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification</h2>
