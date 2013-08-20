@@ -124,7 +124,7 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
 	}
 
 	@Override
-	public DynamicElementInfo get() throws InvalidObject {
+	public DynamicElementInfo get() {
 		Heap heap = VM.getVM().getHeap();
 		// TODO [for PJA] do we have StaticElementInfo in the heap?
 		// this cast sucks, but we always want DynamicElementInfo and we want to

@@ -11,6 +11,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class implements two functionalities.
  * 
@@ -27,13 +30,15 @@ import java.nio.ByteBuffer;
  * 
  */
 public abstract class JdwpVerifier {
+	
+	final static Logger logger = LoggerFactory.getLogger(JdwpVerifier.class);
 
 	public static final String VERIFY_METHOD_NAME;
 
 	static {
 		try {
 			// this is how we defend against method "verify" rename
-			System.out.println(JdwpVerifier.class.getMethods());
+			logger.trace("Methods found: {}", (Object)JdwpVerifier.class.getMethods());
 			VERIFY_METHOD_NAME = JdwpVerifier.class.getDeclaredMethod("verify", Object[].class).getName();
 		} catch (SecurityException e) {
 			throw new RuntimeException(e);

@@ -30,7 +30,7 @@ public abstract class Identifier<T> {
 	public boolean isNull() {
 		return objectReference.get() == null;
 	}
-	
+
 	public abstract T nullObjectHandler() throws InvalidIdentifier;
 
 	public T get() throws InvalidIdentifier {
@@ -42,10 +42,20 @@ public abstract class Identifier<T> {
 		return object;
 	}
 
-	public void write(DataOutputStream os) throws IOException {
+	/**
+	 * Writes identifier as is into the given stream. <br/>
+	 * If subclasses want to write by default with additional information they
+	 * must introduce new method with different signature.
+	 * 
+	 * @param os
+	 *            The stream where to write the identifier.
+	 * @throws IOException
+	 *             If an I/O Error occurs.
+	 */
+	final public void write(DataOutputStream os) throws IOException {
 		os.writeLong(id);
 	}
-	
+
 	public String toString() {
 		try {
 			return super.toString() + ", reference: " + get() + ", id: " + id;

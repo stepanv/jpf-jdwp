@@ -11,12 +11,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 
  * @author stepan
  * 
  */
 public class VariableTable {
+
+	final static Logger logger = LoggerFactory.getLogger(VariableTable.class);
 
 	/**
 	 * The number of words in the frame used by arguments. Eight-byte arguments
@@ -27,7 +32,7 @@ public class VariableTable {
 	private List<Slot> slots = new ArrayList<VariableTable.Slot>();
 
 	public VariableTable(MethodInfo methodInfo) {
-		System.out.println("VARIABLE TABLE CREATION: method: " + methodInfo);
+		logger.debug("Variable Table creation for method: {}", methodInfo);
 
 		if (methodInfo.getLocalVars() != null) {
 			for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
@@ -139,8 +144,8 @@ public class VariableTable {
 			length = (int) (endInstruction.getInstructionIndex() - codeIndex) + 1;
 			slot = localVarInfo.getSlotIndex();
 
-			System.out.println("VARIABLE TABLE: index: " + codeIndex + " slot: " + slot + " length: " + length + " name: " + name + " ... localVarInfo: "
-					+ localVarInfo + ", generic signature: " + genericSignature);
+			logger.debug("VARIABLE TABLE: index: {} slot: {} length: {} name: {} ... localVarInfo: {}, generic signature: {}", codeIndex, slot, length, name,
+					localVarInfo, genericSignature);
 		}
 
 		/**

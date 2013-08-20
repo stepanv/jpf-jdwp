@@ -16,16 +16,16 @@
 		<appender-ref ref="ASYNC" />
 	</root>
 
-	<logger name="gov.nasa.jpf.jdwp.JDWPListener">
-		<level value="TRACE" />
-	</logger>
-	<logger name="gov.nasa.jpf.jdwp.JDWPSearchBase">
-		<level value="TRACE" />
-	</logger>
-	<logger name="gov.nasa.jpf.jdwp.JDWPListenerBase">
-		<level value="TRACE" />
-	</logger>
-	<logger name="gov.nasa.jpf.jdwp.command.ClassLoaderReferenceCommand">
-		<level value="TRACE" />
-	</logger>
+<!-- 	<logger name="gov.nasa.jpf.jdwp.JDWPListener"> -->
+<!-- 		<level value="TRACE" /> -->
+<!-- 	</logger> -->
+<!-- 	<logger name="gov.nasa.jpf.jdwp.JDWPSearchBase"> -->
+<!-- 		<level value="TRACE" /> -->
+<!-- 	</logger> -->
+<!-- 	<logger name="gov.nasa.jpf.jdwp.JDWPListenerBase"> -->
+<!-- 		<level value="TRACE" /> -->
+<!-- 	</logger> -->
+<!-- 	<logger name="gov.nasa.jpf.jdwp.command.ClassLoaderReferenceCommand"> -->
+<!-- 		<level value="TRACE" /> -->
+<!-- 	</logger> -->
 </log4j:configuration>

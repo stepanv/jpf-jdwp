@@ -1,9 +1,5 @@
 package gov.nasa.jpf.jdwp.type;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
@@ -12,9 +8,16 @@ import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.vm.ClassInfo;
-import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class implements corresponding <tt>location</tt> JDWP data type from the
@@ -48,6 +51,8 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class Location {
 
+	final static Logger logger = LoggerFactory.getLogger(Location.class);
+	
 	public boolean equals(Location location) {
 		if (location == null) {
 			return false;
@@ -106,10 +111,10 @@ public class Location {
 	}
 
 	private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {
-		System.out.println("looking for METHOD global id: " + id + " of CLASS: " + classInfo);
+		logger.debug("looking for METHOD global id: {} of CLASS: {}",  id, classInfo);
 		for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
 			if (id == methodInfo.getGlobalId()) {
-				System.out.println("METHOD found: " + methodInfo);
+				logger.trace("METHOD found: {}", methodInfo);
 				return methodInfo;
 			}
 		}

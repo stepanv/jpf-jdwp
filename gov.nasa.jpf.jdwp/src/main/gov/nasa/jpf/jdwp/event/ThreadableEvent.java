@@ -1,6 +1,6 @@
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -8,8 +8,13 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class ThreadableEvent extends EventBase implements Event {
 
+	final static Logger logger = LoggerFactory.getLogger(ThreadableEvent.class);
+	
 	public ThreadableEvent(EventKind eventKind, ThreadInfo threadInfo) {
 		super(eventKind);
 		this.threadInfo = threadInfo;
@@ -28,15 +33,14 @@ public abstract class ThreadableEvent extends EventBase implements Event {
 	
 	protected final void writeSpecific(DataOutputStream os) throws IOException {
 		ThreadId threadId = JdwpObjectManager.getInstance().getThreadId(threadInfo);
-		System.out.println("Thread ID: " + threadId + " .. for: " + threadInfo);
-		try {
-			if (threadId.get() == null || threadId.getInfoObject() != threadInfo) {
-				System.err.println("A BIG PROBLEM");
+		logger.debug("Thread ID: {} .. for: {}",  threadId, threadInfo);
+			try {
+				if (threadId.get() == null || threadId.getInfoObject() != threadInfo) {
+					throw new RuntimeException("Identifier for thread info instance: "+threadInfo+" is not valid.");
+				}
+			} catch (InvalidThreadException e) {
+				throw new RuntimeException(e);
 			}
-		} catch (InvalidObject e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		threadId.write(os);
 		writeThreadableSpecific(os);
 	}

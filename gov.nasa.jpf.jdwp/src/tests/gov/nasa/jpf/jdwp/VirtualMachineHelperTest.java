@@ -339,6 +339,8 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 		@Override
 		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
+			ClassInfo returnClazz = ClassLoaderInfo.getSystemResolvedClassInfo("gov.nasa.jpf.jdwp.VirtualMachineHelperTest$MethodCallReferenceClass");
+			
 			DynamicElementInfo classInstance = (DynamicElementInfo) passedObjects[0];
 			
 			// Prepare arguments
@@ -356,9 +358,11 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 			/*
 			 * Test that the buffer contains appropriate values
 			 */
-			assertEquals(Tag.DOUBLE.identifier().byteValue(), bb.get());
+			assertEquals(Tag.STRING.identifier().byteValue(), bb.get());
 			// verify the primitive value result right in here since it's not that easy to pass primitives back to SuT
-			assertEquals(1.0000001011111E12, bb.getDouble());
+			ObjectId objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+			ElementInfo elementInfo = objectId.get();
+			returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", elementInfo == null ? -1 : elementInfo.getObjectRef());
 			
 			// no exception hence NullObject expected
 			assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
@@ -374,15 +378,14 @@ public class VirtualMachineHelperTest  extends TestJdwp {
 	public void nativeMethodCallTest() throws SecurityException, NoSuchFieldException {
 		if (verifyNoPropertyViolation()) {
 			// prepare and clear before the test
-			MethodCallReferenceClass methodCallReferenceObject = new MethodCallReferenceClass(100000);
-			MethodCallReferenceClass.staticField = 1000;
-			methodCallReferenceObject.object = null;
+			MethodCallReferenceClass.staticObject = null;
 			
 			String string = "ahoj";
 			
-			verifyNativeMethodCall.verify(string, "oj");
+			verifyNativeMethodCall.verify(string);
 			
-			// all the assertions are done in the verifier
+			assertTrue(MethodCallReferenceClass.staticObject instanceof String);
+			assertEquals("ahoj", ((String)MethodCallReferenceClass.staticObject));
 		}
 	}
 	

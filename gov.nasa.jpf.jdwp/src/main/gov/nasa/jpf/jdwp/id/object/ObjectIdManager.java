@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.id.IdManager.IdFactory;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -83,12 +82,9 @@ public class ObjectIdManager {
 		}
 		if (idMap.containsKey(id)) {
 			ObjectId objectId = idMap.get(id);
-			try {
-				if (!object.getClassInfo().equals(objectId.get().getClassInfo())) {
-					logger.error("Object {} is not object {} for objectId {}", object, objectId.get(), objectId);
-					throw new RuntimeException(String.format("Object %s is not object %s for objectId %s", object, objectId.get(), objectId));
-				}
-			} catch (InvalidObject e) {
+			if (!object.getClassInfo().equals(objectId.get().getClassInfo())) {
+				logger.error("Object {} is not object {} for objectId {}", object, objectId.get(), objectId);
+				throw new RuntimeException(String.format("Object %s is not object %s for objectId %s", object, objectId.get(), objectId));
 			}
 			return objectId;
 		} else {

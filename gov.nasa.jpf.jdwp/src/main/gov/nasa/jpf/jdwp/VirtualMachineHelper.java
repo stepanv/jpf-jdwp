@@ -25,7 +25,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class VirtualMachineHelper {
+	
+	final static Logger logger = LoggerFactory.getLogger(VirtualMachineHelper.class);
 
 	/**
 	 * Returns the thread's call stack
@@ -78,10 +83,10 @@ public class VirtualMachineHelper {
 	}
 
 	public static MethodInfo getClassMethod(ClassInfo clazz, long id) throws JdwpError {
-		System.out.println("looking for METHOD global id: " + id + " of CLASS: " + clazz);
+		logger.debug("looking for METHOD global id:  of CLASS: {}", id, clazz);
 		for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
 			if (id == methodInfo.getGlobalId()) {
-				System.out.println("METHOD found: " + methodInfo);
+				logger.debug("METHOD found: {}", methodInfo);
 				return methodInfo;
 			}
 		}
@@ -160,7 +165,7 @@ public class VirtualMachineHelper {
 		// TODO [for PJA] What is the best way to execute a method
 		// it's typical, we want to execute obj.toString() when generating a
 		// popup of a hover info when inspecting an object
-		System.out.println("Executing method: " + method + " of object instance: " + object);
+		logger.info("Executing method: " + method + " of object instance: " + object);
 
 		DirectCallStackFrame frame = method.createDirectCallStackFrame(thread, values.length);
 		frame.setFireWall();
@@ -207,7 +212,7 @@ public class VirtualMachineHelper {
 		}
 
 		for (Value value : values) {
-			System.out.println(value);
+			logger.trace("Value: {}", value);
 
 			// TODO we should probably call rather frame.setArgument() as in
 			// JPF_gov_nasa_jpf_test_basic_MJITest#nativeHiddenRoundtrip__I__I
@@ -219,7 +224,7 @@ public class VirtualMachineHelper {
 			// ti.advancePC();
 
 		} catch (UncaughtException ux) { // frame's method is firewalled
-			System.out.println("# hidden method execution failed, leaving nativeHiddenRoundtrip: " + ux);
+			logger.debug("# hidden method execution failed, leaving nativeHiddenRoundtrip: ", ux);
 			ExceptionInfo exceptionInfo = thread.getPendingException();
 			thread.clearPendingException();
 			ObjectId exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo.getException());
@@ -235,7 +240,7 @@ public class VirtualMachineHelper {
 			returnValue = ValueUtils.methodReturnValue(method, frame);
 		}
 
-		System.out.println("# exit nativeHiddenRoundtrip: " + returnValue);
+		logger.info("# exit nativeHiddenRoundtrip: {}", returnValue);
 
 		return new MethodResult(returnValue, null);
 

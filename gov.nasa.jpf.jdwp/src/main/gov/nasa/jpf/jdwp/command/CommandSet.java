@@ -167,7 +167,15 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 			}
 
 			if (chainError != null) {
-				throw new InternalException(chainError);
+				if (chainError instanceof JdwpError) {
+					throw (JdwpError)chainError;
+				} else if (chainError instanceof Error) {
+					throw (Error)chainError;
+				} else if (chainError instanceof RuntimeException) {
+					throw (RuntimeException)chainError;
+				} else {
+					throw new InternalException(chainError);
+				}
 			}
 		}
 	}

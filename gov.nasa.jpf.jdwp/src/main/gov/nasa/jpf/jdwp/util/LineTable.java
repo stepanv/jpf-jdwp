@@ -1,12 +1,15 @@
 package gov.nasa.jpf.jdwp.util;
 
+import gov.nasa.jpf.vm.Instruction;
+import gov.nasa.jpf.vm.MethodInfo;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.nasa.jpf.vm.Instruction;
-import gov.nasa.jpf.vm.MethodInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for creation Line Table for a method according to the JDWP
@@ -22,6 +25,8 @@ import gov.nasa.jpf.vm.MethodInfo;
  * 
  */
 public class LineTable {
+	
+	final static Logger logger = LoggerFactory.getLogger(LineTable.class);
 
 	/**
 	 * Lowest valid code index for the method, >=0, or -1 if the method is
@@ -63,8 +68,7 @@ public class LineTable {
 			
 			lineRows.add(this);
 
-			System.out.println("LINE TABLE: index: " + lineCodeIndex + " line: " + lineNumber + " position: " + instruction.getPosition()
-					+ " ... instruction: " + instruction);
+			logger.debug("LINE TABLE: index: {} line: {} position: {} ... instruction: {}", lineCodeIndex, lineNumber, instruction.getPosition(), instruction);
 		}
 
 		public void write(DataOutputStream os) throws IOException {

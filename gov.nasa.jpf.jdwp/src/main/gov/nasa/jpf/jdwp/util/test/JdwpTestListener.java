@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -16,6 +19,8 @@ import gov.nasa.jpf.vm.VMListener;
 
 public class JdwpTestListener extends ListenerAdapter implements VMListener {
 
+	final static Logger logger = LoggerFactory.getLogger(JdwpTestListener.class);
+	
 	public JdwpTestListener() {
 	}
 
@@ -23,7 +28,7 @@ public class JdwpTestListener extends ListenerAdapter implements VMListener {
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		ClassInfo methodClassInfo = enteredMethod.getClassInfo();
 
-		System.out.println("Method entered: " + methodClassInfo + " ... " + enteredMethod);
+		logger.trace("Method entered: {} ... {}", methodClassInfo, enteredMethod);
 
 		if (methodClassInfo != null && methodClassInfo.getName().equals(JdwpVerifier.class.getName())) {
 			// we entered verifier class which is a notification to execute the

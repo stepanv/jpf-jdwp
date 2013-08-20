@@ -12,6 +12,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadGroupReferenceCommand> {
 
 	/**
@@ -42,7 +45,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 				throws IOException, JdwpError {
 			int parentref = threadGroupElementInfo.getReferenceField("parent");
 			ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
-			System.out.println("Thread group parent: " + parent);
+			logger.debug("Thread group parent: {}", parent);
 
 			if (parent == null) {
 				NullObjectId.instantWrite(os);
@@ -60,6 +63,9 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(ThreadGroupReferenceCommand.class);
+	
 	private byte commandId;
 
 	private ThreadGroupReferenceCommand(int commandId) {

@@ -307,7 +307,6 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		@Override
 		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			String stratumId = JdwpString.read(bytes);
-			System.out.println(stratumId);
 			// TODO Finish this if possible
 		}
 	},
@@ -331,6 +330,8 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 		}
 	};
 
+	final static Logger logger = LoggerFactory.getLogger(VirtualMachineCommand.class);
+	
 	@Override
 	public Byte identifier() {
 		return commandId;
@@ -346,8 +347,6 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 	private VirtualMachineCommand(int commandId) {
 		this.commandId = (byte) commandId;
 	}
-
-	final static Logger logger = LoggerFactory.getLogger(VirtualMachineCommand.class);
 
 	private static ReverseEnumMap<Byte, VirtualMachineCommand> map = new ReverseEnumMap<Byte, VirtualMachineCommand>(VirtualMachineCommand.class);
 

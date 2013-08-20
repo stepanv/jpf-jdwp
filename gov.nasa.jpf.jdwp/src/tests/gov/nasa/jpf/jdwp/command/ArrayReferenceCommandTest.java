@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.command.ObjectReferenceCommandTest.ObjectReferenceTestReferenceClass;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
@@ -10,6 +11,8 @@ import gov.nasa.jpf.vm.VM;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ArrayReferenceCommandTest extends TestJdwp {
 
@@ -32,6 +35,8 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 			Object[] variableArray = new Object[] {"StringValue3", null, null, new Integer(3), null};
 		}
 	}
+	
+	Logger logger = LoggerFactory.getLogger(ObjectReferenceTestReferenceClass.class);
 
 	JdwpVerifier verifierNumber1 = new JdwpVerifier() {
 
@@ -67,6 +72,7 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
 	@Test
 	public void lenghtTest() throws SecurityException, NoSuchFieldException {
+		logger.error("FOOBAR");
 		if (verifyNoPropertyViolation()) {
 			
 			ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();
@@ -154,7 +160,7 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
 	@Test
 	public void setValuesTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation()) {
+		if (verifyNoPropertyViolation("+classpath=+,C:\\Users\\stepan\\Data\\Mff\\mthesis\\public-sources\\gov.nasa.jpf.jpda\\gov.nasa.jpf.jdwp\\lib\\slf4j-api-1.7.5.jar,C:\\Users\\stepan\\Data\\Mff\\mthesis\\public-sources\\gov.nasa.jpf.jpda\\gov.nasa.jpf.jdwp\\lib\\slf4j-log4j12-1.7.5.jar")) {
 			
 			ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();
 			

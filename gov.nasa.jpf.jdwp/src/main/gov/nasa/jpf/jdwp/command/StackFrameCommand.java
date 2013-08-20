@@ -17,6 +17,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFrameCommand> {
 	/**
 	 * <p>
@@ -104,7 +107,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 				throw new IllegalArgumentException("Not sure whether we're allowed to return static elements");
 			}
 			ObjectId thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);
-			System.out.println("Found this object id: " + thisObjectId + ", object itself: " + thisObject);
+			logger.debug("Found this object id: {}, object itself: {}", thisObjectId, thisObject);
 			thisObjectId.writeTagged(os);
 		}
 	},
@@ -134,6 +137,8 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 			}
 		}
 	};
+	
+	final static Logger logger = LoggerFactory.getLogger(StackFrameCommand.class);
 
 	@Override
 	public Byte identifier() {

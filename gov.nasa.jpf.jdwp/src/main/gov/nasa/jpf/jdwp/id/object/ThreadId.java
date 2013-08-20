@@ -3,7 +3,6 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
 import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -132,11 +131,11 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
 	 * @return Resolved Thread Info instance.
 	 */
 	@Override
-	public ThreadInfo getInfoObject() throws InvalidObject {
+	public ThreadInfo getInfoObject() throws InvalidThreadException {
 		return resolveInfoObject();
 	}
 
-	public ThreadInfo resolveInfoObject() throws InvalidObject {
+	public ThreadInfo resolveInfoObject() throws InvalidThreadException {
 		ElementInfo threadElementInfo = get();
 		if (threadElementInfo == null) {
 			throw new InvalidThreadException(this);

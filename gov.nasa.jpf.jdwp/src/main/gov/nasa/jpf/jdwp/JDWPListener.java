@@ -51,10 +51,16 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 	private VirtualMachine virtualMachine;
 	private FieldVisitor fieldVisitor = new FieldVisitor();
 
+	private boolean runningAsListenerOnly = false;
+	// this is here TEMPORARILLY until we solve the JDWP singleton problem
+	private Jdwp jdwp;
+	
 	public JDWPListener() {
+		runningAsListenerOnly = true;
+		
 		this.virtualMachine = new VirtualMachine(VM.getVM().getJPF(), Thread.currentThread());
 
-		Jdwp jdwp = new Jdwp(virtualMachine);
+		jdwp = new Jdwp(virtualMachine);
 
 		String jdwpProperty = VM.getVM().getConfig().getString("jpf-jdwp.jdwp");
 
@@ -79,8 +85,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 		}
 
 		// Get the lock before the JPF starts.
-		// This lock is paired with unlock at the end of the finally block
-		// .. see a comment there for further detail
+		// This lock is paired with unlock {@link JDWPListener#searchFinished(Search)}
 		virtualMachine.getRunLock().lock();
 	}
 
@@ -436,8 +441,17 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
 	@Override
 	public void searchFinished(Search search) {
-		logger.trace("Processing search");
 		fixThreadNotificationState();
+		if (runningAsListenerOnly) {
+			jdwp.shutdown();
+			
+			// the unlock here is just for packet processor to be able to finish
+			// if the lock is owned
+			// We cannot be sure whether the lock is owned or not since the
+			// Exception could have been thrown from both locked and unlocked
+			// sections
+			virtualMachine.getRunLock().unlockIfOwned();
+		}
 	}
 
 }
