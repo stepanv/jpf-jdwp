@@ -169,6 +169,16 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		}
 	},
 
+	/**
+	 * Returns objects that directly reference this object. Only objects that
+	 * are reachable for the purposes of garbage collection are returned. Note
+	 * that an object can also be referenced in other ways, such as from a local
+	 * variable in a stack frame, or from a JNI global reference. Such
+	 * non-object referrers are not returned by this command. <br/>
+	 * Requires {@link CapabilitiesNew#CAN_GET_INSTANCE_INFO} capability
+	 * 
+	 * @since JDWP version 1.6.
+	 */
 	REFERRINGOBJECTS(10) {
 
 		@Override

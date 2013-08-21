@@ -1,5 +1,7 @@
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.AbsentInformationException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
@@ -21,6 +23,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -136,7 +139,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				JdwpError {
 			String sourceFileName = classInfo.getSourceFileName();
 			if (sourceFileName == null) {
-				throw new AbsentInformationException(classInfo + " has unknown source." );
+				throw new AbsentInformationException(classInfo + " has unknown source.");
 			}
 			JdwpString.write(SOURCEFILENAME_FIX_PATTERN.matcher(sourceFileName).replaceFirst(""), os);
 		}
@@ -257,6 +260,29 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 				JdwpError {
 			executeMethods(classInfo, bytes, os, contextProvider, true);
 		}
+	},
+
+	/**
+	 * Returns instances of this reference type. Only instances that are
+	 * reachable for the purposes of garbage collection are returned. <br/>
+	 * Requires {@link CapabilitiesNew#CAN_GET_INSTANCE_INFO} capability - see .
+	 * 
+	 * @since JDWP version 1.6.
+	 */
+	INSTANCES(16) {
+
+		@Override
+		protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
+				JdwpError {
+			List<ObjectId> allInstancesFound = VirtualMachineHelper.getInstances(classInfo, bytes.getInt(), contextProvider);
+			
+			os.writeInt(allInstancesFound.size());
+			for (ObjectId instanceObjectId : allInstancesFound) {
+				instanceObjectId.writeTagged(os);
+			}
+
+		}
+
 	};
 
 	final static Logger logger = LoggerFactory.getLogger(ReferenceTypeCommand.class);
@@ -308,7 +334,8 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			if (withGeneric) {
 				JdwpString.writeNullAsEmpty(field.getGenericSignature(), os);
 			}
-			logger.debug("Field: {}, signature: {}, generic signature: {}, fieldId: {}", field.getName(), field.getSignature(), field.getGenericSignature(), fieldId);
+			logger.debug("Field: {}, signature: {}, generic signature: {}, fieldId: {}", field.getName(), field.getSignature(), field.getGenericSignature(),
+					fieldId);
 			os.writeInt(field.getModifiers());
 		}
 	}
@@ -332,7 +359,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 		for (int i = 0; i < methods.length; i++) {
 			MethodInfo method = methods[i];
 			os.writeLong(method.getGlobalId());
-			
+
 			JdwpString.write(method.getName(), os);
 			JdwpString.write(method.getSignature(), os);
 
@@ -341,8 +368,9 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 			}
 
 			os.writeInt(method.getModifiers());
-			
-			logger.debug("Method: '{}', signature: {}, generic signature: {} (global id: {})", method.getName(), method.getSignature(), method.getGenericSignature(), method.getGlobalId());
+
+			logger.debug("Method: '{}', signature: {}, generic signature: {} (global id: {})", method.getName(), method.getSignature(),
+					method.getGenericSignature(), method.getGlobalId());
 		}
 	}
 

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -326,6 +327,57 @@ public class VirtualMachineHelper {
 		}
 
 		return referringObjectRefs;
+	}
+
+	/**
+	 * Gets the list of all instances of the given class and its all subtypes.
+	 * 
+	 * @param classInfo
+	 *            Represents the class the instances all searched for.
+	 * @param maxInstances
+	 *            The maximum number of instances to be returned.
+	 * @param contextProvider
+	 *            The context provider.
+	 * @return The list of all instances.
+	 */
+	public static List<ObjectId> getInstances(ClassInfo classInfo, int maxInstances, CommandContextProvider contextProvider) {
+		List<ObjectId> allInstancesFound = new LinkedList<ObjectId>();
+
+		for (ElementInfo elementInfo : contextProvider.getVM().getHeap()) {
+			if (maxInstances > 0 && allInstancesFound.size() == maxInstances) {
+				break;
+			}
+
+			ClassInfo elementClassInfo = elementInfo.getClassInfo();
+			if (elementClassInfo.isInstanceOf(classInfo)) {
+				ObjectId elementObjectId = contextProvider.getObjectManager().getObjectId(elementInfo);
+				allInstancesFound.add(elementObjectId);
+			}
+		}
+
+		return allInstancesFound;
+	}
+
+	/**
+	 * Gets the count of all the instances of the given class.
+	 * 
+	 * @param classInfo
+	 *            Represents the class the instances all searched for.
+	 * @param contextProvider
+	 *            The context provider.
+	 * @return The count of all instances.
+	 */
+	public static long getInstancesCount(ClassInfo classInfo, CommandContextProvider contextProvider) {
+		long numberOfInstancesFound = 0;
+
+		for (ElementInfo elementInfo : contextProvider.getVM().getHeap()) {
+			ClassInfo elementClassInfo = elementInfo.getClassInfo();
+			if (elementClassInfo.isInstanceOf(classInfo)) {
+				++numberOfInstancesFound;
+			}
+		}
+
+		return numberOfInstancesFound;
 	}
 
 }

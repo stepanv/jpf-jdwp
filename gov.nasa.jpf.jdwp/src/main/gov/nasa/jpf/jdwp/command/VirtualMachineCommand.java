@@ -5,7 +5,9 @@ import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.Capabilities;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
+import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
@@ -24,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -137,7 +140,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
 			// All event requests are cancelled.
 			for (EventKind eventKind : EventKind.values()) {
-				
+
 				if (eventKind == EventKind.VM_DISCONNECTED) {
 					continue;
 				}
@@ -218,16 +221,16 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			ElementInfo stringElementInfo = VM.getVM().getHeap().newInternString(string, VM.getVM().getCurrentThread());
 
 			contextProvider.getVirtualMachine().lastCreatedString = stringElementInfo.getObjectRef();
-			
+
 			ObjectId stringId = contextProvider.getObjectManager().getObjectId(stringElementInfo);
 
 			// Since this string isn't referenced anywhere we'll disable garbage
 			// collection on it so it's still around when the debugger gets back
 			// to it.
-			
+
 			stringId.disableCollection();
 			logger.debug("Collection for: {} disabled (is this instance: {}).", stringId, stringId.get());
-			
+
 			stringId.write(os);
 
 		}
@@ -328,10 +331,47 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 			}
 
 		}
-	};
+	},
+	
+	/**
+	 * Returns the number of instances of each reference type in the input list.
+	 * Only instances that are reachable for the purposes of garbage collection
+	 * are counted. If a reference type is invalid, eg. it has been unloaded,
+	 * zero is returned for its instance count. <br/>
+	 * Requires {@link CapabilitiesNew#CAN_GET_INSTANCE_INFO}.
+	 * 
+	 * @since JDWP version 1.6.
+	 */
+	INSTANCECOUNTS(21) {
+
+		/* (non-Javadoc)
+		 * @see gov.nasa.jpf.jdwp.command.VirtualMachineCommand#execute(java.nio.ByteBuffer, java.io.DataOutputStream, gov.nasa.jpf.jdwp.command.CommandContextProvider)
+		 */
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			int refTypesCount = bytes.getInt();
+			List<ReferenceTypeId> referenceTypeIdList = new LinkedList<ReferenceTypeId>();
+			
+			if (refTypesCount < 0) {
+				throw new IllegalArgumentException("Reference types count is less than zero.");
+			}
+			
+			// write back the number of returned counts
+			os.writeInt(refTypesCount);
+			
+			for (int i = 0; i < refTypesCount; ++i) {
+				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+				referenceTypeIdList.add(referenceTypeId);
+				os.writeLong(VirtualMachineHelper.getInstancesCount(referenceTypeId.get(), contextProvider));
+			}
+		}
+
+	}
+
+	;
 
 	final static Logger logger = LoggerFactory.getLogger(VirtualMachineCommand.class);
-	
+
 	@Override
 	public Byte identifier() {
 		return commandId;

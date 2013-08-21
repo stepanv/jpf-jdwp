@@ -4,16 +4,11 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.FieldId;
-import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
+import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
+import gov.nasa.jpf.jdwp.util.test.CommandVerifier.ObjectWrapper;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
-import gov.nasa.jpf.vm.DynamicElementInfo;
-import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.FieldInfo;
-import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.VM;
 
 import java.io.ByteArrayOutputStream;
@@ -52,77 +47,22 @@ public class ObjectReferenceCommandTest extends TestJdwp {
 		String instanceString = "test";
 	}
 
-	public static abstract class ObjectReferenceVerifier extends JdwpVerifier {
+	CommandVerifier objectReferenceVerifier = new CommandVerifier(ObjectReferenceCommand.SETVALUES) {
 
-		private ObjectReferenceCommand command;
-		protected Object[] passedObjects;
-
-		ObjectReferenceVerifier(ObjectReferenceCommand command) {
-			this.command = command;
-		}
-
-		protected ObjectId toObjectId(int i) {
-			return JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[i]);
-		}
-
-		protected FieldId toFieldId(int i) {
-			String fieldString = passedObjectAs(i, ElementInfo.class).asString();
-			FieldInfo fieldInfo = ((DynamicElementInfo) passedObjects[0]).getFieldInfo(fieldString);
-			return JdwpObjectManager.getInstance().getFieldId(fieldInfo);
+		@Override
+		protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+			ObjectId objectId = loadObjectId(0);
+			objectId.write(inputDataOutputStream);
+			
+			inputDataOutputStream.writeInt(1);
+			toFieldId(objectId, 1).write(inputDataOutputStream);
+			loadObjectId(2).writeUntagged(inputDataOutputStream);
 		}
 
 		@Override
-		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
-			this.passedObjects = passedObjects;
-			ObjectId objectId = toObjectId(0);
-
-			prepareInput();
-			bytes.rewind();
-
-			command.execute(objectId, this.bytes, dataOutputStream, contextProvider);
-
-			processOutput();
-
-		}
-
-		abstract protected void processOutput();
-
-		abstract protected void prepareInput() throws IOException;
-
-		@SuppressWarnings("unchecked")
-		protected <T> T passedObjectAs(int i, Class<T> clazz) {
-			return (T) passedObjects[i];
-		}
-
-		protected void prepareIdentifier(Identifier<?> identifier) throws IOException {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			identifier.write(dos);
-
-			bytes.put(baos.toByteArray());
-
-			baos.close();
-			dos.close();
-		}
-
-		void prepareUntaggedValue(ObjectId objectId) throws IOException {
-			prepareIdentifier(objectId);
-		}
-
-	}
-
-	ObjectReferenceVerifier objectReferenceVerifier = new ObjectReferenceVerifier(ObjectReferenceCommand.SETVALUES) {
-
-		@Override
-		protected void prepareInput() throws IOException {
-			bytes.putInt(1);
-			prepareIdentifier(toFieldId(1));
-			prepareUntaggedValue(toObjectId(2));
-		}
-
-		@Override
-		protected void processOutput() {
+		protected void processOutput(ByteBuffer outputBytes) {
 			// empty on a purpose
+
 		}
 	};
 
@@ -141,39 +81,27 @@ public class ObjectReferenceCommandTest extends TestJdwp {
 		}
 	}
 
-	public static class ObjectWrapper<T> {
-		public T wrappedObject;
-	}
-
-	ObjectReferenceVerifier referringObjectsVerifier = new ObjectReferenceVerifier(ObjectReferenceCommand.REFERRINGOBJECTS) {
+	CommandVerifier referringObjectsVerifier = new CommandVerifier(ObjectReferenceCommand.REFERRINGOBJECTS) {
 
 		@Override
-		protected void prepareInput() throws IOException {
-			bytes.putInt((Integer) ((ElementInfo) passedObjects[1]).asBoxObject());
+		protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+			loadObjectId(0).write(inputDataOutputStream);
+			inputDataOutputStream.writeInt(loadBoxObject(1, Integer.class));
 		}
 
 		@Override
-		protected void processOutput() {
-			ByteBuffer outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-
+		protected void processOutput(ByteBuffer outputBytes) {
 			int foundReferringObjectNumber = outputBytes.getInt();
 
-			MJIEnv mjiEnv = VM.getVM().getCurrentThread().getMJIEnv();
-
-			int foundReferringObjectsObjRef = mjiEnv.newInteger(foundReferringObjectNumber);
-			DynamicElementInfo intResultElementInfo = (DynamicElementInfo) passedObjects[2];
-
-			mjiEnv.setReferenceField(intResultElementInfo.getObjectRef(), "wrappedObject", foundReferringObjectsObjRef);
-
-			DynamicElementInfo arrayResultElementInfo = (DynamicElementInfo) passedObjects[3];
+			storeToWrapper(2, mjiEnv.newInteger(foundReferringObjectNumber));
 
 			for (int i = 0; i < foundReferringObjectNumber; ++i) {
 				outputBytes.get(); // we don't care about the tag byte
 				ObjectId referringObjectId = contextProvider.getObjectManager().readObjectId(outputBytes);
-				mjiEnv.setReferenceArrayElement(arrayResultElementInfo.getObjectRef(), i, referringObjectId.get().getObjectRef());
+				
+				storeToArray(3, i, referringObjectId.get().getObjectRef());
 			}
 		}
-
 	};
 
 	/**
