@@ -79,7 +79,7 @@ public class ClassTypeCommandTest extends TestJdwp {
 		bytes = ByteBuffer.allocate(200); // This "might" be enough
 		CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
 
-		vm.initialize(); // this should instantiate two SystemClassLoaders
+		vm.initialize();
 
 		ByteBuffer outputBytes;
 		ReferenceTypeId refTypeId;

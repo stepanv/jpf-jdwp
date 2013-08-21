@@ -24,6 +24,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +34,9 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		@Override
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ElementInfo elementInfo = objectId.get();
-			
+
 			ClassInfo classInfo = elementInfo.getClassInfo();
-			
+
 			ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(classInfo);
 			refId.writeTagged(os);
 		}
@@ -84,7 +85,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
 				Tag tag = Tag.classInfoToTag(fieldClassInfo);
 				Value valueUntagged = tag.readValue(bytes);
-				
+
 				// set the value into the object's field
 				valueUntagged.modify(obj, fieldInfo);
 			}
@@ -102,8 +103,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 			ElementInfo elementInfo = objectId.get();
 			Monitor monitor = elementInfo.getMonitor();
-			
-			// The monitor owner, or null if it is not currently owned.  
+
+			// The monitor owner, or null if it is not currently owned.
 			ThreadInfo ownerThreadInfo = monitor.getLockingThread();
 			if (ownerThreadInfo == null) {
 				// is not currently owned
@@ -112,17 +113,18 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 				ThreadId ownerThreadId = contextProvider.getObjectManager().getThreadId(ownerThreadInfo);
 				ownerThreadId.write(os);
 			}
-			
-			// The number of times the monitor has been entered.  
+
+			// The number of times the monitor has been entered.
 			int entryCount = monitor.getLockCount();
 			os.writeInt(entryCount);
-			
-			// The number of threads that are waiting for the monitor 0 if there is no current owner  
+
+			// The number of threads that are waiting for the monitor 0 if there
+			// is no current owner
 			int waiters = monitor.getNumberOfWaitingThreads();
 			os.writeInt(waiters);
-			
+
 			for (ThreadInfo waitingThread : monitor.getWaitingThreads()) {
-				// A thread waiting for this monitor.  
+				// A thread waiting for this monitor.
 				ThreadId threadId = contextProvider.getObjectManager().getThreadId(waitingThread);
 				threadId.write(os);
 			}
@@ -165,10 +167,26 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 			logger.debug("Is collect: {}", isCollected);
 			os.writeBoolean(isCollected);
 		}
+	},
+
+	REFERRINGOBJECTS(10) {
+
+		@Override
+		public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			Set<ObjectId> referringObjectRefs = VirtualMachineHelper.getReferringObjects(objectId.get().getObjectRef(), bytes.getInt(), contextProvider);
+
+			// write the results
+			os.writeInt(referringObjectRefs.size());
+			for (ObjectId referringObjectId : referringObjectRefs) {
+				referringObjectId.writeTagged(os);
+			}
+
+		}
+
 	};
-	
+
 	final static Logger logger = LoggerFactory.getLogger(ObjectReferenceCommand.class);
-	
+
 	private byte commandId;
 
 	private ObjectReferenceCommand(int commandId) {
@@ -190,7 +208,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 	@Override
 	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
 		ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
-		
+
 		logger.debug("Object ID: {}", objectId);
 		if (objectId.isNull()) {
 			// null means it's collected

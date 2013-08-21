@@ -59,7 +59,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new ByteValue(bytes.get());
 			}
 
@@ -86,7 +86,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new CharValue(bytes.getChar());
 			}
 
@@ -114,7 +114,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new FloatValue(bytes.getFloat());
 			}
 
@@ -142,7 +142,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new DoubleValue(bytes.getDouble());
 			}
 
@@ -170,7 +170,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new IntegerValue(bytes.getInt());
 			}
 
@@ -197,7 +197,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new LongValue(bytes.getLong());
 			}
 
@@ -225,7 +225,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new ShortValue(bytes.getShort());
 			}
 
@@ -252,7 +252,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new VoidValue();
 			}
 
@@ -279,7 +279,7 @@ public abstract class PrimitiveValue implements Value {
 			}
 
 			@Override
-			public Value readValue(ByteBuffer bytes) throws JdwpError {
+			public Value readValue(ByteBuffer bytes) {
 				return new BooleanValue(bytes.get() != 0);
 			}
 
@@ -407,7 +407,7 @@ public abstract class PrimitiveValue implements Value {
 		 * @return Value instance
 		 * @throws JdwpError
 		 */
-		public Value readValue(ByteBuffer bytes) throws JdwpError {
+		public Value readValue(ByteBuffer bytes) {
 			return JdwpObjectManager.getInstance().readObjectId(bytes);
 		}
 

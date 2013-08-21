@@ -111,15 +111,15 @@ public class JdwpObjectManager {
 		return frameIdManager.readIdentifier(bytes);
 	}
 
-	public ClassObjectId readClassObjectId(ByteBuffer bytes) throws JdwpError {
+	public ClassObjectId readClassObjectId(ByteBuffer bytes) {
 		return objectIdManager.readIdentifier(bytes, ClassObjectId.class);
 	}
 
-	public ClassLoaderId readClassLoaderId(ByteBuffer bytes) throws JdwpError {
+	public ClassLoaderId readClassLoaderId(ByteBuffer bytes) {
 		return objectIdManager.readIdentifier(bytes, ClassLoaderId.class);
 	}
 
-	public ThreadId readThreadId(ByteBuffer bytes) throws JdwpError {
+	public ThreadId readThreadId(ByteBuffer bytes) {
 		// try {
 		return objectIdManager.readIdentifier(bytes, ThreadId.class);
 		// } catch (InvalidObject io) {
@@ -128,7 +128,7 @@ public class JdwpObjectManager {
 		// }
 	}
 
-	public ObjectId readObjectId(ByteBuffer bytes) throws JdwpError {
+	public ObjectId readObjectId(ByteBuffer bytes) {
 		return objectIdManager.readIdentifier(bytes);
 	}
 

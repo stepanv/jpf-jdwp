@@ -1,5 +1,6 @@
 package gov.nasa.jpf.jdwp;
 
+import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
@@ -8,11 +9,14 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.ValueUtils;
+import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -22,14 +26,16 @@ import gov.nasa.jpf.vm.UncaughtException;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VirtualMachineHelper {
-	
+
 	final static Logger logger = LoggerFactory.getLogger(VirtualMachineHelper.class);
 
 	/**
@@ -244,6 +250,82 @@ public class VirtualMachineHelper {
 
 		return new MethodResult(returnValue, null);
 
+	}
+
+	/**
+	 * Gets referring objects for the given object reference.
+	 * 
+	 * @param searchedObjRef
+	 *            The reference of the object instance that is searched for.
+	 * @param maxReferrers
+	 *            The maximum number of referees that is to be returned.
+	 * @param contextProvider
+	 *            The context provider instance.
+	 * @return The set of all objectId that has a reference to the given object
+	 *         reference.
+	 */
+	public static Set<ObjectId> getReferringObjects(int searchedObjRef, int maxReferrers, CommandContextProvider contextProvider) {
+		Set<ObjectId> referringObjectRefs = new HashSet<ObjectId>();
+
+		EI_LOOP: for (ElementInfo elementInfo : contextProvider.getVM().getHeap()) {
+			int i, n;
+			Fields fields = elementInfo.getFields();
+
+			// according to the spec we should return maximum number of
+			// referring objects if maxReferrers is greater than 0
+			if (maxReferrers > 0 && maxReferrers == referringObjectRefs.size()) {
+				break;
+			}
+
+			if (elementInfo.isArray()) {
+				if (fields.isReferenceArray()) {
+					n = ((ArrayFields) fields).arrayLength();
+					for (i = 0; i < n; i++) {
+						int objref = fields.getReferenceValue(i);
+						if (objref == searchedObjRef) {
+
+							ObjectId referringObjectId = contextProvider.getObjectManager().getObjectId(elementInfo);
+							referringObjectRefs.add(referringObjectId);
+
+							logger.debug("Found referring object: {}", elementInfo);
+
+							// break the inner loop because current
+							// elementInfo is already added
+							continue EI_LOOP;
+						}
+					}
+				}
+
+			} else { // not an array
+				ClassInfo ci = elementInfo.getClassInfo();
+
+				do {
+					n = ci.getNumberOfDeclaredInstanceFields();
+
+					for (i = 0; i < n; i++) {
+						FieldInfo fi = ci.getDeclaredInstanceField(i);
+						if (fi.isReference()) {
+
+							int objref = fields.getReferenceValue(fi.getStorageOffset());
+							if (objref == searchedObjRef) {
+
+								ObjectId referringObjectId = contextProvider.getObjectManager().getObjectId(elementInfo);
+								referringObjectRefs.add(referringObjectId);
+
+								logger.debug("Found referring object: {}", elementInfo);
+
+								// break the inner loop because current
+								// elementInfo is already added
+								continue EI_LOOP;
+							}
+						}
+					}
+					ci = ci.getSuperClass();
+				} while (ci != null);
+			}
+		}
+
+		return referringObjectRefs;
 	}
 
 }
