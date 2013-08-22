@@ -28,16 +28,21 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 		runTestsOfThisClass(args);
 	}
 
+	static class ReferenceClassSuper {
+		private Object privateSuperField;
+	}
 	/**
 	 * This is the reference class we query in this test set.
 	 * 
 	 * @author stepan
 	 * 
 	 */
-	public static class ReferenceClass {
+	static class ReferenceClass {
 		void method() {
-
 		}
+		
+		private Object privateField;
+		static String staticStringField;
 
 		public String methodStrint(String string) {
 			return "";
@@ -98,15 +103,30 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 
 		}
 	}
+	
+	private abstract static class ReferenceTypeCommandVerifier extends CommandVerifier {
 
-	CommandVerifier instancesVerifier = new CommandVerifier(ReferenceTypeCommand.INSTANCES) {
-
+		public ReferenceTypeCommandVerifier(Command command) {
+			super(command);
+		}
+		
+		protected abstract void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException;
+		
 		@Override
-		protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+		final protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
 			ObjectId objectId = loadObjectId(0);
 			ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(objectId.get().getClassInfo());
 			referenceTypeId.write(inputDataOutputStream);
+			
+			postprepareInput(inputDataOutputStream);
+		}
+		
+	}
 
+	CommandVerifier instancesVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.INSTANCES) {
+
+		@Override
+		protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
 			inputDataOutputStream.writeInt(loadBoxObject(1, Integer.class));
 		}
 
@@ -185,6 +205,49 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 			instancesVerifier.verify(testedObject, Integer.valueOf(foundInstances.length), foundInstancesNumber, foundInstances);
 
 			assertEquals(2, foundInstancesNumber.wrappedObject.intValue());
+		}
+	}
+	
+	CommandVerifier fieldsVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.FIELDS) {
+
+		@Override
+		protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+			// empty on a purpose
+		}
+
+		@Override
+		protected void processOutput(ByteBuffer outputBytes) {
+			int declared = outputBytes.getInt();
+			storeToWrapper(1, mjiEnv.newInteger(declared));
+
+			int outputArrayIndex = 0;
+			
+			for (int i = 0; i < declared; ++i) {
+				// fieldId is thrown away
+				contextProvider.getObjectManager().readFieldId(outputBytes);
+				
+				storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+				storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+				storeToArray(2, outputArrayIndex++, mjiEnv.newInteger(outputBytes.getInt()));
+			}
+		}
+	};
+	
+	@Test
+	public void fieldsTest() throws SecurityException, NoSuchFieldException {
+		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+
+			ReferenceClass testedObject = new ReferenceClass();
+
+			Object[] foundFields = new Object[50];
+			ObjectWrapper<Integer> declared = new ObjectWrapper<Integer>();
+
+			instancesVerifier.verify(testedObject, declared, foundFields);
+			
+			assertEquals(2, declared.wrappedObject.intValue());
+			assertEquals("privateField", foundFields[0]);
+			assertEquals("staticStringField", foundFields[3]);
+			
 		}
 	}
 }

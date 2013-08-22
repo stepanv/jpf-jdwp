@@ -55,7 +55,7 @@ public class ObjectReferenceCommandTest extends TestJdwp {
 			objectId.write(inputDataOutputStream);
 			
 			inputDataOutputStream.writeInt(1);
-			toFieldId(objectId, 1).write(inputDataOutputStream);
+			loadFieldId(objectId, 1).write(inputDataOutputStream);
 			loadObjectId(2).writeUntagged(inputDataOutputStream);
 		}
 
