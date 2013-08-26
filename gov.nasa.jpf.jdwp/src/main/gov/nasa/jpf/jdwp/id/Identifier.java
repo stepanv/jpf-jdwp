@@ -4,13 +4,31 @@ import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 
+/**
+ * Universal identifier container for any object that needs to be referenced by
+ * the debugger.<br/>
+ * It is important to not prevent GC from collecting the referenced object if
+ * there is no other reference.<br/>
+ * It is also important to not store the reference anywhere else in the JDWP
+ * back-end itself to not prevent the GC collection. The referenced object is
+ * likely to be stored in the {@link JdwpObjectManager} instance and there the
+ * references must be intentionally handled with care.<br/>
+ * It is also convenient to immediately reflect the referenced object collection
+ * which is done by using {@link WeakReference} references.
+ * 
+ * @author stepan
+ * 
+ * @see JdwpObjectManager
+ * 
+ * @param <T>
+ */
 public abstract class Identifier<T> {
 
   public static int SIZE = 8;
   private long id;
-  private SoftReference<T> objectReference;
+  private WeakReference<T> objectReference;
 
   /**
    * This is here to keep the reference in case we don't want a garbage
@@ -23,7 +41,7 @@ public abstract class Identifier<T> {
   private T object;
 
   public Identifier(long id, T object) {
-    this.objectReference = new SoftReference<T>(object);
+    this.objectReference = new WeakReference<T>(object);
     this.id = id;
   }
 
