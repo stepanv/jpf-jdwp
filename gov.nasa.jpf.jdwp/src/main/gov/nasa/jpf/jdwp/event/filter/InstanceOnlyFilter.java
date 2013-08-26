@@ -17,17 +17,17 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
  */
 public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
-	private ObjectId objectId;
+  private ObjectId objectId;
 
-	public InstanceOnlyFilter(ObjectId objectId) {
-		super(ModKind.INSTANCE_ONLY, InstanceOnlyFilterable.class);
-		this.objectId = objectId;
-	}
+  public InstanceOnlyFilter(ObjectId objectId) {
+    super(ModKind.INSTANCE_ONLY, InstanceOnlyFilterable.class);
+    this.objectId = objectId;
+  }
 
-	@Override
-	public boolean matches(InstanceOnlyFilterable event) {
-		// TODO not implemented yet
-		throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + objectId);
-	}
+  @Override
+  public boolean matches(InstanceOnlyFilterable event) {
+    // TODO not implemented yet
+    throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + objectId);
+  }
 
 }

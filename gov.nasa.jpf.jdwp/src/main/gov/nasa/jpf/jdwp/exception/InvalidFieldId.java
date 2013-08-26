@@ -4,13 +4,13 @@ import gov.nasa.jpf.jdwp.id.Identifier;
 
 public class InvalidFieldId extends InvalidIdentifier {
 
-	/**
+  /**
 	 * 
 	 */
-	private static final long serialVersionUID = 2187774892944476187L;
+  private static final long serialVersionUID = 2187774892944476187L;
 
-	public InvalidFieldId(Identifier<?> identifier) {
-		super(ErrorType.INVALID_FIELDID, identifier);
-	}
+  public InvalidFieldId(Identifier<?> identifier) {
+    super(ErrorType.INVALID_FIELDID, identifier);
+  }
 
 }

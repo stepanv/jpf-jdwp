@@ -19,61 +19,61 @@ import java.nio.ByteBuffer;
  */
 public class JdwpString {
 
-	/**
-	 * No instances are allowed.
-	 */
-	private JdwpString() {
-	}
+  /**
+   * No instances are allowed.
+   */
+  private JdwpString() {
+  }
 
-	/**
-	 * Writes data to the stream in a conformity with the specification.
-	 * 
-	 * @param data
-	 *            The string to send.
-	 * @param os
-	 *            The stream where to write the string.
-	 * @throws IOException
-	 *             If IO error occurs
-	 */
-	public static void write(String data, DataOutputStream os) throws IOException {
-		byte[] utfEncoded = data.getBytes("UTF-8");
-		os.writeInt(utfEncoded.length);
-		os.write(utfEncoded);
-	}
+  /**
+   * Writes data to the stream in a conformity with the specification.
+   * 
+   * @param data
+   *          The string to send.
+   * @param os
+   *          The stream where to write the string.
+   * @throws IOException
+   *           If IO error occurs
+   */
+  public static void write(String data, DataOutputStream os) throws IOException {
+    byte[] utfEncoded = data.getBytes("UTF-8");
+    os.writeInt(utfEncoded.length);
+    os.write(utfEncoded);
+  }
 
-	/**
-	 * Write data to the stream in a conformity with the specification.<br/>
-	 * If data is null, empty string &lt;""&gt; is sent.
-	 * 
-	 * @param data
-	 *            String or null to send across JDWP
-	 * @param os
-	 *            Output Stream
-	 * @throws IOException
-	 *             If I/O error occurs
-	 */
-	public static void writeNullAsEmpty(String data, DataOutputStream os) throws IOException {
-		write(data == null ? "" : data, os);
-	}
+  /**
+   * Write data to the stream in a conformity with the specification.<br/>
+   * If data is null, empty string &lt;""&gt; is sent.
+   * 
+   * @param data
+   *          String or null to send across JDWP
+   * @param os
+   *          Output Stream
+   * @throws IOException
+   *           If I/O error occurs
+   */
+  public static void writeNullAsEmpty(String data, DataOutputStream os) throws IOException {
+    write(data == null ? "" : data, os);
+  }
 
-	/**
-	 * Reads the string from in a conformity with the specification.
-	 * 
-	 * @param bytes
-	 *            Byte buffer
-	 * @return Received string
-	 */
-	public static String read(ByteBuffer bytes) {
-		int size = bytes.getInt();
-		byte[] string = new byte[size];
-		bytes.get(string);
-		try {
-			return new String(string, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// ALL VMs MUST implements UTF-8 (If compiled with 1.7, there is
-			// already constant for this
-			throw new RuntimeException("This VM doesn't conform to Java VM Specification!", e);
-		}
-	}
+  /**
+   * Reads the string from in a conformity with the specification.
+   * 
+   * @param bytes
+   *          Byte buffer
+   * @return Received string
+   */
+  public static String read(ByteBuffer bytes) {
+    int size = bytes.getInt();
+    byte[] string = new byte[size];
+    bytes.get(string);
+    try {
+      return new String(string, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      // ALL VMs MUST implements UTF-8 (If compiled with 1.7, there is
+      // already constant for this
+      throw new RuntimeException("This VM doesn't conform to Java VM Specification!", e);
+    }
+  }
 
 }

@@ -14,27 +14,27 @@ import gov.nasa.jpf.vm.Instruction;
  */
 public class StepOutFilter extends StepFilter {
 
-	public StepOutFilter(ThreadId thread, StepSize size) throws InvalidThreadException, InvalidObject {
-		super(thread, size);
-	}
+  public StepOutFilter(ThreadId thread, StepSize size) throws InvalidThreadException, InvalidObject {
+    super(thread, size);
+  }
 
-	@Override
-	protected boolean matches(int currentStackFrameSize, Instruction currentInstruction) {
-		/* we just stepped out of some method */
-		if (currentStackFrameSize < stackSnapshot.size()) {
+  @Override
+  protected boolean matches(int currentStackFrameSize, Instruction currentInstruction) {
+    /* we just stepped out of some method */
+    if (currentStackFrameSize < stackSnapshot.size()) {
 
-			/* we're already on a different line */
-			if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
-				return true;
-			}
+      /* we're already on a different line */
+      if (lineDiffers(stackSnapshot.size() - currentStackFrameSize, currentInstruction)) {
+        return true;
+      }
 
-			/* we're about to enter another method at the same line */
-			if (currentInstruction instanceof InvokeInstruction) {
-				return true;
-			}
+      /* we're about to enter another method at the same line */
+      if (currentInstruction instanceof InvokeInstruction) {
+        return true;
+      }
 
-		}
-		return false;
-	}
+    }
+    return false;
+  }
 
 }

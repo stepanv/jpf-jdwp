@@ -19,69 +19,67 @@ import gov.nasa.jpf.vm.ThreadInfo;
 
 public class FieldVisitor extends InstructionVisitorAdapter {
 
-	private ThreadInfo threadInfo;
+  private ThreadInfo threadInfo;
 
-	/**
-	 * Field access handler for standard instances and also statics of any
-	 * class.
-	 * 
-	 * @param fieldInstruction
-	 *            Instruction that has to be investigated
-	 * @param objectBeingAccessed
-	 *            Object being accessed or null for statics
-	 */
-	private void fieldAccess(FieldInstruction fieldInstruction, ElementInfo objectBeingAccessed) {
+  /**
+   * Field access handler for standard instances and also statics of any class.
+   * 
+   * @param fieldInstruction
+   *          Instruction that has to be investigated
+   * @param objectBeingAccessed
+   *          Object being accessed or null for statics
+   */
+  private void fieldAccess(FieldInstruction fieldInstruction, ElementInfo objectBeingAccessed) {
 
-		ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-		Event event = new FieldAccessEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo, fieldInstruction.getFieldInfo(),
-				objectBeingAccessed);
-		Jdwp.notify(event);
-	}
+    ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+    Event event = new FieldAccessEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
+        fieldInstruction.getFieldInfo(), objectBeingAccessed);
+    Jdwp.notify(event);
+  }
 
-	/**
-	 * Field modification handler for standard instances and also statics of
-	 * any class.
-	 * 
-	 * @param fieldInstruction
-	 *            Instruction that has to be investigated
-	 * @param objectBeingModified
-	 *            Object being modified or null for statics
-	 */
-	private void fieldModification(FieldInstruction fieldInstruction, ElementInfo objectBeingModified) {
-		StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
+  /**
+   * Field modification handler for standard instances and also statics of any
+   * class.
+   * 
+   * @param fieldInstruction
+   *          Instruction that has to be investigated
+   * @param objectBeingModified
+   *          Object being modified or null for statics
+   */
+  private void fieldModification(FieldInstruction fieldInstruction, ElementInfo objectBeingModified) {
+    StackFrame topStackFrame = threadInfo.getModifiableTopFrame();
 
-		ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
-		Tag tag = Tag.classInfoToTag(fieldClassInfo);
+    ClassInfo fieldClassInfo = fieldInstruction.getFieldInfo().getTypeClassInfo();
+    Tag tag = Tag.classInfoToTag(fieldClassInfo);
 
-		Event event = new FieldModificationEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
-				fieldInstruction.getFieldInfo(), objectBeingModified, tag, topStackFrame);
-		Jdwp.notify(event);
-	}
+    Event event = new FieldModificationEvent(threadInfo, Location.factorySafe(fieldInstruction, threadInfo), fieldClassInfo,
+        fieldInstruction.getFieldInfo(), objectBeingModified, tag, topStackFrame);
+    Jdwp.notify(event);
+  }
 
-	@Override
-	public void visit(GETFIELD ins) {
-		fieldAccess(ins, ins.getLastElementInfo());
-	}
+  @Override
+  public void visit(GETFIELD ins) {
+    fieldAccess(ins, ins.getLastElementInfo());
+  }
 
-	@Override
-	public void visit(PUTFIELD ins) {
-		fieldModification(ins, ins.getLastElementInfo());
-	}
+  @Override
+  public void visit(PUTFIELD ins) {
+    fieldModification(ins, ins.getLastElementInfo());
+  }
 
-	@Override
-	public void visit(GETSTATIC ins) {
-		fieldAccess(ins, null);
-	}
+  @Override
+  public void visit(GETSTATIC ins) {
+    fieldAccess(ins, null);
+  }
 
-	@Override
-	public void visit(PUTSTATIC ins) {
+  @Override
+  public void visit(PUTSTATIC ins) {
 
-		fieldModification(ins, null);
-	}
+    fieldModification(ins, null);
+  }
 
-	public void initalize(ThreadInfo currentThread) {
-		this.threadInfo = currentThread;
-	}
+  public void initalize(ThreadInfo currentThread) {
+    this.threadInfo = currentThread;
+  }
 
 }
-

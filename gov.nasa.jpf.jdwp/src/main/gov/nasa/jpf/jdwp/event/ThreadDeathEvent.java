@@ -24,18 +24,18 @@ import java.io.IOException;
  */
 public class ThreadDeathEvent extends ThreadableEvent implements Threadable {
 
-	/**
-	 * Creates Thread Death event.
-	 * 
-	 * @param threadInfo
-	 *            Ending thread
-	 */
-	public ThreadDeathEvent(ThreadInfo threadInfo) {
-		super(EventKind.THREAD_DEATH, threadInfo);
-	}
+  /**
+   * Creates Thread Death event.
+   * 
+   * @param threadInfo
+   *          Ending thread
+   */
+  public ThreadDeathEvent(ThreadInfo threadInfo) {
+    super(EventKind.THREAD_DEATH, threadInfo);
+  }
 
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

@@ -84,135 +84,135 @@ import java.io.IOException;
  */
 public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements Value {
 
-	private Tag tag;
+  private Tag tag;
 
-	private int objectRef;
+  private int objectRef;
 
-	public ObjectId(Tag tag, long id, ElementInfo object) {
-		this(tag, id, object.getObjectRef());
-	}
+  public ObjectId(Tag tag, long id, ElementInfo object) {
+    this(tag, id, object.getObjectRef());
+  }
 
-	protected ObjectId(Tag tag, long id, int objectRef) {
-		super(id, null);
-		this.tag = tag;
-		this.objectRef = objectRef;
-	}
+  protected ObjectId(Tag tag, long id, int objectRef) {
+    super(id, null);
+    this.tag = tag;
+    this.objectRef = objectRef;
+  }
 
-	@Override
-	public Tag getIdentifier() {
-		return tag;
-	}
+  @Override
+  public Tag getIdentifier() {
+    return tag;
+  }
 
-	@Override
-	public void push(StackFrame frame) {
-		frame.pushRef(objectRef);
-	}
+  @Override
+  public void push(StackFrame frame) {
+    frame.pushRef(objectRef);
+  }
 
-	@Override
-	public void modify(StackFrame stackFrame, int slotIndex) {
-		stackFrame.setLocalVariable(slotIndex, objectRef, true);
-	}
+  @Override
+  public void modify(StackFrame stackFrame, int slotIndex) {
+    stackFrame.setLocalVariable(slotIndex, objectRef, true);
+  }
 
-	@Override
-	public void modify(ElementInfo instance, FieldInfo field) {
-		instance.setReferenceField(field, objectRef);
-	}
+  @Override
+  public void modify(ElementInfo instance, FieldInfo field) {
+    instance.setReferenceField(field, objectRef);
+  }
 
-	@Override
-	public void modify(ElementInfo arrayInstance, int index) {
-		arrayInstance.setReferenceElement(index, objectRef);
-	}
+  @Override
+  public void modify(ElementInfo arrayInstance, int index) {
+    arrayInstance.setReferenceElement(index, objectRef);
+  }
 
-	@Override
-	public DynamicElementInfo get() {
-		Heap heap = VM.getVM().getHeap();
-		// TODO [for PJA] do we have StaticElementInfo in the heap?
-		// this cast sucks, but we always want DynamicElementInfo and we want to
-		// enforce it!
-		return (DynamicElementInfo) heap.get(objectRef);
-	}
+  @Override
+  public DynamicElementInfo get() {
+    Heap heap = VM.getVM().getHeap();
+    // TODO [for PJA] do we have StaticElementInfo in the heap?
+    // this cast sucks, but we always want DynamicElementInfo and we want to
+    // enforce it!
+    return (DynamicElementInfo) heap.get(objectRef);
+  }
 
-	public void disableCollection() throws InvalidObject {
-		Heap heap = VM.getVM().getHeap();
-		heap.registerPinDown(objectRef);
-	}
+  public void disableCollection() throws InvalidObject {
+    Heap heap = VM.getVM().getHeap();
+    heap.registerPinDown(objectRef);
+  }
 
-	public void enableCollection() throws InvalidObject {
-		Heap heap = VM.getVM().getHeap();
-		heap.releasePinDown(objectRef);
-	}
+  public void enableCollection() throws InvalidObject {
+    Heap heap = VM.getVM().getHeap();
+    heap.releasePinDown(objectRef);
+  }
 
-	@Override
-	public boolean isNull() {
-		Heap heap = VM.getVM().getHeap();
-		return heap.get(objectRef) == null;
-	}
+  @Override
+  public boolean isNull() {
+    Heap heap = VM.getVM().getHeap();
+    return heap.get(objectRef) == null;
+  }
 
-	/**
-	 * Factory that creates JDWP object identifier for the given parameter.<br/>
-	 * Note that this factory should be used only and only if the given object
-	 * doesn't have a JDWP identifier yet (an instance of {@link ObjectId} or
-	 * it's subclasses).
-	 * 
-	 * @see JdwpObjectManager#getObjectId(ElementInfo)
-	 * 
-	 * @param id
-	 *            Unique id that is used in the JDWP protocol to represent the
-	 *            given object
-	 * @param object
-	 *            The object to be represented by the result of this factory
-	 * @return The {@link Identifier} instance of the given object
-	 */
-	static ObjectId objectIdFactory(long id, ElementInfo object) {
-		ClassInfo classInfo = object.getClassInfo();
+  /**
+   * Factory that creates JDWP object identifier for the given parameter.<br/>
+   * Note that this factory should be used only and only if the given object
+   * doesn't have a JDWP identifier yet (an instance of {@link ObjectId} or it's
+   * subclasses).
+   * 
+   * @see JdwpObjectManager#getObjectId(ElementInfo)
+   * 
+   * @param id
+   *          Unique id that is used in the JDWP protocol to represent the given
+   *          object
+   * @param object
+   *          The object to be represented by the result of this factory
+   * @return The {@link Identifier} instance of the given object
+   */
+  static ObjectId objectIdFactory(long id, ElementInfo object) {
+    ClassInfo classInfo = object.getClassInfo();
 
-		/*
-		 * Here, we need to dynamically find whether the object is more than
-		 * just a normal object. It is important to understand, that methods
-		 * like classInfo.isThreadClassInfo() are misleading since we can have
-		 * also subclasses of standard java.lang classes.
-		 */
+    /*
+     * Here, we need to dynamically find whether the object is more than just a
+     * normal object. It is important to understand, that methods like
+     * classInfo.isThreadClassInfo() are misleading since we can have also
+     * subclasses of standard java.lang classes.
+     */
 
-		if (classInfo.isArray()) {
-			return new ArrayId(id, object);
-		} else if (classInfo.isInstanceOf("java.lang.Thread")) {
-			return new ThreadId(id, object);
-		} else if (classInfo.isInstanceOf("java.lang.String")) {
-			return new StringId(id, object);
-		} else if (classInfo.isInstanceOf("java.lang.Class")) {
-			return new ClassObjectId(id, object);
-		} else if (classInfo.isInstanceOf("java.lang.ThreadGroup")) {
-			return new ThreadGroupId(id, object);
-		} else if (classInfo.isInstanceOf("java.lang.ClassLoader")) {
-			return new ClassLoaderId(id, object);
-		} else {
-			// any other ElementInfos don't have a specific representation in
-			// the JDWP Specification
-			return new ObjectId(Tag.OBJECT, id, object);
-		}
-	}
+    if (classInfo.isArray()) {
+      return new ArrayId(id, object);
+    } else if (classInfo.isInstanceOf("java.lang.Thread")) {
+      return new ThreadId(id, object);
+    } else if (classInfo.isInstanceOf("java.lang.String")) {
+      return new StringId(id, object);
+    } else if (classInfo.isInstanceOf("java.lang.Class")) {
+      return new ClassObjectId(id, object);
+    } else if (classInfo.isInstanceOf("java.lang.ThreadGroup")) {
+      return new ThreadGroupId(id, object);
+    } else if (classInfo.isInstanceOf("java.lang.ClassLoader")) {
+      return new ClassLoaderId(id, object);
+    } else {
+      // any other ElementInfos don't have a specific representation in
+      // the JDWP Specification
+      return new ObjectId(Tag.OBJECT, id, object);
+    }
+  }
 
-	@Override
-	public void writeUntagged(DataOutputStream os) throws IOException {
-		write(os);
-	}
+  @Override
+  public void writeUntagged(DataOutputStream os) throws IOException {
+    write(os);
+  }
 
-	public DynamicElementInfo getModifiable() {
-		Heap heap = VM.getVM().getHeap();
-		// TODO [for PJA] do we have StaticElementInfo in the heap?
-		// this cast sucks, but we always want DynamicElementInfo and we want to
-		// enforce it!
-		return (DynamicElementInfo) heap.getModifiable(objectRef);
-	}
+  public DynamicElementInfo getModifiable() {
+    Heap heap = VM.getVM().getHeap();
+    // TODO [for PJA] do we have StaticElementInfo in the heap?
+    // this cast sucks, but we always want DynamicElementInfo and we want to
+    // enforce it!
+    return (DynamicElementInfo) heap.getModifiable(objectRef);
+  }
 
-	@Override
-	public DynamicElementInfo nullObjectHandler() throws InvalidIdentifier {
+  @Override
+  public DynamicElementInfo nullObjectHandler() throws InvalidIdentifier {
 
-		// TODO this is not used since ObjectId#get() completely overrides
-		// Identifier#get()
-		// solve nullobject pattern and also take advantage of this class
-		// structure .. now it's kind of masked
-		// since ObjectId overrides almost everything ...
-		return NullObjectId.getInstance().get();
-	}
+    // TODO this is not used since ObjectId#get() completely overrides
+    // Identifier#get()
+    // solve nullobject pattern and also take advantage of this class
+    // structure .. now it's kind of masked
+    // since ObjectId overrides almost everything ...
+    return NullObjectId.getInstance().get();
+  }
 }

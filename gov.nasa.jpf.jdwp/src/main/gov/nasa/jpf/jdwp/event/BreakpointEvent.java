@@ -18,19 +18,19 @@ import java.io.IOException;
  */
 public class BreakpointEvent extends LocatableEvent implements LocationOnlyFilterable {
 
-	/**
-	 * 
-	 * @param threadId
-	 *            thread which hit breakpoint
-	 * @param location
-	 *            Location hit
-	 */
-	public BreakpointEvent(ThreadInfo threadInfo, Location location) {
-		super(EventKind.BREAKPOINT, threadInfo, location);
-	}
+  /**
+   * 
+   * @param threadId
+   *          thread which hit breakpoint
+   * @param location
+   *          Location hit
+   */
+  public BreakpointEvent(ThreadInfo threadInfo, Location location) {
+    super(EventKind.BREAKPOINT, threadInfo, location);
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

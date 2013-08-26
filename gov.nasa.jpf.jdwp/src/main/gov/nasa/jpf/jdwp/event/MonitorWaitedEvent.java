@@ -17,23 +17,23 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class MonitorWaitedEvent extends MonitorBase {
 
-	private boolean timedOut;
+  private boolean timedOut;
 
-	/**
-	 * Creates Monitor Waited event.
-	 * 
-	 * @param threadInfo
-	 *            Thread which entered monitor
-	 * @param taggedObject
-	 *            Monitor object reference
-	 * @param location
-	 *            location contended monitor enter
-	 * @param timedOut
-	 *            true if timed out
-	 */
-	public MonitorWaitedEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, boolean timedOut) {
-		super(EventKind.MONITOR_WAITED, threadInfo, taggedObject, location);
-		this.timedOut = timedOut;
-	}
+  /**
+   * Creates Monitor Waited event.
+   * 
+   * @param threadInfo
+   *          Thread which entered monitor
+   * @param taggedObject
+   *          Monitor object reference
+   * @param location
+   *          location contended monitor enter
+   * @param timedOut
+   *          true if timed out
+   */
+  public MonitorWaitedEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, boolean timedOut) {
+    super(EventKind.MONITOR_WAITED, threadInfo, taggedObject, location);
+    this.timedOut = timedOut;
+  }
 
 }

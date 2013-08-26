@@ -51,121 +51,121 @@ import org.slf4j.LoggerFactory;
  */
 public class Location {
 
-	final static Logger logger = LoggerFactory.getLogger(Location.class);
-	
-	public boolean equals(Location location) {
-		if (location == null) {
-			return false;
-		}
-		return instruction == location.instruction;
-	}
+  final static Logger logger = LoggerFactory.getLogger(Location.class);
 
-	private Instruction instruction;
-	private MethodInfo methodInfo;
-	private int index;
+  public boolean equals(Location location) {
+    if (location == null) {
+      return false;
+    }
+    return instruction == location.instruction;
+  }
 
-	/**
-	 * Locations should be create using a factory.
-	 */
-	private Location(MethodInfo methodInfo, int index, Instruction instruction) {
-		this.methodInfo = methodInfo;
-		this.index = index;
-		this.instruction = instruction;
-	}
+  private Instruction instruction;
+  private MethodInfo methodInfo;
+  private int index;
 
-	/**
-	 * Creates a location for the given instruction.<br/>
-	 * No check, whether given instruction is possible to transform in a
-	 * <tt>location</tt>.
-	 * 
-	 * @see Location#factorySafe(Instruction, ThreadInfo)
-	 * 
-	 * @param instruction
-	 *            The instruction
-	 * @return The location
-	 */
-	public static Location factory(Instruction instruction) {
-		return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
-	}
+  /**
+   * Locations should be create using a factory.
+   */
+  private Location(MethodInfo methodInfo, int index, Instruction instruction) {
+    this.methodInfo = methodInfo;
+    this.index = index;
+    this.instruction = instruction;
+  }
 
-	/**
-	 * Creates a location for the given instruction.<br/>
-	 * This method tends to be safe but is actually pretty weird.<br/>
-	 * TODO It must be analyzed when an instruction doesn't have methodInfo or
-	 * when methodInfo doesn't have a clasInfo and then reflected in this piece
-	 * of code.
-	 * 
-	 * @param instruction
-	 *            The instruction.
-	 * @param threadInfo
-	 *            The thread that executes the given instruction or possibly the
-	 *            next one.
-	 * @return The location.
-	 */
-	public static Location factorySafe(Instruction instruction, ThreadInfo threadInfo) {
-		while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
-			instruction = instruction.getNext(threadInfo);
-			// TODO possible NPE
-		}
-		return factory(instruction);
-	}
+  /**
+   * Creates a location for the given instruction.<br/>
+   * No check, whether given instruction is possible to transform in a
+   * <tt>location</tt>.
+   * 
+   * @see Location#factorySafe(Instruction, ThreadInfo)
+   * 
+   * @param instruction
+   *          The instruction
+   * @return The location
+   */
+  public static Location factory(Instruction instruction) {
+    return new Location(instruction.getMethodInfo(), instruction.getInstructionIndex(), instruction);
+  }
 
-	private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {
-		logger.debug("looking for METHOD global id: {} of CLASS: {}",  id, classInfo);
-		for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
-			if (id == methodInfo.getGlobalId()) {
-				logger.trace("METHOD found: {}", methodInfo);
-				return methodInfo;
-			}
-		}
-		// also try super types
-		if (classInfo.getSuperClass() != null) {
-			return methodInfoLookup(classInfo.getSuperClass(), id);
-		}
-		throw new InvalidMethodId(new MethodId(id));
-	}
+  /**
+   * Creates a location for the given instruction.<br/>
+   * This method tends to be safe but is actually pretty weird.<br/>
+   * TODO It must be analyzed when an instruction doesn't have methodInfo or
+   * when methodInfo doesn't have a clasInfo and then reflected in this piece of
+   * code.
+   * 
+   * @param instruction
+   *          The instruction.
+   * @param threadInfo
+   *          The thread that executes the given instruction or possibly the
+   *          next one.
+   * @return The location.
+   */
+  public static Location factorySafe(Instruction instruction, ThreadInfo threadInfo) {
+    while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+      instruction = instruction.getNext(threadInfo);
+      // TODO possible NPE
+    }
+    return factory(instruction);
+  }
 
-	public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-		byte typeTag = bytes.get(); // TODO we have unique id for all
-									// referenceTypeIds regardless of its type
-									// tag
-		ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+  private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {
+    logger.debug("looking for METHOD global id: {} of CLASS: {}", id, classInfo);
+    for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
+      if (id == methodInfo.getGlobalId()) {
+        logger.trace("METHOD found: {}", methodInfo);
+        return methodInfo;
+      }
+    }
+    // also try super types
+    if (classInfo.getSuperClass() != null) {
+      return methodInfoLookup(classInfo.getSuperClass(), id);
+    }
+    throw new InvalidMethodId(new MethodId(id));
+  }
 
-		ClassInfo classInfo = referenceTypeId.get();
+  public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+    byte typeTag = bytes.get(); // TODO we have unique id for all
+    // referenceTypeIds regardless of its type
+    // tag
+    ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 
-		long id = bytes.getLong();
+    ClassInfo classInfo = referenceTypeId.get();
 
-		long index = bytes.getLong();
+    long id = bytes.getLong();
 
-		MethodInfo methodInfo = methodInfoLookup(classInfo, id);
+    long index = bytes.getLong();
 
-		return new Location(methodInfo, (int) index, methodInfo.getInstruction((int) index));
-	}
+    MethodInfo methodInfo = methodInfoLookup(classInfo, id);
 
-	public Instruction getInstruction() {
-		return instruction;
-	}
+    return new Location(methodInfo, (int) index, methodInfo.getInstruction((int) index));
+  }
 
-	private TypeTag typeTag;
+  public Instruction getInstruction() {
+    return instruction;
+  }
 
-	public void write(DataOutputStream os) throws IOException {
-		if (methodInfo != null) {
+  private TypeTag typeTag;
 
-		}
-		JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
+  public void write(DataOutputStream os) throws IOException {
+    if (methodInfo != null) {
 
-		ClassInfo classInfo = methodInfo.getClassInfo();
-		objectManager.getReferenceTypeId(classInfo).writeTagged(os);
-		os.writeLong(methodInfo.getGlobalId());
-		// objectManager.getObjectId(methodInfo).write(os);
-		os.writeLong(index);
+    }
+    JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
 
-	}
+    ClassInfo classInfo = methodInfo.getClassInfo();
+    objectManager.getReferenceTypeId(classInfo).writeTagged(os);
+    os.writeLong(methodInfo.getGlobalId());
+    // objectManager.getObjectId(methodInfo).write(os);
+    os.writeLong(index);
 
-	@Override
-	public String toString() {
-		return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation() + ", methodId: " + methodInfo.getGlobalId()
-				+ ", index: " + index;
-	}
+  }
+
+  @Override
+  public String toString() {
+    return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation() + ", methodId: "
+        + methodInfo.getGlobalId() + ", index: " + index;
+  }
 
 }

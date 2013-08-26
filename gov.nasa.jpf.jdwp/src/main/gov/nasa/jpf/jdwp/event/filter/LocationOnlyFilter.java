@@ -41,22 +41,22 @@ import gov.nasa.jpf.jdwp.type.Location;
  */
 public class LocationOnlyFilter extends Filter<LocationOnlyFilterable> {
 
-	private Location location;
+  private Location location;
 
-	/**
-	 * Creates Location Only Filter.
-	 * 
-	 * @param location
-	 *            Required location
-	 */
-	public LocationOnlyFilter(Location location) {
-		super(Filter.ModKind.LOCATION_ONLY, LocationOnlyFilterable.class);
+  /**
+   * Creates Location Only Filter.
+   * 
+   * @param location
+   *          Required location
+   */
+  public LocationOnlyFilter(Location location) {
+    super(Filter.ModKind.LOCATION_ONLY, LocationOnlyFilterable.class);
 
-		this.location = location;
-	}
+    this.location = location;
+  }
 
-	@Override
-	public boolean matches(LocationOnlyFilterable event) {
-		return location.equals(event.getLocation());
-	}
+  @Override
+  public boolean matches(LocationOnlyFilterable event) {
+    return location.equals(event.getLocation());
+  }
 }

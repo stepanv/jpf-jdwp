@@ -1,6 +1,5 @@
 package gov.nasa.jpf.jdwp.event.filter;
 
-
 /**
  * <p>
  * <h2>JDWP Specification</h2>
@@ -16,25 +15,25 @@ package gov.nasa.jpf.jdwp.event.filter;
  */
 public class ClassMatchFilter extends ClassFilter {
 
-	/**
-	 * <p>
-	 * Creates Class Match Filter for the given restricted regular expression.<br/>
-	 * Be aware that we're not talking about standard regular expressions.
-	 * </p>
-	 * 
-	 * @see ClassFilter
-	 * @param classPattern
-	 *            Required class pattern. Matches are limited to exact matches
-	 *            of the given class pattern and matches of patterns that begin
-	 *            or end with '*'; for example, "*.Foo" or "java.*".
-	 */
-	public ClassMatchFilter(String classPattern) {
-		super(ModKind.CLASS_MATCH, classPattern);
-	}
+  /**
+   * <p>
+   * Creates Class Match Filter for the given restricted regular expression.<br/>
+   * Be aware that we're not talking about standard regular expressions.
+   * </p>
+   * 
+   * @see ClassFilter
+   * @param classPattern
+   *          Required class pattern. Matches are limited to exact matches of
+   *          the given class pattern and matches of patterns that begin or end
+   *          with '*'; for example, "*.Foo" or "java.*".
+   */
+  public ClassMatchFilter(String classPattern) {
+    super(ModKind.CLASS_MATCH, classPattern);
+  }
 
-	@Override
-	public boolean matches(String className) {
-		return compare(className);
-	}
+  @Override
+  public boolean matches(String className) {
+    return compare(className);
+  }
 
 }

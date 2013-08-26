@@ -25,100 +25,104 @@ import org.junit.Test;
  */
 public class ClassTypeCommandTest extends TestJdwp {
 
-	private ByteArrayOutputStream dataOutputBytes;
-	private DataOutputStream dataOutputStream;
-	private ByteBuffer bytes;
+  private ByteArrayOutputStream dataOutputBytes;
+  private DataOutputStream dataOutputStream;
+  private ByteBuffer bytes;
 
-	public ClassTypeCommandTest() {
-	}
+  public ClassTypeCommandTest() {
+  }
 
-	/** Reference interface */
-	public static interface I1 {
-	}
+  /** Reference interface */
+  public static interface I1 {
+  }
 
-	/** Reference interface */
-	public static interface I2 extends I1 {
-	}
+  /** Reference interface */
+  public static interface I2 extends I1 {
+  }
 
-	/** Reference interface */
-	public static interface I3 {
-	}
+  /** Reference interface */
+  public static interface I3 {
+  }
 
-	/** Reference class */
-	public static class A implements I3 {
-	}
+  /** Reference class */
+  public static class A implements I3 {
+  }
 
-	/** Reference class */
-	public static class B extends A implements I2 {
-	}
+  /** Reference class */
+  public static class B extends A implements I2 {
+  }
 
-	private void resetBuffers() {
-		try {
-			dataOutputBytes.close(); // has no effect
-			dataOutputStream.close();
-		} catch (IOException e) {
-			// we don't care let's try to go further
-		}
+  private void resetBuffers() {
+    try {
+      dataOutputBytes.close(); // has no effect
+      dataOutputStream.close();
+    } catch (IOException e) {
+      // we don't care let's try to go further
+    }
 
-		dataOutputBytes = new ByteArrayOutputStream(0);
-		dataOutputStream = new DataOutputStream(dataOutputBytes);
-		bytes.clear();
-	}
+    dataOutputBytes = new ByteArrayOutputStream(0);
+    dataOutputStream = new DataOutputStream(dataOutputBytes);
+    bytes.clear();
+  }
 
-	@Test
-	public void superclassTest() {
+  @Test
+  public void superclassTest() {
 
-		String[] args = { "+target=HelloWorld" }; // using HelloWorld from
-													// jpf-core src/examples
-		Config config = new Config(args);
-		JPF jpf = new JPF(config);
-		VM vm = jpf.getVM();
+    String[] args = { "+target=HelloWorld" }; // using HelloWorld from
+    // jpf-core src/examples
+    Config config = new Config(args);
+    JPF jpf = new JPF(config);
+    VM vm = jpf.getVM();
 
-		dataOutputBytes = new ByteArrayOutputStream(0);
-		dataOutputStream = new DataOutputStream(dataOutputBytes);
-		bytes = ByteBuffer.allocate(200); // This "might" be enough
-		CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
+    dataOutputBytes = new ByteArrayOutputStream(0);
+    dataOutputStream = new DataOutputStream(dataOutputBytes);
+    bytes = ByteBuffer.allocate(200); // This "might" be enough
+    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
 
-		vm.initialize();
+    vm.initialize();
 
-		ByteBuffer outputBytes;
-		ReferenceTypeId refTypeId;
+    ByteBuffer outputBytes;
+    ReferenceTypeId refTypeId;
 
-		try {
-			ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(B.class.getName()), bytes, dataOutputStream, contextProvider);
+    try {
+      ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(B.class.getName()), bytes, dataOutputStream,
+                                          contextProvider);
 
-			outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-			refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
-			assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(A.class.getName()), refTypeId.get());
+      outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
+      assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(A.class.getName()), refTypeId.get());
 
-			resetBuffers();
+      resetBuffers();
 
-			ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(A.class.getName()), bytes, dataOutputStream, contextProvider);
+      ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(A.class.getName()), bytes, dataOutputStream,
+                                          contextProvider);
 
-			outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-			refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
-			assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), refTypeId.get());
+      outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
+      assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), refTypeId.get());
 
-			resetBuffers();
+      resetBuffers();
 
-			ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), bytes, dataOutputStream, contextProvider);
+      ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), bytes, dataOutputStream,
+                                          contextProvider);
 
-			outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-			refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
-			assertEquals(null, refTypeId);
+      outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
+      assertEquals(null, refTypeId);
 
-			resetBuffers();
+      resetBuffers();
 
-			ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(I2.class.getName()), bytes, dataOutputStream, contextProvider);
+      ClassTypeCommand.SUPERCLASS.execute(ClassLoaderInfo.getSystemResolvedClassInfo(I2.class.getName()), bytes, dataOutputStream,
+                                          contextProvider);
 
-			outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
-			refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
-			assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), refTypeId.get());
+      outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
+      assertEquals(ClassLoaderInfo.getSystemResolvedClassInfo(Object.class.getName()), refTypeId.get());
 
-		} catch (Exception e) {
-			throw new TestInError(e);
-		}
+    } catch (Exception e) {
+      throw new TestInError(e);
+    }
 
-	}
+  }
 
 }

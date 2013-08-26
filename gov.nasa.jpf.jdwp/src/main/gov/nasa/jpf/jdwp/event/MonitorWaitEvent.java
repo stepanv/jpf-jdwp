@@ -19,29 +19,29 @@ import java.io.IOException;
  */
 public class MonitorWaitEvent extends MonitorBase {
 
-	private long timeout;
+  private long timeout;
 
-	/**
-	 * Creates Monitor Wait event.
-	 * 
-	 * @param threadInfo
-	 *            Thread which entered monitor
-	 * @param taggedObject
-	 *            Monitor object reference
-	 * @param location
-	 *            location contended monitor enter
-	 * @param timeout
-	 *            thread wait time in milliseconds
-	 */
-	public MonitorWaitEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, long timeout) {
-		super(EventKind.MONITOR_WAIT, threadInfo, taggedObject, location);
-		this.timeout = timeout;
-	}
+  /**
+   * Creates Monitor Wait event.
+   * 
+   * @param threadInfo
+   *          Thread which entered monitor
+   * @param taggedObject
+   *          Monitor object reference
+   * @param location
+   *          location contended monitor enter
+   * @param timeout
+   *          thread wait time in milliseconds
+   */
+  public MonitorWaitEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, long timeout) {
+    super(EventKind.MONITOR_WAIT, threadInfo, taggedObject, location);
+    this.timeout = timeout;
+  }
 
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-		super.writeThreadableSpecific(os);
-		os.writeLong(timeout);
-	}
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+    super.writeThreadableSpecific(os);
+    os.writeLong(timeout);
+  }
 
 }

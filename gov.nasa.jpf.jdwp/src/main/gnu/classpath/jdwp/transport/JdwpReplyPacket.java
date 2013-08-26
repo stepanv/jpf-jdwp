@@ -36,22 +36,19 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * A class represents a JDWP reply packet.
- * This class adds an error code to the packet header information
- * in {@link gnu.classpath.jdwp.transport.JdwpPacket} and adds additional
- * reply packet-specific processing.
- *
- * @author Keith Seitz  <keiths@redhat.com>
+ * A class represents a JDWP reply packet. This class adds an error code to the
+ * packet header information in {@link gnu.classpath.jdwp.transport.JdwpPacket}
+ * and adds additional reply packet-specific processing.
+ * 
+ * @author Keith Seitz <keiths@redhat.com>
  */
-public class JdwpReplyPacket extends JdwpPacket
-{
+public class JdwpReplyPacket extends JdwpPacket {
   /**
    * Error code
    */
@@ -63,75 +60,68 @@ public class JdwpReplyPacket extends JdwpPacket
   /**
    * Constructs a <code>JdwpReplyPacket</code>.
    */
-  public JdwpReplyPacket ()
-  {
+  public JdwpReplyPacket() {
     // Don't assign a packet id. This is called by JdwpPacket.fromBytes
     // which assigns a packet id. (Not that a VM would do that...)
   }
 
   /**
-   * Constructs a <code>JdwpReplyPacket</code> with the
-   * id from the given packet and error code
-   *
-   * @param pkt        the packet whose id this packet will use
-   * @param errorCode  the error code
+   * Constructs a <code>JdwpReplyPacket</code> with the id from the given packet
+   * and error code
+   * 
+   * @param pkt
+   *          the packet whose id this packet will use
+   * @param errorCode
+   *          the error code
    */
-  public JdwpReplyPacket (JdwpPacket pkt, short errorCode)
-  {
+  public JdwpReplyPacket(JdwpPacket pkt, short errorCode) {
     this(pkt);
     _errorCode = errorCode;
   }
 
   /**
-   * Constructs a <code>JdwpReplyPacket</code> with the
-   * id from the given packet and an empty error code
-   *
-   * @param pkt        the packet whose id this packet will use
+   * Constructs a <code>JdwpReplyPacket</code> with the id from the given packet
+   * and an empty error code
+   * 
+   * @param pkt
+   *          the packet whose id this packet will use
    */
-  public JdwpReplyPacket (JdwpPacket pkt)
-  {
-    super (pkt);
+  public JdwpReplyPacket(JdwpPacket pkt) {
+    super(pkt);
     _flags = (byte) JDWP_FLAG_REPLY;
   }
 
   /**
    * Returns the length of this packet
    */
-  public int getLength ()
-  {
-    return MINIMUM_LENGTH + super.getLength ();
+  public int getLength() {
+    return MINIMUM_LENGTH + super.getLength();
   }
 
   /**
    * Returns the error code
    */
-  public short getErrorCode ()
-  {
+  public short getErrorCode() {
     return _errorCode;
   }
 
   /**
    * Sets the error code
    */
-  public void setErrorCode (short ec)
-  {
+  public void setErrorCode(short ec) {
     _errorCode = ec;
   }
 
   // Reads command packet data from the given buffer, starting
   // at the given offset
-  protected int myFromBytes (byte[] bytes, int index)
-  {
+  protected int myFromBytes(byte[] bytes, int index) {
     int i = 0;
-    setErrorCode ((short) ((bytes[index + i++] & 0xff) << 8
-                           | (bytes[index + i++] & 0xff)));
+    setErrorCode((short) ((bytes[index + i++] & 0xff) << 8 | (bytes[index + i++] & 0xff)));
     return i;
   }
 
   // Writes the command packet data into the given buffer
-  protected void myWrite (DataOutputStream dos)
-    throws IOException
- {
-    dos.writeShort (getErrorCode ());
+  protected void myWrite(DataOutputStream dos) throws IOException {
+    dos.writeShort(getErrorCode());
   }
 }

@@ -46,77 +46,77 @@ import java.io.IOException;
  * 
  */
 public interface Value {
-	/**
-	 * Writes the value including the {@link Tag} as a first byte which is a
-	 * signature.<br/>
-	 * Values are written tagged by default.
-	 * 
-	 * @param os
-	 *            Output stream
-	 * @throws IOException
-	 *             If I/O error occurs
-	 */
-	public void writeTagged(DataOutputStream os) throws IOException;
+  /**
+   * Writes the value including the {@link Tag} as a first byte which is a
+   * signature.<br/>
+   * Values are written tagged by default.
+   * 
+   * @param os
+   *          Output stream
+   * @throws IOException
+   *           If I/O error occurs
+   */
+  public void writeTagged(DataOutputStream os) throws IOException;
 
-	/**
-	 * Writes the plain value to the output stream.<br/>
-	 * Values are written untagged rarely, as the JDWP specification states, if
-	 * the signature is known from the context as it is with arrays.
-	 * 
-	 * @param os
-	 * @throws IOException
-	 */
-	public void writeUntagged(DataOutputStream os) throws IOException;
+  /**
+   * Writes the plain value to the output stream.<br/>
+   * Values are written untagged rarely, as the JDWP specification states, if
+   * the signature is known from the context as it is with arrays.
+   * 
+   * @param os
+   * @throws IOException
+   */
+  public void writeUntagged(DataOutputStream os) throws IOException;
 
-	/**
-	 * Pushes the current value (of this instance) to the given frame.
-	 * 
-	 * @param frame
-	 *            The stack frame where to push this value.
-	 * @throws InvalidObject
-	 */
-	public void push(StackFrame frame);
+  /**
+   * Pushes the current value (of this instance) to the given frame.
+   * 
+   * @param frame
+   *          The stack frame where to push this value.
+   * @throws InvalidObject
+   */
+  public void push(StackFrame frame);
 
-	/**
-	 * Modifies local variable at the given slot index of the given frame.
-	 * 
-	 * @param stackFrame
-	 *            The frame where to modify the local variable. Must be modifiable!
-	 * @param slotIndex
-	 *            The slot index of the local variable.
-	 */
-	public void modify(StackFrame stackFrame, int slotIndex);
+  /**
+   * Modifies local variable at the given slot index of the given frame.
+   * 
+   * @param stackFrame
+   *          The frame where to modify the local variable. Must be modifiable!
+   * @param slotIndex
+   *          The slot index of the local variable.
+   */
+  public void modify(StackFrame stackFrame, int slotIndex);
 
-	/**
-	 * Modifies the field of given instance with its value.
-	 * <p>
-	 * Note that this method is not interchangeable with
-	 * {@link Value#modify(ElementInfo, int)} as it is designed for standard
-	 * object instances and NOT arrays!
-	 * 
-	 * @see Value#modify(ElementInfo, int)
-	 * 
-	 * @param instance
-	 *            The SuT instance to be modified. Must be modifiable!
-	 * @param fieldInfo
-	 *            The field that is modified
-	 */
-	public void modify(ElementInfo instance, FieldInfo field);
+  /**
+   * Modifies the field of given instance with its value.
+   * <p>
+   * Note that this method is not interchangeable with
+   * {@link Value#modify(ElementInfo, int)} as it is designed for standard
+   * object instances and NOT arrays!
+   * 
+   * @see Value#modify(ElementInfo, int)
+   * 
+   * @param instance
+   *          The SuT instance to be modified. Must be modifiable!
+   * @param fieldInfo
+   *          The field that is modified
+   */
+  public void modify(ElementInfo instance, FieldInfo field);
 
-	/**
-	 * Modifies the given array at the given index.
-	 * <p>
-	 * Note that this method is not interchangeable with
-	 * {@link Value#modify(ElementInfo, FieldInfo)} as it is designed for arrays
-	 * only.<br/>
-	 * It is sad JPF doesn't make a difference between array and standard object
-	 * instances at the class design level.
-	 * </p>
-	 * 
-	 * @param arrayInstance
-	 *            The instance of an array to be modified. Must be modifiable!
-	 * @param index
-	 *            The index to the array where to modify its value.
-	 */
-	public void modify(ElementInfo arrayInstance, int index);
+  /**
+   * Modifies the given array at the given index.
+   * <p>
+   * Note that this method is not interchangeable with
+   * {@link Value#modify(ElementInfo, FieldInfo)} as it is designed for arrays
+   * only.<br/>
+   * It is sad JPF doesn't make a difference between array and standard object
+   * instances at the class design level.
+   * </p>
+   * 
+   * @param arrayInstance
+   *          The instance of an array to be modified. Must be modifiable!
+   * @param index
+   *          The index to the array where to modify its value.
+   */
+  public void modify(ElementInfo arrayInstance, int index);
 }

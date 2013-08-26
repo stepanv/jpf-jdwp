@@ -63,57 +63,57 @@ import org.slf4j.LoggerFactory;
  */
 public class JDWPRunner {
 
-	public static VirtualMachine vm;
+  public static VirtualMachine vm;
 
-	static final Logger logger = LoggerFactory.getLogger(JDWPRunner.class);
+  static final Logger logger = LoggerFactory.getLogger(JDWPRunner.class);
 
-	/**
-	 * The entry point of JPF JPDA implementation.
-	 * 
-	 * @param args
-	 *            Standard JPF application arguments
-	 */
-	public static void main(String[] args) {
-		// this initializes the JPF configuration from default.properties,
-		// site.properties
-		// configured extensions (jpf.properties), current directory
-		// (jpf.properies) and
-		// command line args ("+<key>=<value>" options and *.jpf)
-		Config conf = JPF.createConfig(args);
+  /**
+   * The entry point of JPF JPDA implementation.
+   * 
+   * @param args
+   *          Standard JPF application arguments
+   */
+  public static void main(String[] args) {
+    // this initializes the JPF configuration from default.properties,
+    // site.properties
+    // configured extensions (jpf.properties), current directory
+    // (jpf.properies) and
+    // command line args ("+<key>=<value>" options and *.jpf)
+    Config conf = JPF.createConfig(args);
 
-		conf.printEntries();
-		
-		JPF jpf = new JPF(conf);
+    conf.printEntries();
 
-		String jdwpProperty = System.getProperty("jdwp");
+    JPF jpf = new JPF(conf);
 
-		if (jdwpProperty != null) {
-			logger.debug("Found JDWP property: {}", jdwpProperty);
+    String jdwpProperty = System.getProperty("jdwp");
 
-			vm = new VirtualMachine(jpf);
+    if (jdwpProperty != null) {
+      logger.debug("Found JDWP property: {}", jdwpProperty);
 
-			Jdwp jdwp = new Jdwp(vm);
-			jdwp.configure(jdwpProperty);
+      vm = new VirtualMachine(jpf);
 
-			vm.setJdwp(jdwp);
+      Jdwp jdwp = new Jdwp(vm);
+      jdwp.configure(jdwpProperty);
 
-			jpf.addListener(new JDWPListener(jpf, vm));
-			jdwp.start();
+      vm.setJdwp(jdwp);
 
-			while (Jdwp.suspendOnStartup() || !jdwp.isServer()) {
-				try {
-					jdwp.join();
-					break;
-				} catch (InterruptedException e) {
-				}
-			}
+      jpf.addListener(new JDWPListener(jpf, vm));
+      jdwp.start();
 
-			vm.run();
-		} else {
-			System.err.println("System property 'jdwp' not found. Running JPF without the JDWP agent.");
-			jpf.run();
-		}
+      while (Jdwp.suspendOnStartup() || !jdwp.isServer()) {
+        try {
+          jdwp.join();
+          break;
+        } catch (InterruptedException e) {
+        }
+      }
 
-	}
+      vm.run();
+    } else {
+      System.err.println("System property 'jdwp' not found. Running JPF without the JDWP agent.");
+      jpf.run();
+    }
+
+  }
 
 }

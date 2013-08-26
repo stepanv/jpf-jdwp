@@ -18,44 +18,44 @@ import java.io.IOException;
  */
 public class NullObjectId extends ObjectId {
 
-	private NullObjectId() {
-		super(Tag.OBJECT, 0, -1);
-	}
+  private NullObjectId() {
+    super(Tag.OBJECT, 0, -1);
+  }
 
-	public static NullObjectId getInstance() {
-		return instance;
-	}
+  public static NullObjectId getInstance() {
+    return instance;
+  }
 
-	/**
-	 * Helper method that writes {@link NullObjectId} instance to the stream.
-	 * 
-	 * @param os
-	 *            Where to write the null object
-	 * @throws IOException
-	 *             If IO error occurs
-	 */
-	public static void instantWrite(DataOutputStream os) throws IOException {
-		instance.write(os);
-	}
+  /**
+   * Helper method that writes {@link NullObjectId} instance to the stream.
+   * 
+   * @param os
+   *          Where to write the null object
+   * @throws IOException
+   *           If IO error occurs
+   */
+  public static void instantWrite(DataOutputStream os) throws IOException {
+    instance.write(os);
+  }
 
-	/**
-	 * Helper method that writes {@link NullObjectId} tagged instance to the
-	 * stream.
-	 * 
-	 * @param os
-	 *            Where to write the null object
-	 * @throws IOException
-	 *             If IO error occurs
-	 */
-	public static void instanceWriteTagged(DataOutputStream os) throws IOException {
-		instance.writeTagged(os);
-	}
+  /**
+   * Helper method that writes {@link NullObjectId} tagged instance to the
+   * stream.
+   * 
+   * @param os
+   *          Where to write the null object
+   * @throws IOException
+   *           If IO error occurs
+   */
+  public static void instanceWriteTagged(DataOutputStream os) throws IOException {
+    instance.writeTagged(os);
+  }
 
-	private static final NullObjectId instance = new NullObjectId();
+  private static final NullObjectId instance = new NullObjectId();
 
-	@Override
-	public void push(StackFrame frame) {
-		frame.pushRef(-1);
-	}
+  @Override
+  public void push(StackFrame frame) {
+    frame.pushRef(-1);
+  }
 
 }

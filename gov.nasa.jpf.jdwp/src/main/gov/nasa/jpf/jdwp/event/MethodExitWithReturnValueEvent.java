@@ -23,25 +23,25 @@ import java.io.IOException;
  */
 public class MethodExitWithReturnValueEvent extends LocatableEvent implements Locatable {
 
-	private Value value;
+  private Value value;
 
-	/**
-	 * 
-	 * @param threadInfo
-	 *            Thread which exited method
-	 * @param location
-	 *            Location of exit
-	 * @param value
-	 *            Value that will be returned by the method
-	 */
-	public MethodExitWithReturnValueEvent(ThreadInfo threadInfo, Location location, Value value) {
-		super(EventKind.METHOD_EXIT_WITH_RETURN_VALUE, threadInfo, location);
-		this.value = value;
-	}
+  /**
+   * 
+   * @param threadInfo
+   *          Thread which exited method
+   * @param location
+   *          Location of exit
+   * @param value
+   *          Value that will be returned by the method
+   */
+  public MethodExitWithReturnValueEvent(ThreadInfo threadInfo, Location location, Value value) {
+    super(EventKind.METHOD_EXIT_WITH_RETURN_VALUE, threadInfo, location);
+    this.value = value;
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		value.writeUntagged(os);
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+    value.writeUntagged(os);
+  }
 
 }

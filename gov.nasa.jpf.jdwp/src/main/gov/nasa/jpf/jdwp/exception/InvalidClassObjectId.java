@@ -18,13 +18,13 @@ import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
  */
 public class InvalidClassObjectId extends InvalidObject {
 
-	/**
+  /**
 	 * 
 	 */
-	private static final long serialVersionUID = -4264642841819420585L;
+  private static final long serialVersionUID = -4264642841819420585L;
 
-	public InvalidClassObjectId(ErrorType errorType, ClassObjectId classObjectId) {
-		super(ErrorType.INVALID_CLASS, classObjectId);
-	}
+  public InvalidClassObjectId(ErrorType errorType, ClassObjectId classObjectId) {
+    super(ErrorType.INVALID_CLASS, classObjectId);
+  }
 
 }

@@ -13,13 +13,13 @@ import gov.nasa.jpf.vm.MethodInfo;
  */
 public class MethodId extends Identifier<MethodInfo> {
 
-	public MethodId(long globalMethodId) {
-		super(0, MethodInfo.getMethodInfo((int) globalMethodId));
-	}
+  public MethodId(long globalMethodId) {
+    super(0, MethodInfo.getMethodInfo((int) globalMethodId));
+  }
 
-	@Override
-	public MethodInfo nullObjectHandler() throws InvalidIdentifier {
-		throw new InvalidMethodId(this);
-	}
+  @Override
+  public MethodInfo nullObjectHandler() throws InvalidIdentifier {
+    throw new InvalidMethodId(this);
+  }
 
 }

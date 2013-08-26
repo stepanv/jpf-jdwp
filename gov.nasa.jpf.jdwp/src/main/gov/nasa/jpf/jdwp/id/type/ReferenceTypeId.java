@@ -30,82 +30,82 @@ import java.nio.ByteBuffer;
  */
 public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
-	public enum TypeTag implements ConvertibleEnum<Byte, TypeTag> {
-		/** ReferenceType is a class. */
-		CLASS(1) {
-			@Override
-			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				throw new RuntimeException("NOT IMPLEMENTED YET");
-			}
-		},
-		/** ReferenceType is an interface. */
-		INTERFACE(2) {
-			@Override
-			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				throw new RuntimeException("NOT IMPLEMENTED YET");
-			}
-		},
-		/** ReferenceType is an array. */
-		ARRAY(3) {
-			@Override
-			public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				throw new RuntimeException("NOT IMPLEMENTED YET");
-			}
-		};
+  public enum TypeTag implements ConvertibleEnum<Byte, TypeTag> {
+    /** ReferenceType is a class. */
+    CLASS(1) {
+      @Override
+      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        throw new RuntimeException("NOT IMPLEMENTED YET");
+      }
+    },
+    /** ReferenceType is an interface. */
+    INTERFACE(2) {
+      @Override
+      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        throw new RuntimeException("NOT IMPLEMENTED YET");
+      }
+    },
+    /** ReferenceType is an array. */
+    ARRAY(3) {
+      @Override
+      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        throw new RuntimeException("NOT IMPLEMENTED YET");
+      }
+    };
 
-		private byte typeTagId;
+    private byte typeTagId;
 
-		TypeTag(int typeTagId) {
-			this.typeTagId = (byte) typeTagId;
-		}
+    TypeTag(int typeTagId) {
+      this.typeTagId = (byte) typeTagId;
+    }
 
-		@Override
-		public Byte identifier() {
-			return typeTagId;
-		}
+    @Override
+    public Byte identifier() {
+      return typeTagId;
+    }
 
-		private static ReverseEnumMap<Byte, TypeTag> map = new ReverseEnumMap<Byte, ReferenceTypeId.TypeTag>(TypeTag.class);
+    private static ReverseEnumMap<Byte, TypeTag> map = new ReverseEnumMap<Byte, ReferenceTypeId.TypeTag>(TypeTag.class);
 
-		@Override
-		public TypeTag convert(Byte val) throws JdwpError {
-			return map.get(val);
-		}
+    @Override
+    public TypeTag convert(Byte val) throws JdwpError {
+      return map.get(val);
+    }
 
-		public abstract ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
+    public abstract ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
 
-	}
+  }
 
-	private TypeTag typeTag;
+  private TypeTag typeTag;
 
-	public ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
-		super(id, classInfo);
-		this.typeTag = typeTag;
-	}
+  public ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
+    super(id, classInfo);
+    this.typeTag = typeTag;
+  }
 
-	public static ReferenceTypeId factory(long id, ClassInfo classInfo) {
-		if (classInfo.isArray()) {
-			return new ArrayTypeReferenceId(id, classInfo);
-		}
-		if (classInfo.isInterface()) {
-			return new InterfaceTypeReferenceId(id, classInfo);
-		}
+  public static ReferenceTypeId factory(long id, ClassInfo classInfo) {
+    if (classInfo.isArray()) {
+      return new ArrayTypeReferenceId(id, classInfo);
+    }
+    if (classInfo.isInterface()) {
+      return new InterfaceTypeReferenceId(id, classInfo);
+    }
 
-		return new ClassTypeReferenceId(id, classInfo);
-	}
+    return new ClassTypeReferenceId(id, classInfo);
+  }
 
-	public static ReferenceTypeId factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-		return TypeTag.ARRAY.convert(bytes.get()).createReferenceTypeId(bytes, contextProvider);
-		// TODO delete this if it is unused .. and also all other methods
-	}
+  public static ReferenceTypeId factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+    return TypeTag.ARRAY.convert(bytes.get()).createReferenceTypeId(bytes, contextProvider);
+    // TODO delete this if it is unused .. and also all other methods
+  }
 
-	@Override
-	public IdentifiableEnum<Byte> getIdentifier() {
-		return typeTag;
-	}
+  @Override
+  public IdentifiableEnum<Byte> getIdentifier() {
+    return typeTag;
+  }
 
-	@Override
-	public ClassInfo nullObjectHandler() throws InvalidIdentifier {
-		throw new InvalidReferenceType(this);
-	}
+  @Override
+  public ClassInfo nullObjectHandler() throws InvalidIdentifier {
+    throw new InvalidReferenceType(this);
+  }
 
 }

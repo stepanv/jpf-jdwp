@@ -24,136 +24,137 @@ import java.nio.ByteBuffer;
 
 public class JdwpObjectManager {
 
-	private static class JdwpObjectManagerHolder {
-		private static final JdwpObjectManager instance = new JdwpObjectManager();
-	}
+  private static class JdwpObjectManagerHolder {
+    private static final JdwpObjectManager instance = new JdwpObjectManager();
+  }
 
-	public static JdwpObjectManager getInstance() {
-		return JdwpObjectManagerHolder.instance;
-	}
+  public static JdwpObjectManager getInstance() {
+    return JdwpObjectManagerHolder.instance;
+  }
 
-	ObjectIdManager objectIdManager = new ObjectIdManager();
+  ObjectIdManager objectIdManager = new ObjectIdManager();
 
-	private IdManager<ReferenceTypeId, ClassInfo> referenceIdManager = new IdManager<ReferenceTypeId, ClassInfo>(new IdFactory<ReferenceTypeId, ClassInfo>() {
+  private IdManager<ReferenceTypeId, ClassInfo> referenceIdManager = new IdManager<ReferenceTypeId, ClassInfo>(
+      new IdFactory<ReferenceTypeId, ClassInfo>() {
 
-		@Override
-		public ReferenceTypeId create(long id, ClassInfo classInfo) {
-			// TODO we probably already know what we want thus we should maybe
-			// force and wrap as with objectIdManager
-			return ReferenceTypeId.factory(id, classInfo);
-		}
-	});
+        @Override
+        public ReferenceTypeId create(long id, ClassInfo classInfo) {
+          // TODO we probably already know what we want thus we should maybe
+          // force and wrap as with objectIdManager
+          return ReferenceTypeId.factory(id, classInfo);
+        }
+      });
 
-	private IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
-		@Override
-		public FieldId create(long id, FieldInfo fieldInfo) {
-			return new FieldId(id, fieldInfo);
-		}
-	});
-	private IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
-		@Override
-		public FrameId create(long id, StackFrame stackFrame) {
-			return new FrameId(id, stackFrame);
-		}
-	});
+  private IdManager<FieldId, FieldInfo> fieldIdManager = new IdManager<FieldId, FieldInfo>(new IdFactory<FieldId, FieldInfo>() {
+    @Override
+    public FieldId create(long id, FieldInfo fieldInfo) {
+      return new FieldId(id, fieldInfo);
+    }
+  });
+  private IdManager<FrameId, StackFrame> frameIdManager = new IdManager<FrameId, StackFrame>(new IdFactory<FrameId, StackFrame>() {
+    @Override
+    public FrameId create(long id, StackFrame stackFrame) {
+      return new FrameId(id, stackFrame);
+    }
+  });
 
-	private JdwpObjectManager() {
-	}
+  private JdwpObjectManager() {
+  }
 
-	public ArrayId readArrayId(ByteBuffer bytes) throws JdwpError {
-		return objectIdManager.readIdentifier(bytes, ArrayId.class);
-	}
+  public ArrayId readArrayId(ByteBuffer bytes) throws JdwpError {
+    return objectIdManager.readIdentifier(bytes, ArrayId.class);
+  }
 
-	public ArrayTypeReferenceId readArrayTypeReferenceId(ByteBuffer bytes) throws JdwpError {
-		return (ArrayTypeReferenceId) readReferenceTypeId(bytes);
-	}
+  public ArrayTypeReferenceId readArrayTypeReferenceId(ByteBuffer bytes) throws JdwpError {
+    return (ArrayTypeReferenceId) readReferenceTypeId(bytes);
+  }
 
-	public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
-		// TODO throw ErrorType.INVALID_CLASS
-		return referenceIdManager.readIdentifier(bytes);
-	}
+  public ReferenceTypeId readReferenceTypeId(ByteBuffer bytes) throws JdwpError {
+    // TODO throw ErrorType.INVALID_CLASS
+    return referenceIdManager.readIdentifier(bytes);
+  }
 
-	public ReferenceTypeId getReferenceTypeId(ClassInfo classInfo) {
-		return referenceIdManager.getIdentifierId(classInfo);
-	}
+  public ReferenceTypeId getReferenceTypeId(ClassInfo classInfo) {
+    return referenceIdManager.getIdentifierId(classInfo);
+  }
 
-	/**
-	 * Gets the {@link Identifier} for the given object that will represent this
-	 * object in the JPDA.<br/>
-	 * If the representation doesn't exist yet, new instance of {@link ObjectId}
-	 * or it's subclasses is created, otherwise and existing identifier is
-	 * returned.
-	 * 
-	 * @param object
-	 *            The object that needs an ID representation
-	 * @return The identifier for the given parameter.
-	 */
-	public ObjectId getObjectId(ElementInfo object) {
-		if (object == null) {
-			return NullObjectId.getInstance();
-		}
-		return objectIdManager.getIdentifierId(object);
-	}
+  /**
+   * Gets the {@link Identifier} for the given object that will represent this
+   * object in the JPDA.<br/>
+   * If the representation doesn't exist yet, new instance of {@link ObjectId}
+   * or it's subclasses is created, otherwise and existing identifier is
+   * returned.
+   * 
+   * @param object
+   *          The object that needs an ID representation
+   * @return The identifier for the given parameter.
+   */
+  public ObjectId getObjectId(ElementInfo object) {
+    if (object == null) {
+      return NullObjectId.getInstance();
+    }
+    return objectIdManager.getIdentifierId(object);
+  }
 
-	public FieldId getFieldId(FieldInfo fieldInfo) {
-		return fieldIdManager.getIdentifierId(fieldInfo);
-	}
+  public FieldId getFieldId(FieldInfo fieldInfo) {
+    return fieldIdManager.getIdentifierId(fieldInfo);
+  }
 
-	public FrameId getFrameId(StackFrame stackFrame) {
-		return frameIdManager.getIdentifierId(stackFrame);
-	}
+  public FrameId getFrameId(StackFrame stackFrame) {
+    return frameIdManager.getIdentifierId(stackFrame);
+  }
 
-	public FieldId readFieldId(ByteBuffer bytes) {
-		return fieldIdManager.readIdentifier(bytes);
-	}
+  public FieldId readFieldId(ByteBuffer bytes) {
+    return fieldIdManager.readIdentifier(bytes);
+  }
 
-	public FrameId readFrameId(ByteBuffer bytes) {
-		return frameIdManager.readIdentifier(bytes);
-	}
+  public FrameId readFrameId(ByteBuffer bytes) {
+    return frameIdManager.readIdentifier(bytes);
+  }
 
-	public ClassObjectId readClassObjectId(ByteBuffer bytes) {
-		return objectIdManager.readIdentifier(bytes, ClassObjectId.class);
-	}
+  public ClassObjectId readClassObjectId(ByteBuffer bytes) {
+    return objectIdManager.readIdentifier(bytes, ClassObjectId.class);
+  }
 
-	public ClassLoaderId readClassLoaderId(ByteBuffer bytes) {
-		return objectIdManager.readIdentifier(bytes, ClassLoaderId.class);
-	}
+  public ClassLoaderId readClassLoaderId(ByteBuffer bytes) {
+    return objectIdManager.readIdentifier(bytes, ClassLoaderId.class);
+  }
 
-	public ThreadId readThreadId(ByteBuffer bytes) {
-		// try {
-		return objectIdManager.readIdentifier(bytes, ThreadId.class);
-		// } catch (InvalidObject io) {
-		// // TODO throw invalid thread probably
-		// throw new JdwpError(ErrorType.INVALID_THREAD);
-		// }
-	}
+  public ThreadId readThreadId(ByteBuffer bytes) {
+    // try {
+    return objectIdManager.readIdentifier(bytes, ThreadId.class);
+    // } catch (InvalidObject io) {
+    // // TODO throw invalid thread probably
+    // throw new JdwpError(ErrorType.INVALID_THREAD);
+    // }
+  }
 
-	public ObjectId readObjectId(ByteBuffer bytes) {
-		return objectIdManager.readIdentifier(bytes);
-	}
+  public ObjectId readObjectId(ByteBuffer bytes) {
+    return objectIdManager.readIdentifier(bytes);
+  }
 
-	public ClassLoaderId getClassLoaderObjectId(ClassLoaderInfo classLoaderInfo) {
-		return objectIdManager.getClassLoaderId(classLoaderInfo);
-	}
+  public ClassLoaderId getClassLoaderObjectId(ClassLoaderInfo classLoaderInfo) {
+    return objectIdManager.getClassLoaderId(classLoaderInfo);
+  }
 
-	public ClassObjectId getClassObjectId(ClassInfo classInfo) {
-		return objectIdManager.getClassObjectId(classInfo);
-	}
+  public ClassObjectId getClassObjectId(ClassInfo classInfo) {
+    return objectIdManager.getClassObjectId(classInfo);
+  }
 
-	public ThreadId getThreadId(ThreadInfo threadInfo) {
-		return objectIdManager.getThreadId(threadInfo);
-	}
+  public ThreadId getThreadId(ThreadInfo threadInfo) {
+    return objectIdManager.getThreadId(threadInfo);
+  }
 
-	public ArrayId getArrayId(ElementInfo elementInfoArray) {
-		return objectIdManager.getIdentifierId(elementInfoArray, ArrayId.class);
-	}
+  public ArrayId getArrayId(ElementInfo elementInfoArray) {
+    return objectIdManager.getIdentifierId(elementInfoArray, ArrayId.class);
+  }
 
-	public ThreadGroupId getThreadGroupId(ElementInfo elementThreadGroup) {
-		return objectIdManager.getIdentifierId(elementThreadGroup, ThreadGroupId.class);
-	}
+  public ThreadGroupId getThreadGroupId(ElementInfo elementThreadGroup) {
+    return objectIdManager.getIdentifierId(elementThreadGroup, ThreadGroupId.class);
+  }
 
-	public StringId readStringId(ByteBuffer bytes) {
-		return objectIdManager.readIdentifier(bytes, StringId.class);
-	}
+  public StringId readStringId(ByteBuffer bytes) {
+    return objectIdManager.readIdentifier(bytes, StringId.class);
+  }
 
 }

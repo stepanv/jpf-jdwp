@@ -43,146 +43,146 @@ import java.nio.ByteBuffer;
  */
 public abstract class Filter<T extends Event> {
 
-	public static enum ModKind implements ConvertibleEnum<Byte, ModKind> {
-		COUNT(1) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				return new CountFilter(bytes.getInt());
-			}
-		},
-		CONDITIONAL(2) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			}
-		},
-		THREAD_ONLY(3) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
-				return new ThreadOnlyFilter(threadId);
-			}
-		},
-		CLASS_ONLY(4) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-				return new ClassOnlyFilter(referenceTypeId);
-			}
-		},
-		CLASS_MATCH(5) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				String classPattern = JdwpString.read(bytes);
-				return new ClassMatchFilter(classPattern);
-			}
-		},
-		CLASS_EXCLUDE(6) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				String classPattern = JdwpString.read(bytes);
-				return new ClassExcludeFilter(classPattern);
-			}
-		},
-		LOCATION_ONLY(7) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				Location location = Location.factory(bytes, contextProvider);
-				return new LocationOnlyFilter(location);
-			}
-		},
-		EXCEPTION_ONLY(8) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-				boolean caught = bytes.get() != 0;
-				boolean uncaught = bytes.get() != 0;
-				return new ExceptionOnlyFilter(exceptionOrNull, caught, uncaught);
-			}
-		},
-		FIELD_ONLY(9) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-				FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
-				return new FieldOnlyFilter(declaring, fieldId);
-			}
-		},
-		STEP(10) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				return StepFilter.factory(bytes, contextProvider);
-			}
-		},
-		INSTANCE_ONLY(11) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
-				return new InstanceOnlyFilter(objectId);
-			}
-		},
-		SOURCE_NAME_MATCH(12) {
-			@Override
-			public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-				// TODO Auto-generated method stub
-				throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-			}
-		};
+  public static enum ModKind implements ConvertibleEnum<Byte, ModKind> {
+    COUNT(1) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        return new CountFilter(bytes.getInt());
+      }
+    },
+    CONDITIONAL(2) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        // TODO Auto-generated method stub
+        throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+      }
+    },
+    THREAD_ONLY(3) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+        return new ThreadOnlyFilter(threadId);
+      }
+    },
+    CLASS_ONLY(4) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+        return new ClassOnlyFilter(referenceTypeId);
+      }
+    },
+    CLASS_MATCH(5) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        String classPattern = JdwpString.read(bytes);
+        return new ClassMatchFilter(classPattern);
+      }
+    },
+    CLASS_EXCLUDE(6) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        String classPattern = JdwpString.read(bytes);
+        return new ClassExcludeFilter(classPattern);
+      }
+    },
+    LOCATION_ONLY(7) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        Location location = Location.factory(bytes, contextProvider);
+        return new LocationOnlyFilter(location);
+      }
+    },
+    EXCEPTION_ONLY(8) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+        boolean caught = bytes.get() != 0;
+        boolean uncaught = bytes.get() != 0;
+        return new ExceptionOnlyFilter(exceptionOrNull, caught, uncaught);
+      }
+    },
+    FIELD_ONLY(9) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+        FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
+        return new FieldOnlyFilter(declaring, fieldId);
+      }
+    },
+    STEP(10) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        return StepFilter.factory(bytes, contextProvider);
+      }
+    },
+    INSTANCE_ONLY(11) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
+        return new InstanceOnlyFilter(objectId);
+      }
+    },
+    SOURCE_NAME_MATCH(12) {
+      @Override
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+        // TODO Auto-generated method stub
+        throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+      }
+    };
 
-		private byte modKindId;
+    private byte modKindId;
 
-		ModKind(int modKindId) {
-			this.modKindId = (byte) modKindId;
-		}
+    ModKind(int modKindId) {
+      this.modKindId = (byte) modKindId;
+    }
 
-		@Override
-		public Byte identifier() {
-			return modKindId;
-		}
+    @Override
+    public Byte identifier() {
+      return modKindId;
+    }
 
-		private static ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
+    private static ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
 
-		@Override
-		public ModKind convert(Byte val) throws JdwpError {
-			return map.get(val);
-		}
+    @Override
+    public ModKind convert(Byte val) throws JdwpError {
+      return map.get(val);
+    }
 
-		public abstract Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
-	}
+    public abstract Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
+  }
 
-	private ModKind modKind;
-	private Class<T> genericClazz;
+  private ModKind modKind;
+  private Class<T> genericClazz;
 
-	public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove
-															// unused parameter
-		this.modKind = modKind;
-		this.genericClazz = genericClass;
-	}
+  public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove
+    // unused parameter
+    this.modKind = modKind;
+    this.genericClazz = genericClass;
+  }
 
-	public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-		return ModKind.COUNT.convert(bytes.get()).createFilter(bytes, contextProvider);
-	}
+  public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+    return ModKind.COUNT.convert(bytes.get()).createFilter(bytes, contextProvider);
+  }
 
-	/**
-	 * Whether this filter allows the given event.
-	 * 
-	 * @param event
-	 *            The event to be filtered.
-	 * @return True of false as a result of filtering.
-	 * @throws InvalidObject
-	 * @throws InvalidIdentifier 
-	 */
-	public boolean matches(T event) throws InvalidIdentifier {
-		return false;
-	}
-	
-	public String toString() {
-		return "class: " + this.getClass() + "; modKind: " + modKind.toString();
-	}
+  /**
+   * Whether this filter allows the given event.
+   * 
+   * @param event
+   *          The event to be filtered.
+   * @return True of false as a result of filtering.
+   * @throws InvalidObject
+   * @throws InvalidIdentifier
+   */
+  public boolean matches(T event) throws InvalidIdentifier {
+    return false;
+  }
 
-	public Class<T> getGenericClass() {
-		return this.genericClazz;
-	}
+  public String toString() {
+    return "class: " + this.getClass() + "; modKind: " + modKind.toString();
+  }
+
+  public Class<T> getGenericClass() {
+    return this.genericClazz;
+  }
 
 }

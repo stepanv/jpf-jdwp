@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import gov.nasa.jpf.jdwp.command.Command;
@@ -50,18 +49,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A class representing a JDWP command packet.
- * This class adds command set and command to the packet header
- * information in {@link gnu.classpath.jdwp.transport.JdwpPacket}
- * and adds additional command packet-specific processing.
- *
- * @author Keith Seitz  <keiths@redhat.com>
+ * A class representing a JDWP command packet. This class adds command set and
+ * command to the packet header information in
+ * {@link gnu.classpath.jdwp.transport.JdwpPacket} and adds additional command
+ * packet-specific processing.
+ * 
+ * @author Keith Seitz <keiths@redhat.com>
  */
-public class JdwpCommandPacket extends JdwpPacket
-{
-	
+public class JdwpCommandPacket extends JdwpPacket {
+
   final static Logger logger = LoggerFactory.getLogger(JdwpCommandPacket.class);
-	
+
   /**
    * Command set
    */
@@ -79,21 +77,21 @@ public class JdwpCommandPacket extends JdwpPacket
   /**
    * Constructs a new <code>JdwpCommandPacket</code>
    */
-  public JdwpCommandPacket ()
-  {
+  public JdwpCommandPacket() {
     // Don't assign an id. This constructor is called by
     // JdwpPacket.fromBytes, and that will assign a packet id.
   }
 
   /**
-   * Constructs a new <code>JdwpCommandPacket</code>
-   * with the given command set and command
-   *
-   * @param set      the command set
-   * @param command  the command
+   * Constructs a new <code>JdwpCommandPacket</code> with the given command set
+   * and command
+   * 
+   * @param set
+   *          the command set
+   * @param command
+   *          the command
    */
-  public JdwpCommandPacket (CommandSet set, Command command)
-  {
+  public JdwpCommandPacket(CommandSet set, Command command) {
     _id = ++_last_id;
     _commandSet = set;
     _command = command;
@@ -102,36 +100,31 @@ public class JdwpCommandPacket extends JdwpPacket
   /**
    * Retuns the length of this packet
    */
-  public int getLength ()
-  {
-    return MINIMUM_LENGTH + super.getLength ();
+  public int getLength() {
+    return MINIMUM_LENGTH + super.getLength();
   }
 
   /**
    * Returns the command
    */
-  public Command getCommand ()
-  {
+  public Command getCommand() {
     return _command;
   }
 
   // Reads command packet data from the given buffer, starting
   // at the given offset
-  protected int myFromBytes (byte[] bytes, int index) throws JdwpError
-  {
+  protected int myFromBytes(byte[] bytes, int index) throws JdwpError {
     int i = 0;
-    
+
     _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);
-	_command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
-	
+    _command = _commandSet.getCommandConverterSample().convert(bytes[index + i++]);
+
     return i;
   }
 
   // Writes the command packet data into the given buffer
-  protected void myWrite (DataOutputStream dos)
-    throws IOException
-  {
-    dos.writeByte (_commandSet.identifier());
-    dos.writeByte (_command.identifier());
+  protected void myWrite(DataOutputStream dos) throws IOException {
+    dos.writeByte(_commandSet.identifier());
+    dos.writeByte(_command.identifier());
   }
 }

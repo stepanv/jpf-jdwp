@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import java.io.InputStream;
@@ -47,48 +46,46 @@ import java.util.HashMap;
 /**
  * A class representing a transport layer. This class serves as a generic
  * interface for all transport types used in the JDWP back-end.
- *
+ * 
  * @author Keith Seitz (keiths@redhat.com)
  */
-public interface ITransport
-{
+public interface ITransport {
   /**
    * Configure the transport with the given properties
-   *
-   * @param   properties  properties of the transport configuration
-   * @throws  TransportException on configury error
+   * 
+   * @param properties
+   *          properties of the transport configuration
+   * @throws TransportException
+   *           on configury error
    */
-  public void configure (HashMap properties)
-    throws TransportException;
+  public void configure(HashMap properties) throws TransportException;
 
   /**
    * Initialize the transport
-   *
-   * @throws  TransportException on initialization error
+   * 
+   * @throws TransportException
+   *           on initialization error
    */
-  public void initialize ()
-    throws TransportException;
+  public void initialize() throws TransportException;
 
   /**
    * Shutdown the transport
    */
-  public void shutdown ();
-  
+  public void shutdown();
+
   /**
    * Get the input stream for the transport
    */
-  public InputStream getInputStream ()
-    throws IOException;
+  public InputStream getInputStream() throws IOException;
 
   /**
    * Get the output stream for the transport
    */
-  public OutputStream getOutputStream ()
-    throws IOException;
+  public OutputStream getOutputStream() throws IOException;
 
-public boolean isServer();
+  public boolean isServer();
 
-public String getName();
+  public String getName();
 
-public String getAddress();
+  public String getAddress();
 }

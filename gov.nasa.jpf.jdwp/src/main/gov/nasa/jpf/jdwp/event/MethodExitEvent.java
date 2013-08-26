@@ -21,19 +21,19 @@ import java.io.IOException;
  */
 public class MethodExitEvent extends LocatableEvent {
 
-	/**
-	 * 
-	 * @param threadInfo
-	 *            The thread which exited method
-	 * @param location
-	 *            Location of exit
-	 */
-	public MethodExitEvent(ThreadInfo threadInfo, Location location) {
-		super(EventKind.METHOD_EXIT, threadInfo, location);
-	}
+  /**
+   * 
+   * @param threadInfo
+   *          The thread which exited method
+   * @param location
+   *          Location of exit
+   */
+  public MethodExitEvent(ThreadInfo threadInfo, Location location) {
+    super(EventKind.METHOD_EXIT, threadInfo, location);
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

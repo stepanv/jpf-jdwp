@@ -21,28 +21,27 @@ import java.io.IOException;
  */
 public class ClassUnloadEvent extends EventBase implements ClassFilterable {
 
-	private String signature;
+  private String signature;
 
-	/**
-	 * Creates Class Unload event.
-	 * 
-	 * @param signature
-	 *            Type signature
-	 */
-	public ClassUnloadEvent(String signature) {
-		super(EventKind.CLASS_UNLOAD);
-		this.signature = signature;
-	}
+  /**
+   * Creates Class Unload event.
+   * 
+   * @param signature
+   *          Type signature
+   */
+  public ClassUnloadEvent(String signature) {
+    super(EventKind.CLASS_UNLOAD);
+    this.signature = signature;
+  }
 
+  @Override
+  protected void writeSpecific(DataOutputStream os) throws IOException {
+    JdwpString.write(signature, os);
+  }
 
-	@Override
-	protected void writeSpecific(DataOutputStream os) throws IOException {
-		JdwpString.write(signature, os);
-	}
-
-	@Override
-	public boolean matches(ClassFilter classMatchFilter) {
-		return classMatchFilter.matches(signature);
-	}
+  @Override
+  public boolean matches(ClassFilter classMatchFilter) {
+    return classMatchFilter.matches(signature);
+  }
 
 }

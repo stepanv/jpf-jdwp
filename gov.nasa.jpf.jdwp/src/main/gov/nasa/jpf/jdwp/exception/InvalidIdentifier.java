@@ -11,18 +11,18 @@ import gov.nasa.jpf.jdwp.id.Identifier;
  */
 public abstract class InvalidIdentifier extends JdwpError {
 
-	/**
+  /**
 	 * 
 	 */
-	private static final long serialVersionUID = -3101810848944813714L;
-	private Identifier<?> identifier;
+  private static final long serialVersionUID = -3101810848944813714L;
+  private Identifier<?> identifier;
 
-	protected InvalidIdentifier(ErrorType errorType, Identifier<?> identifier) {
-		super(errorType);
-		this.identifier = identifier;
-	}
+  protected InvalidIdentifier(ErrorType errorType, Identifier<?> identifier) {
+    super(errorType);
+    this.identifier = identifier;
+  }
 
-	public String toString() {
-		return super.toString() + " (Identifier: " + identifier + ")";
-	}
+  public String toString() {
+    return super.toString() + " (Identifier: " + identifier + ")";
+  }
 }

@@ -19,18 +19,18 @@ import gov.nasa.jpf.vm.ElementInfo;
  */
 public class ArrayId extends ObjectId {
 
-	/**
-	 * Constructs the array ID.
-	 * 
-	 * @param id
-	 *            The ID known by {@link ObjectIdManager}
-	 * @param object
-	 *            The {@link ElementInfo} instance that needs JDWP ID
-	 *            representation.
-	 */
-	public ArrayId(long id, ElementInfo object) {
-		super(Tag.ARRAY, id, object);
-		new ArrayList<Object>();
-	}
+  /**
+   * Constructs the array ID.
+   * 
+   * @param id
+   *          The ID known by {@link ObjectIdManager}
+   * @param object
+   *          The {@link ElementInfo} instance that needs JDWP ID
+   *          representation.
+   */
+  public ArrayId(long id, ElementInfo object) {
+    super(Tag.ARRAY, id, object);
+    new ArrayList<Object>();
+  }
 
 }

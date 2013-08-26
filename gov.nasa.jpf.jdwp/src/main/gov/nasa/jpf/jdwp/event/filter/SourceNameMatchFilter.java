@@ -18,25 +18,25 @@ import gov.nasa.jpf.jdwp.event.SourceNameMatchFilterable;
  * 
  */
 public class SourceNameMatchFilter extends Filter<SourceNameMatchFilterable> {
-	private String sourceNamePattern;
+  private String sourceNamePattern;
 
-	/**
-	 * Creates Source Name Match filter for the given source name pattern
-	 * parameter.
-	 * 
-	 * @param sourceNamePattern
-	 *            Required source name pattern. Matches are limited to exact
-	 *            matches of the given pattern and matches of patterns that
-	 *            begin or end with '*'; for example, "*.Foo" or "java.*".
-	 */
-	public SourceNameMatchFilter(String sourceNamePattern) {
-		super(ModKind.SOURCE_NAME_MATCH, SourceNameMatchFilterable.class);
-		this.sourceNamePattern = sourceNamePattern;
-	}
+  /**
+   * Creates Source Name Match filter for the given source name pattern
+   * parameter.
+   * 
+   * @param sourceNamePattern
+   *          Required source name pattern. Matches are limited to exact matches
+   *          of the given pattern and matches of patterns that begin or end
+   *          with '*'; for example, "*.Foo" or "java.*".
+   */
+  public SourceNameMatchFilter(String sourceNamePattern) {
+    super(ModKind.SOURCE_NAME_MATCH, SourceNameMatchFilterable.class);
+    this.sourceNamePattern = sourceNamePattern;
+  }
 
-	@Override
-	public boolean matches(SourceNameMatchFilterable event) {
-		throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + sourceNamePattern);
-	}
+  @Override
+  public boolean matches(SourceNameMatchFilterable event) {
+    throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + sourceNamePattern);
+  }
 
 }

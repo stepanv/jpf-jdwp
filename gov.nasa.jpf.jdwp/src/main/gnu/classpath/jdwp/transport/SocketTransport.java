@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import gnu.classpath.jdwp.transport.ITransport;
@@ -53,15 +52,12 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
 /**
- * A socket-based transport. This transport uses
- * configury string that looks like "name=dt_socket,
- * address=localhost:1234,server=y".
- *
+ * A socket-based transport. This transport uses configury string that looks
+ * like "name=dt_socket, address=localhost:1234,server=y".
+ * 
  * @author Keith Seitz (keiths@redhat.com)
  */
-class SocketTransport
-  implements ITransport
-{
+class SocketTransport implements ITransport {
   /**
    * Name of this transport
    */
@@ -85,128 +81,110 @@ class SocketTransport
 
   /**
    * Setup the connection configuration from the given properties
-   *
-   * @param  properties  the properties of the JDWP session
-   * @throws TransportException for any configury errors
+   * 
+   * @param properties
+   *          the properties of the JDWP session
+   * @throws TransportException
+   *           for any configury errors
    */
-  public void configure(HashMap properties)
-    throws TransportException
-  {
+  public void configure(HashMap properties) throws TransportException {
     // Get server [form: "y" or "n"]
     String p = (String) properties.get(_PROPERTY_SERVER);
-    if (p != null)
-      {
-        if (p.toLowerCase().equals("y"))
-          _server = true;
-      }
+    if (p != null) {
+      if (p.toLowerCase().equals("y"))
+        _server = true;
+    }
 
     // Get address [form: "hostname:port"]
     p = (String) properties.get(_PROPERTY_ADDRESS);
-    if (p != null)
-      {
-        String[] s = p.split(":");
-        if (s.length == 1)
-          {
-            // Port number only. Assume "localhost"
-            _port = Integer.parseInt(s[0]);
-            _host = "localhost";
-          }
+    if (p != null) {
+      String[] s = p.split(":");
+      if (s.length == 1) {
+        // Port number only. Assume "localhost"
+        _port = Integer.parseInt(s[0]);
+        _host = "localhost";
+      } else {
+        if (s[0].length() == 0)
+          _host = "localhost";
         else
-          {
-            if (s[0].length() == 0)
-              _host = "localhost";
-            else
-              _host = s[0];
-            _port = Integer.parseInt(s[1]);
-          }
+          _host = s[0];
+        _port = Integer.parseInt(s[1]);
       }
-    
+    }
+
   }
 
   /**
-   * Initialize this socket connection. This includes
-   * connecting to the host (or listening for it).
-   *
-   * @throws TransportException if a transport-related error occurs
+   * Initialize this socket connection. This includes connecting to the host (or
+   * listening for it).
+   * 
+   * @throws TransportException
+   *           if a transport-related error occurs
    */
-  public void initialize ()
-    throws TransportException
-  {
-    try
-      {
-        if (_server)
-          {
-            // Get a server socket
-            ServerSocketFactory ssf = ServerSocketFactory.getDefault ();
-            ServerSocket ss = ssf.createServerSocket (_port, 1);
-            _socket = ss.accept ();
-          }
-        else
-          {
-            // Get a client socket (the factory will connect it)
-            SocketFactory sf = SocketFactory.getDefault ();
-            _socket = sf.createSocket (_host, _port);
-          }
+  public void initialize() throws TransportException {
+    try {
+      if (_server) {
+        // Get a server socket
+        ServerSocketFactory ssf = ServerSocketFactory.getDefault();
+        ServerSocket ss = ssf.createServerSocket(_port, 1);
+        _socket = ss.accept();
+      } else {
+        // Get a client socket (the factory will connect it)
+        SocketFactory sf = SocketFactory.getDefault();
+        _socket = sf.createSocket(_host, _port);
       }
-    catch (IOException ioe)
-      {
-        // This will grab UnknownHostException, too.
-        throw new TransportException (ioe);
-      }
+    } catch (IOException ioe) {
+      // This will grab UnknownHostException, too.
+      throw new TransportException(ioe);
+    }
   }
 
   /**
-   * Shutdown the socket. This could cause SocketExceptions
-   * for anyone blocked on socket i/o
+   * Shutdown the socket. This could cause SocketExceptions for anyone blocked
+   * on socket i/o
    */
-  public void shutdown ()
-  {
-    try
-      {
-        _socket.close ();
-      }
-    catch (Throwable t)
-      {
-        // We don't really care about errors at this point
-      }
+  public void shutdown() {
+    try {
+      _socket.close();
+    } catch (Throwable t) {
+      // We don't really care about errors at this point
+    }
   }
 
   /**
    * Returns an <code>InputStream</code> for the transport
-   *
-   * @throws IOException if an I/O error occurs creating the stream
-   *                     or the socket is not connected
+   * 
+   * @throws IOException
+   *           if an I/O error occurs creating the stream or the socket is not
+   *           connected
    */
-  public InputStream getInputStream ()
-    throws IOException
-  {
-    return _socket.getInputStream ();
+  public InputStream getInputStream() throws IOException {
+    return _socket.getInputStream();
   }
 
   /**
    * Returns an <code>OutputStream</code> for the transport
-   *
-   * @throws IOException if an I/O error occurs creating the stream
-   *                     or the socket is not connected
+   * 
+   * @throws IOException
+   *           if an I/O error occurs creating the stream or the socket is not
+   *           connected
    */
-  public OutputStream getOutputStream ()
-    throws IOException
-  {
-    return _socket.getOutputStream ();
+  public OutputStream getOutputStream() throws IOException {
+    return _socket.getOutputStream();
   }
 
-@Override
-public boolean isServer() {
-	return _server;
-}
+  @Override
+  public boolean isServer() {
+    return _server;
+  }
 
-@Override
-public String getName() {
-	return NAME;
-}
+  @Override
+  public String getName() {
+    return NAME;
+  }
 
-@Override
-public String getAddress() {
-	return _host + ":"  +_port;
-}
+  @Override
+  public String getAddress() {
+    return _host + ":" + _port;
+  }
 }

@@ -16,27 +16,26 @@ package gov.nasa.jpf.jdwp.event.filter;
  */
 public class ClassExcludeFilter extends ClassFilter {
 
-	/**
-	 * <p>
-	 * Creates Class Exclude Filter for the given restricted regular expression.
-	 * <br/>
-	 * Be aware that we're not talking about standard regular expressions.
-	 * </p>
-	 * 
-	 * @see ClassFilter
-	 * 
-	 * @param classPattern
-	 *            Disallowed class pattern. Matches are limited to exact matches
-	 *            of the given class pattern and matches of patterns that begin
-	 *            or end with '*'; for example, "*.Foo" or "java.*".
-	 */
-	public ClassExcludeFilter(String classPattern) {
-		super(ModKind.CLASS_EXCLUDE, classPattern);
-	}
+  /**
+   * <p>
+   * Creates Class Exclude Filter for the given restricted regular expression. <br/>
+   * Be aware that we're not talking about standard regular expressions.
+   * </p>
+   * 
+   * @see ClassFilter
+   * 
+   * @param classPattern
+   *          Disallowed class pattern. Matches are limited to exact matches of
+   *          the given class pattern and matches of patterns that begin or end
+   *          with '*'; for example, "*.Foo" or "java.*".
+   */
+  public ClassExcludeFilter(String classPattern) {
+    super(ModKind.CLASS_EXCLUDE, classPattern);
+  }
 
-	@Override
-	public boolean matches(String className) {
-		return !compare(className);
-	}
+  @Override
+  public boolean matches(String className) {
+    return !compare(className);
+  }
 
 }

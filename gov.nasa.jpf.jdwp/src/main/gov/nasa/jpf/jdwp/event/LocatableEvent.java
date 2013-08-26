@@ -12,41 +12,41 @@ import java.io.IOException;
 
 public abstract class LocatableEvent extends ThreadableEvent implements Locatable {
 
-	private Location location;
+  private Location location;
 
-	public LocatableEvent(EventKind eventKind, ThreadInfo threadInfo, Location location) {
-		super(eventKind, threadInfo);
-		
-		this.location = location;
-	}
+  public LocatableEvent(EventKind eventKind, ThreadInfo threadInfo, Location location) {
+    super(eventKind, threadInfo);
 
-	public Location getLocation() {
-		return location;
-	}
-	
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-		location.write(os);
-		writeLocatableSpecific(os);
-	}
-	
-	@Override
-	public boolean matches(ClassFilter classMatchFilter) {
-		String className = location.getInstruction().getMethodInfo().getClassName();
-		return classMatchFilter.matches(className);
-	}
+    this.location = location;
+  }
 
-	@Override
-	public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifier {
-		ClassInfo classInfo = location.getInstruction().getMethodInfo().getClassInfo();
-		return classOnlyFilter.matches(classInfo);
-	}
+  public Location getLocation() {
+    return location;
+  }
 
-	protected abstract void writeLocatableSpecific(DataOutputStream os)throws IOException;
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+    location.write(os);
+    writeLocatableSpecific(os);
+  }
 
-	@Override
-	public String toString() {
-		return super.toString() + ", location: " + location;
-	}
+  @Override
+  public boolean matches(ClassFilter classMatchFilter) {
+    String className = location.getInstruction().getMethodInfo().getClassName();
+    return classMatchFilter.matches(className);
+  }
+
+  @Override
+  public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifier {
+    ClassInfo classInfo = location.getInstruction().getMethodInfo().getClassInfo();
+    return classOnlyFilter.matches(classInfo);
+  }
+
+  protected abstract void writeLocatableSpecific(DataOutputStream os) throws IOException;
+
+  @Override
+  public String toString() {
+    return super.toString() + ", location: " + location;
+  }
 
 }
