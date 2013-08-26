@@ -218,6 +218,7 @@ public class Jdwp extends Thread {
 			}
 		}
 		_connection.initialize();
+		_connection.setDaemon(true);
 		_connection.start();
 
 		// Create processor
@@ -227,6 +228,7 @@ public class Jdwp extends Thread {
 				AccessController.doPrivileged(_packetProcessor);
 			}
 		}, "packet processor");
+		_ppThread.setDaemon(true);
 		_ppThread.start();
 	}
 

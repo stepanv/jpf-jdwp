@@ -51,6 +51,7 @@ public class SafeLock {
 		if (threadOwner != Thread.currentThread()) {
 			throw new IllegalStateException("Trying to unlock not owned lock. Last owner: " + threadOwner);
 		}
+		logger.trace("[{}] unlocking RUN LOCK", name);
 		threadOwner = null;
 		this.notify();
 	}
