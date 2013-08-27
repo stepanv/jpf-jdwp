@@ -12,8 +12,8 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.ThreadInfo.State;
 
 /**
- * This class implements the corresponding threadID common data type from the
- * JDWP Specification.
+ * This class implements the corresponding <code>threadID</code> common data
+ * type from the JDWP Specification.
  * 
  * <p>
  * It's important to understand that even if a thread is represented by

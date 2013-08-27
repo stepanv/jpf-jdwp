@@ -9,8 +9,8 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
 /**
- * This class implements the corresponding classLoaderID common data type from
- * the JDWP Specification.
+ * This class implements the corresponding <code>classLoaderID</code> common
+ * data type from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification</h2>
