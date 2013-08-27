@@ -23,9 +23,9 @@ public class FrameId extends Identifier<StackFrame> {
    * Frame ID constructor.
    * 
    * @param id
-   *            The numerical ID of this identifier.
+   *          The numerical ID of this identifier.
    * @param stackFrame
-   *            The {@link StackFrame} this identifier is created for.
+   *          The {@link StackFrame} this identifier is created for.
    */
   public FrameId(long id, StackFrame stackFrame) {
     super(id, stackFrame);

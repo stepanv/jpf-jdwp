@@ -26,12 +26,12 @@ import gov.nasa.jpf.vm.MethodInfo;
  */
 public class MethodId extends Identifier<MethodInfo> {
 
-	/**
-	 * Method ID constructor.
-	 * 
-	 * @param id
-	 *            The numerical ID of this identifier.
-	 */
+  /**
+   * Method ID constructor.
+   * 
+   * @param id
+   *          The numerical ID of this identifier.
+   */
   public MethodId(long globalMethodId) {
     super(0, MethodInfo.getMethodInfo((int) globalMethodId));
   }

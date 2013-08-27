@@ -7,8 +7,8 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.VM;
 
 /**
- * This class implements the corresponding <code>classObjectID</code> common data type from
- * the JDWP Specification.
+ * This class implements the corresponding <code>classObjectID</code> common
+ * data type from the JDWP Specification.
  * 
  * Class Object identifier representation.<br/>
  * Since every class object (e.g. SomeClass.class) is represented by a

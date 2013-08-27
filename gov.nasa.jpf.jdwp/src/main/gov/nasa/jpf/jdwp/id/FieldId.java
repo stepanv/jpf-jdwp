@@ -27,9 +27,9 @@ public class FieldId extends Identifier<FieldInfo> {
    * Field ID constructor.
    * 
    * @param id
-   *            The numerical ID of this identifier.
+   *          The numerical ID of this identifier.
    * @param fieldInfo
-   *            The {@link FieldInfo} this identifier is created for.
+   *          The {@link FieldInfo} this identifier is created for.
    */
   public FieldId(Long id, FieldInfo fieldInfo) {
     super(id, fieldInfo);

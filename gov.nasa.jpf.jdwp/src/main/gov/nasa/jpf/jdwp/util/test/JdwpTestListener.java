@@ -50,14 +50,14 @@ public class JdwpTestListener extends ListenerAdapter implements VMListener {
 
         int verifierRef = currentThread.getTopFrame().getThis();
 
-				StackFrame testedFrame = currentThread.getTopFrame().getPrevious();
-				String testClassName = TestJdwp.verifierTest.getClass().getName();
+        StackFrame testedFrame = currentThread.getTopFrame().getPrevious();
+        String testClassName = TestJdwp.verifierTest.getClass().getName();
 
-				while (!testClassName.equals(testedFrame.getMethodInfo().getClassName())) {
-					testedFrame = testedFrame.getPrevious();
-				}
+        while (!testClassName.equals(testedFrame.getMethodInfo().getClassName())) {
+          testedFrame = testedFrame.getPrevious();
+        }
 
-				int testRef = testedFrame.getThis();
+        int testRef = testedFrame.getThis();
         ElementInfo testEi = vm.getHeap().get(testRef);
 
         ClassInfo testCi = testEi.getClassInfo();

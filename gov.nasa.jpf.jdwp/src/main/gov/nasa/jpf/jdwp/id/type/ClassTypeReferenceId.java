@@ -18,14 +18,14 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public class ClassTypeReferenceId extends ReferenceTypeId {
 
-	/**
-	 * Class Type ID constructor.
-	 * 
-	 * @param id
-	 *            The numerical ID of this identifier.
-	 * @param classInfo
-	 *            The {@link ClassInfo} that stands for the desired class type.
-	 */
+  /**
+   * Class Type ID constructor.
+   * 
+   * @param id
+   *          The numerical ID of this identifier.
+   * @param classInfo
+   *          The {@link ClassInfo} that stands for the desired class type.
+   */
   public ClassTypeReferenceId(long id, ClassInfo classInfo) {
     super(TypeTag.CLASS, id, classInfo);
   }

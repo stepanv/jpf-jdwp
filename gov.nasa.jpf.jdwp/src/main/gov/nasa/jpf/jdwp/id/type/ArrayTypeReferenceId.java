@@ -17,14 +17,14 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public class ArrayTypeReferenceId extends ReferenceTypeId {
 
-	/**
-	 * Array Type ID constructor.
-	 * 
-	 * @param id
-	 *            The numerical ID of this identifier.
-	 * @param classInfo
-	 *            The {@link ClassInfo} that stands for the desired array type.
-	 */
+  /**
+   * Array Type ID constructor.
+   * 
+   * @param id
+   *          The numerical ID of this identifier.
+   * @param classInfo
+   *          The {@link ClassInfo} that stands for the desired array type.
+   */
   public ArrayTypeReferenceId(long id, ClassInfo classInfo) {
     super(TypeTag.ARRAY, id, classInfo);
   }
