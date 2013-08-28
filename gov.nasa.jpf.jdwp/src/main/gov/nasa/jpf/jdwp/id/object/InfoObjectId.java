@@ -26,59 +26,59 @@ import java.lang.ref.WeakReference;
  * @author stepan
  * 
  * @param <T>
- *            the <tt>InfoObject</tt> that is bound to this identifier (in an
- *            addition to the {@link ElementInfo} instance)
+ *          the <tt>InfoObject</tt> that is bound to this identifier (in an
+ *          addition to the {@link ElementInfo} instance)
  */
 public abstract class InfoObjectId<T> extends ObjectId {
 
-	/**
-	 * Constructs Info Object ID instance.
-	 * 
-	 * @param tag
-	 *            The Tag
-	 * @param id
-	 *            The identifier
-	 * @param object
-	 *            The instance in SuT this Object ID stands for
-	 * @param infoObject
-	 *            Info Object or null if lazy load is desired
-	 */
-	public InfoObjectId(Tag tag, long id, ElementInfo object, T infoObject) {
-		super(tag, id, object);
+  /**
+   * Constructs Info Object ID instance.
+   * 
+   * @param tag
+   *          The Tag
+   * @param id
+   *          The identifier
+   * @param object
+   *          The instance in SuT this Object ID stands for
+   * @param infoObject
+   *          Info Object or null if lazy load is desired
+   */
+  public InfoObjectId(Tag tag, long id, ElementInfo object, T infoObject) {
+    super(tag, id, object);
 
-		infoObjectReference = new WeakReference<T>(infoObject);
-	}
+    infoObjectReference = new WeakReference<T>(infoObject);
+  }
 
-	protected WeakReference<T> infoObjectReference;
+  protected WeakReference<T> infoObjectReference;
 
-	/**
-	 * Gets the <tt>InfoObject</tt> that is bound to this identifier.<br/>
-	 * Tries to lazy load the object if it is null.
-	 * 
-	 * @return <tt>InfoObject</tt> instance
-	 * @throws InvalidObject
-	 *             If the <tt>InfoObject</tt> doesn't exist
-	 */
-	public T getInfoObject() throws InvalidObject {
-		T infoObject = infoObjectReference.get();
-		if (infoObject == null) {
-			infoObject = resolveInfoObject();
-			if (infoObject != null) {
-				infoObjectReference = new WeakReference<T>(infoObject);
-			} else {
-				throw new InvalidObject(this);
-			}
-		}
-		return infoObject;
-	}
+  /**
+   * Gets the <tt>InfoObject</tt> that is bound to this identifier.<br/>
+   * Tries to lazy load the object if it is null.
+   * 
+   * @return <tt>InfoObject</tt> instance
+   * @throws InvalidObject
+   *           If the <tt>InfoObject</tt> doesn't exist
+   */
+  public T getInfoObject() throws InvalidObject {
+    T infoObject = infoObjectReference.get();
+    if (infoObject == null) {
+      infoObject = resolveInfoObject();
+      if (infoObject != null) {
+        infoObjectReference = new WeakReference<T>(infoObject);
+      } else {
+        throw new InvalidObject(this);
+      }
+    }
+    return infoObject;
+  }
 
-	/**
-	 * The way how to resolve the info object by the subclass for use in
-	 * {@link InfoObjectId#getInfoObject()} in case lazy load is performed.
-	 * 
-	 * @return Info Object instance
-	 * @throws InvalidObject
-	 */
-	abstract protected T resolveInfoObject() throws InvalidObject;
+  /**
+   * The way how to resolve the info object by the subclass for use in
+   * {@link InfoObjectId#getInfoObject()} in case lazy load is performed.
+   * 
+   * @return Info Object instance
+   * @throws InvalidObject
+   */
+  abstract protected T resolveInfoObject() throws InvalidObject;
 
 }

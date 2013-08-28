@@ -17,13 +17,13 @@ import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
  */
 public class InvalidReferenceType extends InvalidIdentifier {
 
-	/**
+  /**
 	 * 
 	 */
-	private static final long serialVersionUID = 5445794498004684701L;
+  private static final long serialVersionUID = 5445794498004684701L;
 
-	public InvalidReferenceType(ReferenceTypeId referenceTypeId) {
-		super(ErrorType.INVALID_CLASS, referenceTypeId);
-	}
+  public InvalidReferenceType(ReferenceTypeId referenceTypeId) {
+    super(ErrorType.INVALID_CLASS, referenceTypeId);
+  }
 
 }

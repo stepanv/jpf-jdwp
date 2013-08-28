@@ -20,18 +20,18 @@ import java.io.IOException;
  */
 public class VmStartEvent extends ThreadableEvent implements Threadable {
 
-	/**
-	 * Creates VM Start event.
-	 * 
-	 * @param currentThread
-	 *            The initial thread of the VM.
-	 */
-	public VmStartEvent(ThreadInfo currentThread) {
-		super(EventKind.VM_START, currentThread);
-	}
+  /**
+   * Creates VM Start event.
+   * 
+   * @param currentThread
+   *          The initial thread of the VM.
+   */
+  public VmStartEvent(ThreadInfo currentThread) {
+    super(EventKind.VM_START, currentThread);
+  }
 
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

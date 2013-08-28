@@ -17,80 +17,80 @@ import org.slf4j.LoggerFactory;
 
 public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte, ThreadGroupReferenceCommand> {
 
-	/**
-	 * <p>
-	 * <h2>JDWP Specification</h2>
-	 * Returns the thread group name.
-	 * </p>
-	 */
-	NAME(1) {
-		@Override
-		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-				throws IOException, JdwpError {
-			int nameref = threadGroupElementInfo.getReferenceField("name");
-			ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
-			JdwpString.write(name.asString(), os);
-		}
-	},
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Returns the thread group name.
+   * </p>
+   */
+  NAME(1) {
+    @Override
+    public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      int nameref = threadGroupElementInfo.getReferenceField("name");
+      ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
+      JdwpString.write(name.asString(), os);
+    }
+  },
 
-	/**
-	 * <p>
-	 * <h2>JDWP Specification</h2>
-	 * Returns the thread group, if any, which contains a given thread group.
-	 * </p>
-	 */
-	PARENT(2) {
-		@Override
-		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-				throws IOException, JdwpError {
-			int parentref = threadGroupElementInfo.getReferenceField("parent");
-			ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
-			logger.debug("Thread group parent: {}", parent);
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Returns the thread group, if any, which contains a given thread group.
+   * </p>
+   */
+  PARENT(2) {
+    @Override
+    public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      int parentref = threadGroupElementInfo.getReferenceField("parent");
+      ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
+      logger.debug("Thread group parent: {}", parent);
 
-			if (parent == null) {
-				NullObjectId.instantWrite(os);
-			} else {
-				ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
-				parentGroup.write(os);
-			}
-		}
-	},
-	CHILDREN(3) {
-		@Override
-		public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-				throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+      if (parent == null) {
+        NullObjectId.instantWrite(os);
+      } else {
+        ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
+        parentGroup.write(os);
+      }
+    }
+  },
+  CHILDREN(3) {
+    @Override
+    public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
-		}
-	};
-	
-	final static Logger logger = LoggerFactory.getLogger(ThreadGroupReferenceCommand.class);
-	
-	private byte commandId;
+    }
+  };
 
-	private ThreadGroupReferenceCommand(int commandId) {
-		this.commandId = (byte) commandId;
-	}
+  final static Logger logger = LoggerFactory.getLogger(ThreadGroupReferenceCommand.class);
 
-	private static ReverseEnumMap<Byte, ThreadGroupReferenceCommand> map = new ReverseEnumMap<Byte, ThreadGroupReferenceCommand>(
-			ThreadGroupReferenceCommand.class);
+  private byte commandId;
 
-	@Override
-	public Byte identifier() {
-		return commandId;
-	}
+  private ThreadGroupReferenceCommand(int commandId) {
+    this.commandId = (byte) commandId;
+  }
 
-	@Override
-	public ThreadGroupReferenceCommand convert(Byte val) throws JdwpError {
-		return map.get(val);
-	}
+  private static ReverseEnumMap<Byte, ThreadGroupReferenceCommand> map = new ReverseEnumMap<Byte, ThreadGroupReferenceCommand>(
+      ThreadGroupReferenceCommand.class);
 
-	@Override
-	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
-		execute(oid.get(), bytes, os, contextProvider);
-	}
+  @Override
+  public Byte identifier() {
+    return commandId;
+  }
 
-	public abstract void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-			throws IOException, JdwpError;
+  @Override
+  public ThreadGroupReferenceCommand convert(Byte val) throws JdwpError {
+    return map.get(val);
+  }
+
+  @Override
+  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    ObjectId oid = contextProvider.getObjectManager().readObjectId(bytes);
+    execute(oid.get(), bytes, os, contextProvider);
+  }
+
+  public abstract void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os,
+                               CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

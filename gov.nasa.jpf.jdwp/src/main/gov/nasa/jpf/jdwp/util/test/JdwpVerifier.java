@@ -30,89 +30,90 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public abstract class JdwpVerifier {
-	
-	final static Logger logger = LoggerFactory.getLogger(JdwpVerifier.class);
 
-	public static final String VERIFY_METHOD_NAME;
+  final static Logger logger = LoggerFactory.getLogger(JdwpVerifier.class);
 
-	static {
-		try {
-			// this is how we defend against method "verify" rename
-			logger.trace("Methods found: {}", (Object)JdwpVerifier.class.getMethods());
-			VERIFY_METHOD_NAME = JdwpVerifier.class.getDeclaredMethod("verify", Object[].class).getName();
-		} catch (SecurityException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  public static final String VERIFY_METHOD_NAME;
 
-	protected ByteArrayOutputStream dataOutputBytes;
-	protected DataOutputStream dataOutputStream;
-	protected CommandContextProvider contextProvider;
-	protected ByteBuffer bytes;
+  static {
+    try {
+      // this is how we defend against method "verify" rename
+      logger.trace("Methods found: {}", (Object) JdwpVerifier.class.getMethods());
+      VERIFY_METHOD_NAME = JdwpVerifier.class.getDeclaredMethod("verify", Object[].class).getName();
+    } catch (SecurityException e) {
+      throw new RuntimeException(e);
+    } catch (NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	/**
-	 * This method implements the JDWP verification which is run outside of SuT.
-	 * (That means by the main thread of JPF.)
-	 * @param contextProvider 
-	 * @param dataOutputStream 
-	 * @param dataOutputBytes 
-	 * 
-	 * @throws Throwable
-	 */
-	abstract protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable;
+  protected ByteArrayOutputStream dataOutputBytes;
+  protected DataOutputStream dataOutputStream;
+  protected CommandContextProvider contextProvider;
+  protected ByteBuffer bytes;
 
-	/**
-	 * Call this method from SuT to trigger synchronous call of this method
-	 * outside of SuT. It sounds tricky but this is how it is.
-	 */
-	public void verify(Object... passedObjects) {
-		if (!TestJPF.isJPFRun()) {
-			// Now, we're outside of SuT - executed from the listener
+  /**
+   * This method implements the JDWP verification which is run outside of SuT.
+   * (That means by the main thread of JPF.)
+   * 
+   * @param contextProvider
+   * @param dataOutputStream
+   * @param dataOutputBytes
+   * 
+   * @throws Throwable
+   */
+  abstract protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable;
 
-			try {
-				init();
-				verifyOutsideOfSuT(passedObjects);
-			} catch (Throwable e) {
-				throw new RuntimeException(e);
-			} finally {
-				clear();
-			}
-		} else {
-			// this is just notification in SuT - this is how we get into
-			// methodExecuted notification so that we can execute this again
-			// outside of SuT
-		}
-	}
-	
-	protected void init() {
-		dataOutputBytes = new ByteArrayOutputStream(0);
-		dataOutputStream = new DataOutputStream(dataOutputBytes);
-		bytes = ByteBuffer.allocate(200); // This "might" be enough 
-		contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
-	}
-	
-	protected void clear() {
-		try {
-			dataOutputBytes.close(); // has no effect
-			dataOutputStream.close();
-		} catch (IOException e) {
-			// we don't care let's try to go further
-		}
-	}
-	
-	protected void reset() {
-		try {
-			dataOutputBytes.close(); // has no effect
-			dataOutputStream.close();
-		} catch (IOException e) {
-			// we don't care let's try to go further
-		}
-		
-		dataOutputBytes = new ByteArrayOutputStream(0);
-		dataOutputStream = new DataOutputStream(dataOutputBytes);
-		bytes.clear();
-	}
+  /**
+   * Call this method from SuT to trigger synchronous call of this method
+   * outside of SuT. It sounds tricky but this is how it is.
+   */
+  public void verify(Object... passedObjects) {
+    if (!TestJPF.isJPFRun()) {
+      // Now, we're outside of SuT - executed from the listener
+
+      try {
+        init();
+        verifyOutsideOfSuT(passedObjects);
+      } catch (Throwable e) {
+        throw new RuntimeException(e);
+      } finally {
+        clear();
+      }
+    } else {
+      // this is just notification in SuT - this is how we get into
+      // methodExecuted notification so that we can execute this again
+      // outside of SuT
+    }
+  }
+
+  protected void init() {
+    dataOutputBytes = new ByteArrayOutputStream(0);
+    dataOutputStream = new DataOutputStream(dataOutputBytes);
+    bytes = ByteBuffer.allocate(200); // This "might" be enough
+    contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
+  }
+
+  protected void clear() {
+    try {
+      dataOutputBytes.close(); // has no effect
+      dataOutputStream.close();
+    } catch (IOException e) {
+      // we don't care let's try to go further
+    }
+  }
+
+  protected void reset() {
+    try {
+      dataOutputBytes.close(); // has no effect
+      dataOutputStream.close();
+    } catch (IOException e) {
+      // we don't care let's try to go further
+    }
+
+    dataOutputBytes = new ByteArrayOutputStream(0);
+    dataOutputStream = new DataOutputStream(dataOutputBytes);
+    bytes.clear();
+  }
 
 }

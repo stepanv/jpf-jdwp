@@ -11,28 +11,28 @@ import java.io.IOException;
 
 public class MonitorBase extends LocatableEvent {
 
-	private ElementInfo taggedObject;
+  private ElementInfo taggedObject;
 
-	public MonitorBase(EventKind eventKind, ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
-		super(eventKind, threadInfo, location);
-		this.taggedObject = taggedObject;
-	}
+  public MonitorBase(EventKind eventKind, ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
+    super(eventKind, threadInfo, location);
+    this.taggedObject = taggedObject;
+  }
 
-	/**
-	 * Overrides threadable specific write since we have to write tagged Object
-	 * Id before it's actual location.
-	 */
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-		ObjectId taggedObjectId = JdwpObjectManager.getInstance().getObjectId(taggedObject);
-		taggedObjectId.write(os);
-		getLocation().write(os);
+  /**
+   * Overrides threadable specific write since we have to write tagged Object Id
+   * before it's actual location.
+   */
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+    ObjectId taggedObjectId = JdwpObjectManager.getInstance().getObjectId(taggedObject);
+    taggedObjectId.write(os);
+    getLocation().write(os);
 
-	}
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		//empty
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+    // empty
+  }
 
 }

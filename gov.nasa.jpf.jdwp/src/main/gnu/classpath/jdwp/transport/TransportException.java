@@ -36,52 +36,48 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 /**
- * A transport configury or initialization exception thrown by
- * JDWP transports. This class is a generic exception class
- * that the different transport layers use to report transport-specific
- * exceptions that may occur (which could be very different from
- * one transport to the next.).
- *
- * @author Keith Seitz  <keiths@redhat.com>
+ * A transport configury or initialization exception thrown by JDWP transports.
+ * This class is a generic exception class that the different transport layers
+ * use to report transport-specific exceptions that may occur (which could be
+ * very different from one transport to the next.).
+ * 
+ * @author Keith Seitz <keiths@redhat.com>
  */
-public class TransportException
-  extends Exception
-{
+public class TransportException extends Exception {
   /**
-   * Constructs a <code>TransportException</code> with the
-   * given message
-   *
-   * @param message  a message describing the exception
+   * Constructs a <code>TransportException</code> with the given message
+   * 
+   * @param message
+   *          a message describing the exception
    */
-  public TransportException (String message)
-  {
-    super (message);
+  public TransportException(String message) {
+    super(message);
   }
 
   /**
-   * Constructs a <code>TransportException</code> with the
-   * given <code>Throwable</code> root cause
-   *
-   * @param t  the cause of the exception
+   * Constructs a <code>TransportException</code> with the given
+   * <code>Throwable</code> root cause
+   * 
+   * @param t
+   *          the cause of the exception
    */
-  public TransportException (Throwable t)
-  {
-    super (t);
+  public TransportException(Throwable t) {
+    super(t);
   }
-  
+
   /**
-   * Constructs a <code>TransportException</code> with the
-   * given <code>Throwable</code> root cause and message
-   *
-   * @param message the message
-   * @param t  the cause of the exception
+   * Constructs a <code>TransportException</code> with the given
+   * <code>Throwable</code> root cause and message
+   * 
+   * @param message
+   *          the message
+   * @param t
+   *          the cause of the exception
    */
-  public TransportException (String message, Throwable t)
-  {
-    super (message, t);
+  public TransportException(String message, Throwable t) {
+    super(message, t);
   }
 }

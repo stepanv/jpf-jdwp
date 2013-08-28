@@ -6,31 +6,31 @@ DONE -> Value.write() and Value.writeUntagged()
 IN PROGRESS 2. Use objectIdManager as late as possible (in the whole Event facility for instance) - it will speed up everything
 IN PROGRESS  -> we don't need objectId for an object we're not sure we will send across JDWP (like when creating FieldModificationEvent)
   
-3. Change sysouts to standard logging
+DONE 3. Change sysouts to standard logging
 4. Complete the possible errors - implement the rest of the Exceptions
 IN PROGRESS 5. Doplnovat javadoc
-6. Napsat testy - unit i integracni
+IN PROGRESS 6. Napsat testy - unit i integracni
 7. Vyhodit enumy do solo trid - uz jsou moc rozrostly
 8. Mozna predelat enumy na nejaky standartnejsi command pattern (skonzultovat s profikama)
 9. U stepovani udelat podrobny rozbor (javadoc), jestli je implementace dostacuji a korektni (napriklad chovani u F5 vs F6 v Eclipse atd...)
 IN PROGRESS 10. Odbouravat TODOs
 11. Solve ObjectId#get() == null everywhere !!!
-12. With one thread processing all the requests, the VM might become unresponsive if it gets stuck in a command (it's not even possible to call virtualmachinecommand#exit)
+DONE 12. With one thread processing all the requests, the VM might become unresponsive if it gets stuck in a command (it's not even possible to call virtualmachinecommand#exit)
 13. Need to finally decide whether nulls are allowed for Identifier instances - for ObjectIds we always get NullObjectId but this doesn't work for any Identifier (like in ExceptionOnlyFilter (see TODO there) for ReferenceTypeId) - it works for instance in FieldModificationEvent with objectBeingModified which as ObjectId is NullObjectId if it is for statics.
 
 14. Nektere event requesty nejsou vubec v mape - napriklad METHOD_EXIT_WITH_RETURN_VALUE
 
 
 x.1 Nektere commandy vyzaduji zastavenou VM - *withGenerics - implementovat
-x.2 Nepouzivat Fields - v interface by melo byt ElementInfo a field index (namisto Fields)
+DONE x.2 Nepouzivat Fields - v interface by melo byt ElementInfo a field index (namisto Fields)
 x.4 dodelat popframes
 x.3 Mozna pouzivat JPF Logger
-x.4 Spousteni jdwp pres jpf propertu
+DONE x.4 Spousteni jdwp pres jpf propertu
 x.5 NullObjectId mit v mape - nepouzivat null tam kde je ObjectId
-x.6 use getModifiable - pro ElementInfo i pro StackFrame
-x.7 u modifikace - vyresit paralelismus (synchronizace)
+DONE x.6 use getModifiable - pro ElementInfo i pro StackFrame
+DONE x.7 u modifikace - vyresit paralelismus (synchronizace)
 
-x.2.question Co s StackFrame - kdyz tam neco menim - narozdil od ElementInfo nemam modifiable instance - StackFrame.checkIsModifiable() metoda se nikde nepouziva - je to implementovany v JPF?
+DONE x.2.question Co s StackFrame - kdyz tam neco menim - narozdil od ElementInfo nemam modifiable instance - StackFrame.checkIsModifiable() metoda se nikde nepouziva - je to implementovany v JPF?
 
 15. Cleanup exception structure - use the same name convention everywhere
 

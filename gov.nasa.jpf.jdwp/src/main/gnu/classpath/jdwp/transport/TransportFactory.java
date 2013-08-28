@@ -36,80 +36,68 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import java.util.HashMap;
 
 /**
- * A factory class that constructs transports for use by
- * the JDWP back-end.
- *
- * @author Keith Seitz  <keiths@redhat.com>
+ * A factory class that constructs transports for use by the JDWP back-end.
+ * 
+ * @author Keith Seitz <keiths@redhat.com>
  */
-public class TransportFactory
-{
+public class TransportFactory {
   // Keyword in configspec that specifies transport method
   private static final String _TRANSPORT_PROPERTY = "transport";
 
   // A single transport method mapping
-  private static class TransportMethod
-  {
+  private static class TransportMethod {
     String name;
     Class clazz;
-    public TransportMethod (String name, Class clazz)
-    {
+
+    public TransportMethod(String name, Class clazz) {
       this.name = name;
       this.clazz = clazz;
     }
   }
 
   // List of all supported transport methods
-  private static TransportMethod[] _transportMethods = new TransportMethod[]
-  {
-    new TransportMethod (SocketTransport.NAME, SocketTransport.class)
-    //new TransportMethod (ShmemTransport.NAME, ShmemTransport.class)
+  private static TransportMethod[] _transportMethods = new TransportMethod[] { new TransportMethod(SocketTransport.NAME,
+      SocketTransport.class)
+  // new TransportMethod (ShmemTransport.NAME, ShmemTransport.class)
   };
 
   /**
    * Get a transport configured as specified in the properties
-   *
-   * @param   properties  a <code>HashMap</code> specifying the JDWP
-   *                      configuration properties
-   * @returns             the created and configured transport
-   * @throws  TransportException for invalid configurations
+   * 
+   * @param properties
+   *          a <code>HashMap</code> specifying the JDWP configuration
+   *          properties
+   * @returns the created and configured transport
+   * @throws TransportException
+   *           for invalid configurations
    */
-  public static ITransport newInstance (HashMap properties)
-    throws TransportException
-  {
+  public static ITransport newInstance(HashMap properties) throws TransportException {
     String name = null;
     if (properties != null)
-      name = (String) properties.get (_TRANSPORT_PROPERTY);
+      name = (String) properties.get(_TRANSPORT_PROPERTY);
     if (name == null)
-      throw new TransportException ("no transport specified");
+      throw new TransportException("no transport specified");
 
-    for (int i = 0; i < _transportMethods.length; ++i)
-      {
-        if (_transportMethods[i].name.equals (name))
-          {
-            try
-              {
-                ITransport t;
-                t = (ITransport) _transportMethods[i].clazz.newInstance ();
-                t.configure (properties);
-                return t;
-              }
-            catch (TransportException te)
-              {
-                throw te;
-              }
-            catch (Exception e)
-              {
-                throw new TransportException (e);
-              }
-          }
+    for (int i = 0; i < _transportMethods.length; ++i) {
+      if (_transportMethods[i].name.equals(name)) {
+        try {
+          ITransport t;
+          t = (ITransport) _transportMethods[i].clazz.newInstance();
+          t.configure(properties);
+          return t;
+        } catch (TransportException te) {
+          throw te;
+        } catch (Exception e) {
+          throw new TransportException(e);
+        }
       }
+    }
 
-    throw new TransportException ("transport \"" + name + "\" not found");
+    throw new TransportException("transport \"" + name + "\" not found");
   }
 }

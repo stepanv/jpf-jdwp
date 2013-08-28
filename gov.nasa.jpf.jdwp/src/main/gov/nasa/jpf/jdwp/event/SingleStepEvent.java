@@ -18,20 +18,20 @@ import java.io.IOException;
  */
 public class SingleStepEvent extends LocatableEvent implements LocationOnlyFilterable, StepFilterable {
 
-	/**
-	 * Creates Single Step event.
-	 * 
-	 * @param threadInfo
-	 *            Stepped thread
-	 * @param location
-	 *            Location stepped to
-	 */
-	public SingleStepEvent(ThreadInfo threadInfo, Location location) {
-		super(EventKind.SINGLE_STEP, threadInfo, location);
-	}
+  /**
+   * Creates Single Step event.
+   * 
+   * @param threadInfo
+   *          Stepped thread
+   * @param location
+   *          Location stepped to
+   */
+  public SingleStepEvent(ThreadInfo threadInfo, Location location) {
+    super(EventKind.SINGLE_STEP, threadInfo, location);
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

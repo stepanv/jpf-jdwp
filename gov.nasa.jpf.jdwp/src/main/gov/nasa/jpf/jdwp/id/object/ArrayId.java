@@ -6,8 +6,8 @@ import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 
 /**
- * This class implements the corresponding arrayID common data type from the
- * JDWP Specification.
+ * This class implements the corresponding <code>arrayID</code> common data type
+ * from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification</h2>
@@ -19,18 +19,18 @@ import gov.nasa.jpf.vm.ElementInfo;
  */
 public class ArrayId extends ObjectId {
 
-	/**
-	 * Constructs the array ID.
-	 * 
-	 * @param id
-	 *            The ID known by {@link ObjectIdManager}
-	 * @param object
-	 *            The {@link ElementInfo} instance that needs JDWP ID
-	 *            representation.
-	 */
-	public ArrayId(long id, ElementInfo object) {
-		super(Tag.ARRAY, id, object);
-		new ArrayList<Object>();
-	}
+  /**
+   * Constructs the array ID.
+   * 
+   * @param id
+   *          The ID known by {@link ObjectIdManager}
+   * @param object
+   *          The {@link ElementInfo} instance that needs JDWP ID
+   *          representation.
+   */
+  public ArrayId(long id, ElementInfo object) {
+    super(Tag.ARRAY, id, object);
+    new ArrayList<Object>();
+  }
 
 }

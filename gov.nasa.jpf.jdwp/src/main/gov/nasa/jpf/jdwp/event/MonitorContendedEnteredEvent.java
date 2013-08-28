@@ -17,18 +17,18 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class MonitorContendedEnteredEvent extends MonitorBase {
 
-	/**
-	 * Creates Monitor Contended Entered event.
-	 * 
-	 * @param threadInfo
-	 *            Thread which entered monitor
-	 * @param taggedObject
-	 *            Monitor object reference
-	 * @param location
-	 *            location of contended monitor enter
-	 */
-	public MonitorContendedEnteredEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
-		super(EventKind.MONITOR_CONTENDED_ENTERED, threadInfo, taggedObject, location);
-	}
+  /**
+   * Creates Monitor Contended Entered event.
+   * 
+   * @param threadInfo
+   *          Thread which entered monitor
+   * @param taggedObject
+   *          Monitor object reference
+   * @param location
+   *          location of contended monitor enter
+   */
+  public MonitorContendedEnteredEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
+    super(EventKind.MONITOR_CONTENDED_ENTERED, threadInfo, taggedObject, location);
+  }
 
 }

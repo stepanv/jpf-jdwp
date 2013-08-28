@@ -23,33 +23,33 @@ import gov.nasa.jpf.vm.FieldInfo;
  */
 public class FieldOnlyFilter extends Filter<FieldOnlyFilterable> {
 
-	ReferenceTypeId declaring;
-	FieldId fieldId;
+  ReferenceTypeId declaring;
+  FieldId fieldId;
 
-	/**
-	 * Creates Field Only filter.
-	 * 
-	 * @param declaring
-	 *            Type in which field is declared.
-	 * @param fieldId
-	 *            Required field
-	 */
-	public FieldOnlyFilter(ReferenceTypeId declaring, FieldId fieldId) {
-		super(ModKind.FIELD_ONLY, FieldOnlyFilterable.class);
-		this.declaring = declaring;
-		this.fieldId = fieldId;
-	}
+  /**
+   * Creates Field Only filter.
+   * 
+   * @param declaring
+   *          Type in which field is declared.
+   * @param fieldId
+   *          Required field
+   */
+  public FieldOnlyFilter(ReferenceTypeId declaring, FieldId fieldId) {
+    super(ModKind.FIELD_ONLY, FieldOnlyFilterable.class);
+    this.declaring = declaring;
+    this.fieldId = fieldId;
+  }
 
-	@Override
-	public boolean matches(FieldOnlyFilterable event) {
-		try {
-			FieldInfo fieldInfo = fieldId.get();
-			return fieldInfo == event.getFieldInfo();
-		} catch (InvalidIdentifier e) {
-			// if fieldId is not resolvable, this filter is not effective
-			// anymore
-			return false;
-		}
-	}
+  @Override
+  public boolean matches(FieldOnlyFilterable event) {
+    try {
+      FieldInfo fieldInfo = fieldId.get();
+      return fieldInfo == event.getFieldInfo();
+    } catch (InvalidIdentifier e) {
+      // if fieldId is not resolvable, this filter is not effective
+      // anymore
+      return false;
+    }
+  }
 
 }

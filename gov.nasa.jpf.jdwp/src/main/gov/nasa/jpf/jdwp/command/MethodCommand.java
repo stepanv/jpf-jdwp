@@ -15,96 +15,101 @@ import java.nio.ByteBuffer;
 
 public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodCommand> {
 
-	/**
-	 * <p>
-	 * <h2>JDWP Specification</h2>
-	 * Returns line number information for the method, if present. The line
-	 * table maps source line numbers to the initial code index of the line. The
-	 * line table is ordered by code index (from lowest to highest). The line
-	 * number information is constant unless a new class definition is installed
-	 * using {@link VirtualMachineCommand#REDEFINECLASSES}.
-	 * </p>
-	 */
-	LINETABLE(1) {
-		@Override
-		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			LineTable lineTable = new LineTable(methodInfo);
-			lineTable.write(os);
-		}
-	},
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Returns line number information for the method, if present. The line table
+   * maps source line numbers to the initial code index of the line. The line
+   * table is ordered by code index (from lowest to highest). The line number
+   * information is constant unless a new class definition is installed using
+   * {@link VirtualMachineCommand#REDEFINECLASSES}.
+   * </p>
+   */
+  LINETABLE(1) {
+    @Override
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      LineTable lineTable = new LineTable(methodInfo);
+      lineTable.write(os);
+    }
+  },
 
-	/**
-	 * Returns variable information for the method. The variable table includes
-	 * arguments and locals declared within the method. For instance methods,
-	 * the "this" reference is included in the table. Also, synthetic variables
-	 * may be present.
-	 */
-	VARIABLETABLE(2) {
-		@Override
-		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			VariableTable variableTable = new VariableTable(methodInfo);
-			variableTable.write(os);
-		}
-	},
-	BYTECODES(3) {
-		@Override
-		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+  /**
+   * Returns variable information for the method. The variable table includes
+   * arguments and locals declared within the method. For instance methods, the
+   * "this" reference is included in the table. Also, synthetic variables may be
+   * present.
+   */
+  VARIABLETABLE(2) {
+    @Override
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      VariableTable variableTable = new VariableTable(methodInfo);
+      variableTable.write(os);
+    }
+  },
+  BYTECODES(3) {
+    @Override
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
-		}
-	},
-	ISOBSOLETE(4) {
-		@Override
-		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+    }
+  },
+  ISOBSOLETE(4) {
+    @Override
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
 
-		}
-	},
+    }
+  },
 
-	/**
-	 * Returns variable information for the method, including generic signatures
-	 * for the variables. The variable table includes arguments and locals
-	 * declared within the method. For instance methods, the "this" reference is
-	 * included in the table. Also, synthetic variables may be present. Generic
-	 * signatures are described in the signature attribute section in the Java
-	 * Virtual Machine Specification, 3rd Edition.
-	 * 
-	 * @since JDWP version 1.5
-	 */
-	VARIABLETABLEWITHGENERIC(5) {
-		@Override
-		public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-			VariableTable variableTable = new VariableTable(methodInfo);
-			variableTable.writeGeneric(os);
+  /**
+   * Returns variable information for the method, including generic signatures
+   * for the variables. The variable table includes arguments and locals
+   * declared within the method. For instance methods, the "this" reference is
+   * included in the table. Also, synthetic variables may be present. Generic
+   * signatures are described in the signature attribute section in the Java
+   * Virtual Machine Specification, 3rd Edition.
+   * 
+   * @since JDWP version 1.5
+   */
+  VARIABLETABLEWITHGENERIC(5) {
+    @Override
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+        throws IOException, JdwpError {
+      VariableTable variableTable = new VariableTable(methodInfo);
+      variableTable.writeGeneric(os);
 
-		}
-	};
-	private byte commandId;
+    }
+  };
+  private byte commandId;
 
-	private MethodCommand(int commandId) {
-		this.commandId = (byte) commandId;
-	}
+  private MethodCommand(int commandId) {
+    this.commandId = (byte) commandId;
+  }
 
-	private static ReverseEnumMap<Byte, MethodCommand> map = new ReverseEnumMap<Byte, MethodCommand>(MethodCommand.class);
+  private static ReverseEnumMap<Byte, MethodCommand> map = new ReverseEnumMap<Byte, MethodCommand>(MethodCommand.class);
 
-	@Override
-	public Byte identifier() {
-		return commandId;
-	}
+  @Override
+  public Byte identifier() {
+    return commandId;
+  }
 
-	@Override
-	public MethodCommand convert(Byte val) throws JdwpError {
-		return map.get(val);
-	}
+  @Override
+  public MethodCommand convert(Byte val) throws JdwpError {
+    return map.get(val);
+  }
 
-	public abstract void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException,
-			JdwpError;
+  public abstract void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
+      throws IOException, JdwpError;
 
-	@Override
-	public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-		ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-		ClassInfo clazz = refId.get();
+  @Override
+  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+    ClassInfo clazz = refId.get();
 
-		execute(VirtualMachineHelper.getClassMethod(clazz, bytes.getLong()), bytes, os, contextProvider);
-	}
+    execute(VirtualMachineHelper.getClassMethod(clazz, bytes.getLong()), bytes, os, contextProvider);
+  }
 }

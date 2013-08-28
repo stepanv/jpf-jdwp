@@ -24,20 +24,20 @@ import java.io.IOException;
  */
 public class MethodEntryEvent extends LocatableEvent {
 
-	/**
-	 * Creates Method Entry event.
-	 * 
-	 * @param threadInfo
-	 *            thread which entered method
-	 * @param location
-	 *            The initial executable location in the method.
-	 */
-	public MethodEntryEvent(ThreadInfo threadInfo, Location location) {
-		super(EventKind.METHOD_ENTRY, threadInfo, location);
-	}
+  /**
+   * Creates Method Entry event.
+   * 
+   * @param threadInfo
+   *          thread which entered method
+   * @param location
+   *          The initial executable location in the method.
+   */
+  public MethodEntryEvent(ThreadInfo threadInfo, Location location) {
+    super(EventKind.METHOD_ENTRY, threadInfo, location);
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

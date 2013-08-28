@@ -31,38 +31,38 @@ import gov.nasa.jpf.jdwp.exception.InvalidCount;
  */
 public class CountFilter extends Filter<Event> {
 
-	private int count;
-	private boolean expired;
+  private int count;
+  private boolean expired;
 
-	/**
-	 * Creates Count Filter for the given parameter.
-	 * 
-	 * @param count
-	 *            The event is not reported for <code>count - 1</code> times.
-	 *            Use 1 to report it immediately.
-	 * @throws InvalidCount
-	 *             In case the count is invalid (i.e. zero or less).
-	 */
-	public CountFilter(int count) throws InvalidCount {
-		super(ModKind.COUNT, Event.class);
+  /**
+   * Creates Count Filter for the given parameter.
+   * 
+   * @param count
+   *          The event is not reported for <code>count - 1</code> times. Use 1
+   *          to report it immediately.
+   * @throws InvalidCount
+   *           In case the count is invalid (i.e. zero or less).
+   */
+  public CountFilter(int count) throws InvalidCount {
+    super(ModKind.COUNT, Event.class);
 
-		if (count <= 0) {
-			throw new InvalidCount(count);
-		}
+    if (count <= 0) {
+      throw new InvalidCount(count);
+    }
 
-		this.count = count;
-		this.expired = false;
-	}
+    this.count = count;
+    this.expired = false;
+  }
 
-	@Override
-	public boolean matches(Event event) {
-		assert expired == false;
+  @Override
+  public boolean matches(Event event) {
+    assert expired == false;
 
-		if (--count > 0) {
-			return false;
-		}
-		expired = true;
-		return count == 0;
-	}
+    if (--count > 0) {
+      return false;
+    }
+    expired = true;
+    return count == 0;
+  }
 
 }

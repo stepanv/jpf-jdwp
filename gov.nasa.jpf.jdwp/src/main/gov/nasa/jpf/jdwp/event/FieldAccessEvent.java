@@ -29,54 +29,56 @@ import java.io.IOException;
  */
 public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilterable, FieldOnlyFilterable {
 
-	private ClassInfo fieldType;
-	private FieldInfo fieldInfo;
-	private ElementInfo objectBeingAccessed;
+  private ClassInfo fieldType;
+  private FieldInfo fieldInfo;
+  private ElementInfo objectBeingAccessed;
 
-	/**
-	 * 
-	 * @param threadInfo
-	 *            Accessing thread
-	 * @param location
-	 *            Location of access
-	 * @param fieldType
-	 *            Type of field
-	 * @param fieldInfo
-	 *            Field being accessed
-	 * @param objectBeingAccessed
-	 *            Object being accessed (will be null=0 for statics when sent across JDWP)
-	 */
-	public FieldAccessEvent(ThreadInfo threadInfo, Location location, ClassInfo fieldType, FieldInfo fieldInfo, ElementInfo objectBeingAccessed) {
-		super(EventKind.FIELD_ACCESS, threadInfo, location);
-		this.fieldType = fieldType;
-		this.fieldInfo = fieldInfo;
-		this.objectBeingAccessed = objectBeingAccessed;
-	}
+  /**
+   * 
+   * @param threadInfo
+   *          Accessing thread
+   * @param location
+   *          Location of access
+   * @param fieldType
+   *          Type of field
+   * @param fieldInfo
+   *          Field being accessed
+   * @param objectBeingAccessed
+   *          Object being accessed (will be null=0 for statics when sent across
+   *          JDWP)
+   */
+  public FieldAccessEvent(ThreadInfo threadInfo, Location location, ClassInfo fieldType, FieldInfo fieldInfo,
+                          ElementInfo objectBeingAccessed) {
+    super(EventKind.FIELD_ACCESS, threadInfo, location);
+    this.fieldType = fieldType;
+    this.fieldInfo = fieldInfo;
+    this.objectBeingAccessed = objectBeingAccessed;
+  }
 
-	@Override
-	protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-		ClassInfo fieldObjectClassInfo;
-		
-		// TODO this is not according the spec!
-		fieldObjectClassInfo = fieldInfo.getClassInfo();
-		
-		ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
-		referenceTypeId.writeTagged(os);
-		
-		FieldId fieldId = JdwpObjectManager.getInstance().getFieldId(fieldInfo);
-		fieldId.write(os);
-		
-		if (objectBeingAccessed instanceof StaticElementInfo) {
-			NullObjectId.instanceWriteTagged(os);
-		} else {		
-			ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(objectBeingAccessed);
-			objectId.writeTagged(os);
-		}
-	}
+  @Override
+  protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+    ClassInfo fieldObjectClassInfo;
 
-	@Override
-	public FieldInfo getFieldInfo() {
-		return fieldInfo;
-	}
+    // TODO this is not according the spec!
+    fieldObjectClassInfo = fieldInfo.getClassInfo();
+
+    ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
+    referenceTypeId.writeTagged(os);
+
+    FieldId fieldId = JdwpObjectManager.getInstance().getFieldId(fieldInfo);
+    fieldId.write(os);
+
+    if (objectBeingAccessed instanceof StaticElementInfo) {
+      NullObjectId.instanceWriteTagged(os);
+    } else {
+      ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(objectBeingAccessed);
+      objectId.writeTagged(os);
+    }
+  }
+
+  @Override
+  public FieldInfo getFieldInfo() {
+    return fieldInfo;
+  }
 
 }

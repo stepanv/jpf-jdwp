@@ -30,18 +30,18 @@ import java.io.IOException;
  */
 public class ThreadStartEvent extends ThreadableEvent implements Threadable {
 
-	/**
-	 * Creates Thread Start event.
-	 * 
-	 * @param threadInfo
-	 *            Started thread
-	 */
-	public ThreadStartEvent(ThreadInfo threadInfo) {
-		super(EventKind.THREAD_START, threadInfo);
-	}
+  /**
+   * Creates Thread Start event.
+   * 
+   * @param threadInfo
+   *          Started thread
+   */
+  public ThreadStartEvent(ThreadInfo threadInfo) {
+    super(EventKind.THREAD_START, threadInfo);
+  }
 
-	@Override
-	protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-	}
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+  }
 
 }

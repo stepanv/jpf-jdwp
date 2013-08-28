@@ -36,7 +36,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.transport;
 
 import gnu.classpath.jdwp.Jdwp;
@@ -54,24 +53,20 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A connection via some transport to some JDWP-speaking entity.
- * This is also a thread which handles all communications to/from
- * the debugger. While access to the transport layer may be accessed by
- * several threads, start-up and initialization should not be allowed
- * to occur more than once.
- *
- * <p>This class is also a thread that is responsible for pulling
- * packets off the wire and sticking them in a queue for packet
- * processing threads.
- *
+ * A connection via some transport to some JDWP-speaking entity. This is also a
+ * thread which handles all communications to/from the debugger. While access to
+ * the transport layer may be accessed by several threads, start-up and
+ * initialization should not be allowed to occur more than once.
+ * 
+ * <p>
+ * This class is also a thread that is responsible for pulling packets off the
+ * wire and sticking them in a queue for packet processing threads.
+ * 
  * @author Keith Seitz (keiths@redhat.com)
  */
-public class JdwpConnection
-  extends Thread
-{
+public class JdwpConnection extends Thread {
   // The JDWP handshake
-  private static final byte[] _HANDSHAKE = {'J', 'D', 'W', 'P', '-', 'H', 'a',
-                                            'n', 'd', 's', 'h', 'a', 'k', 'e'};
+  private static final byte[] _HANDSHAKE = { 'J', 'D', 'W', 'P', '-', 'H', 'a', 'n', 'd', 's', 'h', 'a', 'k', 'e' };
 
   // Transport method
   private ITransport _transport;
@@ -94,238 +89,206 @@ public class JdwpConnection
   // A DataOutputStream for the byte buffer
   private DataOutputStream _doStream;
 
-private VirtualMachine vm;
+  private VirtualMachine vm;
 
   /**
    * Creates a new <code>JdwpConnection</code> instance
-   *
-   * @param transport  the transport to use for communications
- * @param vm 
+   * 
+   * @param transport
+   *          the transport to use for communications
+   * @param vm
    */
-  public JdwpConnection (ThreadGroup group, ITransport transport, VirtualMachine vm)
-  {
-    super (group, "JDWP connection thread");
-    
+  public JdwpConnection(ThreadGroup group, ITransport transport, VirtualMachine vm) {
+    super(group, "JDWP connection thread");
+
     this.setVm(vm);
-    
+
     _transport = transport;
-    _commandQueue = new ArrayList ();
+    _commandQueue = new ArrayList();
     _shutdown = false;
-    _bytes = new ByteArrayOutputStream ();
-    _doStream = new DataOutputStream (_bytes);
-    
-    
+    _bytes = new ByteArrayOutputStream();
+    _doStream = new DataOutputStream(_bytes);
+
   }
 
   /**
-   * Initializes the connection, including connecting
-   * to socket or shared memory endpoint
-   *
-   * @throws TransportException if initialization fails
+   * Initializes the connection, including connecting to socket or shared memory
+   * endpoint
+   * 
+   * @throws TransportException
+   *           if initialization fails
    */
-  public void initialize ()
-    throws TransportException
-  {
+  public void initialize() throws TransportException {
     // Initialize transport (connect socket, e.g.)
-	  
-    _transport.initialize ();
+
+    _transport.initialize();
 
     // Do handshake
-    try
-      {
-        _inStream = new DataInputStream (_transport.getInputStream ());
-        _outStream = new DataOutputStream (_transport.getOutputStream ());
-        _doHandshake ();
-      }
-    catch (IOException ioe)
-      {
-        throw new TransportException (ioe);
-      }
+    try {
+      _inStream = new DataInputStream(_transport.getInputStream());
+      _outStream = new DataOutputStream(_transport.getOutputStream());
+      _doHandshake();
+    } catch (IOException ioe) {
+      throw new TransportException(ioe);
+    }
   }
 
-  /* Does the JDWP handshake -- this should not need synchronization
-     because this is called by VM startup code, i.e., no packet
-     processing threads have started yet. */
-  private void _doHandshake ()
-    throws IOException
-  {
+  /*
+   * Does the JDWP handshake -- this should not need synchronization because
+   * this is called by VM startup code, i.e., no packet processing threads have
+   * started yet.
+   */
+  private void _doHandshake() throws IOException {
     // According to the spec, the handshake is always initiated by
     // the debugger, regardless of whether the JVM is in client mode or
     // server mode.
 
     // Wait for handshake from debugger
     byte[] hshake = new byte[_HANDSHAKE.length];
-    _inStream.readFully (hshake, 0, _HANDSHAKE.length);
+    _inStream.readFully(hshake, 0, _HANDSHAKE.length);
 
-    if (Arrays.equals (hshake, _HANDSHAKE))
-      {
-        // Send reply handshake
-        _outStream.write (_HANDSHAKE, 0, _HANDSHAKE.length);
-        return;
-      }
-    else
-      {
-        throw new IOException ("invalid JDWP handshake (\"" + hshake + "\")");
-      }
+    if (Arrays.equals(hshake, _HANDSHAKE)) {
+      // Send reply handshake
+      _outStream.write(_HANDSHAKE, 0, _HANDSHAKE.length);
+      return;
+    } else {
+      throw new IOException("invalid JDWP handshake (\"" + hshake + "\")");
+    }
   }
 
   /**
-   * Main run method for the thread. This thread loops waiting for
-   * packets to be read via the connection. When a packet is complete
-   * and ready for processing, it places the packet in a queue that can
-   * be accessed via <code>getPacket</code>
+   * Main run method for the thread. This thread loops waiting for packets to be
+   * read via the connection. When a packet is complete and ready for
+   * processing, it places the packet in a queue that can be accessed via
+   * <code>getPacket</code>
    */
-  public void run ()
-  {
+  public void run() {
     // Notify initialization thread (gnu.classpath.jdwp.Jdwp) that
     // the JdwpConnection thread is ready.
-    Jdwp.getDefault().subcomponentInitialized ();
+    Jdwp.getDefault().subcomponentInitialized();
 
-    while (!_shutdown)
-      {
-        try
-          {
-            _readOnePacket ();
-          }
-        catch (IOException ioe)
-          {
-            /* IOException can occur for two reasons:
-               1. Lost connection with the other side
-               2. Transport was shutdown
-               In either case, we make sure that all of the
-               back-end gets shutdown. */
-            Jdwp.getDefault().shutdown ();
-          }
-        catch (Throwable t)
-          {
-            System.out.println ("JdwpConnection.run: caught an exception: "
-                                + t);
-            // Just keep going
-          }
+    while (!_shutdown) {
+      try {
+        _readOnePacket();
+      } catch (IOException ioe) {
+        /*
+         * IOException can occur for two reasons: 1. Lost connection with the
+         * other side 2. Transport was shutdown In either case, we make sure
+         * that all of the back-end gets shutdown.
+         */
+        Jdwp.getDefault().shutdown();
+      } catch (Throwable t) {
+        System.out.println("JdwpConnection.run: caught an exception: " + t);
+        // Just keep going
       }
+    }
   }
 
   // Reads a single packet from the connection, adding it to the packet
   // queue when a complete packet is ready.
-  private void _readOnePacket ()
-    throws IOException
-  {
+  private void _readOnePacket() throws IOException {
     byte[] data = null;
 
     // Read in the packet
-    int length = _inStream.readInt ();
-    if (length < 11)
-      {
-        throw new IOException ("JDWP packet length < 11 ("
-                               + length + ")");
-      }
+    int length = _inStream.readInt();
+    if (length < 11) {
+      throw new IOException("JDWP packet length < 11 (" + length + ")");
+    }
 
     data = new byte[length];
     data[0] = (byte) (length >>> 24);
     data[1] = (byte) (length >>> 16);
     data[2] = (byte) (length >>> 8);
     data[3] = (byte) length;
-    _inStream.readFully (data, 4, length - 4);
+    _inStream.readFully(data, 4, length - 4);
 
-    JdwpPacket packet = JdwpPacket.fromBytes (data);
-    if (packet != null)
-      {
-        synchronized (_commandQueue)
-          {
-            _commandQueue.add (packet);
-            _commandQueue.notifyAll ();
-          }
+    JdwpPacket packet = JdwpPacket.fromBytes(data);
+    if (packet != null) {
+      synchronized (_commandQueue) {
+        _commandQueue.add(packet);
+        _commandQueue.notifyAll();
       }
+    }
   }
 
   /**
    * Returns a packet from the queue of ready packets
-   *
-   * @returns  a <code>JdwpPacket</code> ready for processing
-   *           <code>null</code> when shutting down
+   * 
+   * @returns a <code>JdwpPacket</code> ready for processing <code>null</code>
+   *          when shutting down
    */
-  public JdwpPacket getPacket ()
-  {
-    synchronized (_commandQueue)
-      {
-        while (_commandQueue.isEmpty ())
-          {
-            try
-              {
-                _commandQueue.wait ();
-              }
-            catch (InterruptedException ie)
-              {
-                /* PacketProcessor is interrupted
-                   when shutting down */
-                return null;
-              }
-          }
-
-        return (JdwpPacket) _commandQueue.remove (0);
+  public JdwpPacket getPacket() {
+    synchronized (_commandQueue) {
+      while (_commandQueue.isEmpty()) {
+        try {
+          _commandQueue.wait();
+        } catch (InterruptedException ie) {
+          /*
+           * PacketProcessor is interrupted when shutting down
+           */
+          return null;
+        }
       }
+
+      return (JdwpPacket) _commandQueue.remove(0);
+    }
   }
-  
+
   private static final Object OUTSTREAMLOCK = new Object();
 
   /**
    * Send a packet to the debugger
-   *
-   * @param pkt a <code>JdwpPacket</code> to send
+   * 
+   * @param pkt
+   *          a <code>JdwpPacket</code> to send
    * @throws IOException
    */
-  public void sendPacket (JdwpPacket pkt)
-    throws IOException
-  {
-	  synchronized (OUTSTREAMLOCK) {
-		  pkt.write (_outStream);
-	}
-    
+  public void sendPacket(JdwpPacket pkt) throws IOException {
+    synchronized (OUTSTREAMLOCK) {
+      pkt.write(_outStream);
+    }
+
   }
 
   /**
-   * Send an event notification to the debugger. Note that this
-   * method will only send out one notification: all the events
-   * are passed in a single Event.COMPOSITE packet.
-   *
-   * @param events  requests to events pair
-   * @param suspendPolicy  the suspend policy enforced by the VM
+   * Send an event notification to the debugger. Note that this method will only
+   * send out one notification: all the events are passed in a single
+   * Event.COMPOSITE packet.
+   * 
+   * @param events
+   *          requests to events pair
+   * @param suspendPolicy
+   *          the suspend policy enforced by the VM
    * @throws IOException
    */
-  public void sendEvents(List<Event> events,
-                         SuspendPolicy suspendPolicy)
-    throws IOException
-  {
+  public void sendEvents(List<Event> events, SuspendPolicy suspendPolicy) throws IOException {
     JdwpPacket pkt;
 
-    synchronized (_bytes)
-      {
-        _bytes.reset ();
-        pkt = EventBase.toPacket (_doStream, events, suspendPolicy);
-        pkt.setData (_bytes.toByteArray ());
-      }
+    synchronized (_bytes) {
+      _bytes.reset();
+      pkt = EventBase.toPacket(_doStream, events, suspendPolicy);
+      pkt.setData(_bytes.toByteArray());
+    }
 
-    sendPacket (pkt);
+    sendPacket(pkt);
   }
 
   /**
    * Shutdown the connection
    */
-  public void shutdown ()
-  {
-    if (!_shutdown)
-      {
-        _transport.shutdown ();
-        _shutdown = true;
-        interrupt ();
-      }
+  public void shutdown() {
+    if (!_shutdown) {
+      _transport.shutdown();
+      _shutdown = true;
+      interrupt();
+    }
   }
 
-public VirtualMachine getVm() {
-	return vm;
-}
+  public VirtualMachine getVm() {
+    return vm;
+  }
 
-public void setVm(VirtualMachine vm) {
-	this.vm = vm;
-}
+  public void setVm(VirtualMachine vm) {
+    this.vm = vm;
+  }
 }

@@ -20,29 +20,30 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public class ThreadOnlyFilter extends Filter<Threadable> {
 
-	private ThreadId threadId;
+  private ThreadId threadId;
 
-	/**
-	 * Creates Thread Only filter.
-	 * 
-	 * @param threadId
-	 *            Required thread
-	 */
-	public ThreadOnlyFilter(ThreadId threadId) {
-		super(ModKind.THREAD_ONLY, Threadable.class);
-		this.threadId = threadId;
-	}
+  /**
+   * Creates Thread Only filter.
+   * 
+   * @param threadId
+   *          Required thread
+   */
+  public ThreadOnlyFilter(ThreadId threadId) {
+    super(ModKind.THREAD_ONLY, Threadable.class);
+    this.threadId = threadId;
+  }
 
-	@Override
-	public boolean matches(Threadable event) {
-		ThreadInfo threadInfo;
-		try {
-			threadInfo = threadId.getInfoObject();
-			return event.getThread() == threadInfo;
-		} catch (InvalidObject e) {
-			// info object is not accessible and therefore this filter is not effective
-			return false;
-		}
-	}
+  @Override
+  public boolean matches(Threadable event) {
+    ThreadInfo threadInfo;
+    try {
+      threadInfo = threadId.getInfoObject();
+      return event.getThread() == threadInfo;
+    } catch (InvalidObject e) {
+      // info object is not accessible and therefore this filter is not
+      // effective
+      return false;
+    }
+  }
 
 }

@@ -37,7 +37,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.Jdwp;
@@ -58,18 +57,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible for processing packets from the
- * debugger. It waits for an available packet from the connection
- * ({@link gnu.classpath.jdwp.transport.JdwpConnection}) and then
- * processes the packet and any reply.
- *
+ * This class is responsible for processing packets from the debugger. It waits
+ * for an available packet from the connection (
+ * {@link gnu.classpath.jdwp.transport.JdwpConnection}) and then processes the
+ * packet and any reply.
+ * 
  * @author Keith Seitz (keiths@redhat.com)
  */
-public class PacketProcessor
-  implements PrivilegedAction
-{
+public class PacketProcessor implements PrivilegedAction {
   final static Logger logger = LoggerFactory.getLogger(PacketProcessor.class);
-	
+
   // The connection to the debugger
   private JdwpConnection _connection;
 
@@ -83,111 +80,101 @@ public class PacketProcessor
   private DataOutputStream _os;
 
   /**
-   * Constructs a new <code>PacketProcessor</code> object
-   * Connection must be validated before getting here!
-   *
-   * @param con  the connection
+   * Constructs a new <code>PacketProcessor</code> object Connection must be
+   * validated before getting here!
+   * 
+   * @param con
+   *          the connection
    */
-  public PacketProcessor (JdwpConnection con)
-  {
+  public PacketProcessor(JdwpConnection con) {
     _connection = con;
     _shutdown = false;
-    
+
     ccp = new CommandContextProvider(con.getVm(), JdwpObjectManager.getInstance());
 
     // MAXIMUM is the value of the largest command set we may receive
     _outputBytes = new ByteArrayOutputStream();
-    _os = new DataOutputStream (_outputBytes);
+    _os = new DataOutputStream(_outputBytes);
 
   }
 
   /**
-   * Main run routine for this thread. Will loop getting packets
-   * from the connection and processing them.
+   * Main run routine for this thread. Will loop getting packets from the
+   * connection and processing them.
    */
-  public Object run ()
-  {
+  public Object run() {
     // Notify initialization thread (gnu.classpath.jdwp.Jdwp) that
     // the PacketProcessor thread is ready.
-    Jdwp.getDefault().subcomponentInitialized ();
+    Jdwp.getDefault().subcomponentInitialized();
 
-    try
-      {
-    	int ioErrorCounter = 10;
-        while (!_shutdown)
-          {
-            try {
-				_processOnePacket ();
-			} catch (IOException e) {
-				if (_shutdown) {
-					// normally when the debugger disconnects we end here
-					break;
-				}
-				
-				// let's try to recover for ioErrorCounter times 
-				if (--ioErrorCounter <= 0) {
-					logger.warn("I/O Error occurred: ", e.getMessage());
-					throw e;
-				}
-			}
+    try {
+      int ioErrorCounter = 10;
+      while (!_shutdown) {
+        try {
+          _processOnePacket();
+        } catch (IOException e) {
+          if (_shutdown) {
+            // normally when the debugger disconnects we end here
+            break;
           }
+
+          // let's try to recover for ioErrorCounter times
+          if (--ioErrorCounter <= 0) {
+            logger.warn("I/O Error occurred: ", e.getMessage());
+            throw e;
+          }
+        }
       }
-    catch (Exception ex)
-      {
-        logger.error("Fatal error occurred while processing JDWP commands.", ex);
-      }
+    } catch (Exception ex) {
+      logger.error("Fatal error occurred while processing JDWP commands.", ex);
+    }
     // Time to shutdown, tell Jdwp to shutdown
     Jdwp.getDefault().shutdown();
     return null;
   }
-  
+
   private CommandContextProvider ccp;
 
   /**
    * Shutdown the packet processor
    */
-  public void shutdown ()
-  {
+  public void shutdown() {
     _shutdown = true;
   }
 
   // Helper function which actually does all the work of waiting
   // for a packet and getting it processed.
-  private void _processOnePacket ()
-    throws IOException
-  {
-    JdwpPacket pkt = _connection.getPacket ();
+  private void _processOnePacket() throws IOException {
+    JdwpPacket pkt = _connection.getPacket();
 
-    if (!(pkt instanceof JdwpCommandPacket))
-      {
-        // We're not supposed to get these from the debugger!
-        // Drop it on the floor
-        return;
+    if (!(pkt instanceof JdwpCommandPacket)) {
+      // We're not supposed to get these from the debugger!
+      // Drop it on the floor
+      return;
+    }
+
+    if (pkt != null) {
+      JdwpCommandPacket commandPkt = (JdwpCommandPacket) pkt;
+      JdwpReplyPacket reply = new JdwpReplyPacket(commandPkt);
+
+      // Reset our output stream
+      _outputBytes.reset();
+
+      // Create a ByteBuffer around the command packet
+      ByteBuffer bb = ByteBuffer.wrap(commandPkt.getData());
+
+      try {
+        gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommand(), bb, _os, ccp);
+        reply.setData(_outputBytes.toByteArray());
+      } catch (gov.nasa.jpf.jdwp.exception.VmDead e) {
+        logger.debug("VM is dead. Will send VM_DEAD error code...", e);
+        reply.setErrorCode(e.getErrorType().identifier());
+      } catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
+        logger.info("Command {} returns an error", commandPkt.getCommand(), e);
+        reply.setErrorCode(e.getErrorType().identifier());
       }
 
-    if (pkt != null)
-      {
-        JdwpCommandPacket commandPkt = (JdwpCommandPacket) pkt;
-        JdwpReplyPacket reply = new JdwpReplyPacket(commandPkt);
-
-        // Reset our output stream
-        _outputBytes.reset();
-
-        // Create a ByteBuffer around the command packet
-        ByteBuffer bb = ByteBuffer.wrap(commandPkt.getData());
-        
-        try {
-			gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommand(), bb, _os, ccp);
-			reply.setData(_outputBytes.toByteArray());
-        } catch (gov.nasa.jpf.jdwp.exception.VmDead e) {
-        	logger.debug("VM is dead. Will send VM_DEAD error code...", e);
-        	reply.setErrorCode(e.getErrorType().identifier());
-		} catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
-			logger.info("Command {} returns an error", commandPkt.getCommand(), e);
-			reply.setErrorCode(e.getErrorType().identifier());
-		}
-        
-        _connection.sendPacket (reply);
-      }
+      _connection.sendPacket(reply);
+    }
   }
 }

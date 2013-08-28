@@ -15,211 +15,210 @@ import org.junit.Test;
 
 public class LineTableTest extends TestJdwp {
 
-	public static void main(String[] args) throws SecurityException, NoSuchFieldException {
-		runTestsOfThisClass(args);
-	}
+  public static void main(String[] args) throws SecurityException, NoSuchFieldException {
+    runTestsOfThisClass(args);
+  }
 
-	/**
-	 * This is the reference class we query in this test set.
-	 * 
-	 * @author stepan
-	 * 
-	 */
-	public static class LineTableReferenceClass {
+  /**
+   * This is the reference class we query in this test set.
+   * 
+   * @author stepan
+   * 
+   */
+  public static class LineTableReferenceClass {
 
-		private String id;
+    private String id;
 
-		public LineTableReferenceClass() {
-		}
+    public LineTableReferenceClass() {
+    }
 
-		private String[] anArray;
-		private Object[] anObjectArray = new Object[] { "hello", 3, new StringBuffer("foo") };
-		private int[] anIntArray = new int[] { 1, 2, 4 };
+    private String[] anArray;
+    private Object[] anObjectArray = new Object[] { "hello", 3, new StringBuffer("foo") };
+    private int[] anIntArray = new int[] { 1, 2, 4 };
 
-		void referenceMethod(int i, long longish, short shortish) {
-			boolean foaa = false;
-			synchronized (this) {
-				System.out.println("from synchronzed " + foaa);
-			}
-			System.out.println("Hello from runnable: " + id + " ... iteration number: " + i);
-			if (!Thread.currentThread().getName().contains("second")) {
-				System.out.println("PROBABLY IN FIRST THREAD");
-			} else {
-				System.out.println("PROBABLY IN SECOND THREAD");
-			}
-			StringBuffer sb = new StringBuffer();
-			System.out.println(sb);
-			for (String string : anArray) {
-				System.out.println("Array string: " + string);
-				System.out.println(sb);
-			}
-			System.out.println("end");
-		}
+    void referenceMethod(int i, long longish, short shortish) {
+      boolean foaa = false;
+      synchronized (this) {
+        System.out.println("from synchronzed " + foaa);
+      }
+      System.out.println("Hello from runnable: " + id + " ... iteration number: " + i);
+      if (!Thread.currentThread().getName().contains("second")) {
+        System.out.println("PROBABLY IN FIRST THREAD");
+      } else {
+        System.out.println("PROBABLY IN SECOND THREAD");
+      }
+      StringBuffer sb = new StringBuffer();
+      System.out.println(sb);
+      for (String string : anArray) {
+        System.out.println("Array string: " + string);
+        System.out.println(sb);
+      }
+      System.out.println("end");
+    }
 
-		public native String nativeMethod(Object param);
-	}
+    public native String nativeMethod(Object param);
+  }
 
-	JdwpVerifier verifierAllLines = new JdwpVerifier() {
+  JdwpVerifier verifierAllLines = new JdwpVerifier() {
 
-		@Override
-		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+    @Override
+    protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
-			// Prepare arguments
-			ElementInfo classInstance = (ElementInfo) passedObjects[0];
+      // Prepare arguments
+      ElementInfo classInstance = (ElementInfo) passedObjects[0];
 
-			ClassInfo clazz = classInstance.getClassInfo();
+      ClassInfo clazz = classInstance.getClassInfo();
 
-			MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
+      MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
 
-			LineTable lt = new LineTable(method);
+      LineTable lt = new LineTable(method);
 
-			lt.write(dataOutputStream);
+      lt.write(dataOutputStream);
 
-			// verify the results
-			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      // verify the results
+      ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
 
-			/*
-			 * Test that the header contains appropriate values
-			 */
-			assertEquals(0, bb.getLong());
-			bb.getLong();
-			assertEquals(17, bb.getInt());
+      /*
+       * Test that the header contains appropriate values
+       */
+      assertEquals(0, bb.getLong());
+      bb.getLong();
+      assertEquals(17, bb.getInt());
 
-			Map<Integer, Long> lineToCodeIndexMap = new HashMap<Integer, Long>();
-			for (int i = 0; i < 17; ++i) {
-				long codeIndex = bb.getLong();
-				int line = bb.getInt();
-				lineToCodeIndexMap.put(line, codeIndex);
-			}
+      Map<Integer, Long> lineToCodeIndexMap = new HashMap<Integer, Long>();
+      for (int i = 0; i < 17; ++i) {
+        long codeIndex = bb.getLong();
+        int line = bb.getInt();
+        lineToCodeIndexMap.put(line, codeIndex);
+      }
 
-			/*
-			 * Test that for every instruction's line we have an entry in the
-			 * table
-			 */
-			for (Instruction instruction : method.getInstructions()) {
-				assertNotNull(lineToCodeIndexMap.get(instruction.getLineNumber()));
-			}
-		}
+      /*
+       * Test that for every instruction's line we have an entry in the table
+       */
+      for (Instruction instruction : method.getInstructions()) {
+        assertNotNull(lineToCodeIndexMap.get(instruction.getLineNumber()));
+      }
+    }
 
-	};
+  };
 
-	@Test
-	public void everyLineHasEntryTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation()) {
+  @Test
+  public void everyLineHasEntryTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation()) {
 
-			LineTableReferenceClass arrayObject = new LineTableReferenceClass();
-			verifierAllLines.verify((Object) arrayObject);
+      LineTableReferenceClass arrayObject = new LineTableReferenceClass();
+      verifierAllLines.verify((Object) arrayObject);
 
-			// to prevent GC of the object
-			System.out.println(arrayObject);
+      // to prevent GC of the object
+      System.out.println(arrayObject);
 
-		}
-	}
+    }
+  }
 
-	JdwpVerifier verifierUpAndDown = new JdwpVerifier() {
+  JdwpVerifier verifierUpAndDown = new JdwpVerifier() {
 
-		final int lo = 43;
+    final int lo = 43;
 
-		final Integer[] linesSequence = new Integer[] { lo - 3, lo - 2, lo - 1, lo - 2, lo + 1, lo + 2, lo + 3, lo + 4, lo + 5, lo + 7, lo + 8, lo + 9,
-				lo + 10, lo + 11, lo + 9, lo + 13 };
+    final Integer[] linesSequence = new Integer[] { lo - 3, lo - 2, lo - 1, lo - 2, lo + 1, lo + 2, lo + 3, lo + 4, lo + 5, lo + 7, lo + 8,
+        lo + 9, lo + 10, lo + 11, lo + 9, lo + 13 };
 
-		@Override
-		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+    @Override
+    protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
-			// Prepare arguments
-			ElementInfo classInstance = (ElementInfo) passedObjects[0];
+      // Prepare arguments
+      ElementInfo classInstance = (ElementInfo) passedObjects[0];
 
-			ClassInfo clazz = classInstance.getClassInfo();
+      ClassInfo clazz = classInstance.getClassInfo();
 
-			MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
+      MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
 
-			LineTable lt = new LineTable(method);
+      LineTable lt = new LineTable(method);
 
-			lt.write(dataOutputStream);
+      lt.write(dataOutputStream);
 
-			// verify the results
-			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      // verify the results
+      ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
 
-			/*
-			 * Test that the header contains appropriate values
-			 */
-			assertEquals(0, bb.getLong());
-			long highest = bb.getLong();
-			assertEquals(17, bb.getInt());
+      /*
+       * Test that the header contains appropriate values
+       */
+      assertEquals(0, bb.getLong());
+      long highest = bb.getLong();
+      assertEquals(17, bb.getInt());
 
-			long lastCodeIndex = 0;
+      long lastCodeIndex = 0;
 
-			/*
-			 * Test that line numbers go up and down the same way as it is for
-			 * standard VMs
-			 */
-			for (int line : linesSequence) {
-				System.out.println("Looking for line: " + line);
+      /*
+       * Test that line numbers go up and down the same way as it is for
+       * standard VMs
+       */
+      for (int line : linesSequence) {
+        System.out.println("Looking for line: " + line);
 
-				long lineCodeIndex = bb.getLong();
+        long lineCodeIndex = bb.getLong();
 
-				assertTrue(lineCodeIndex >= 0);
-				assertTrue(lineCodeIndex <= highest);
-				assertTrue(lineCodeIndex >= lastCodeIndex);
+        assertTrue(lineCodeIndex >= 0);
+        assertTrue(lineCodeIndex <= highest);
+        assertTrue(lineCodeIndex >= lastCodeIndex);
 
-				lastCodeIndex = lineCodeIndex;
+        lastCodeIndex = lineCodeIndex;
 
-				assertEquals(line, bb.getInt());
-			}
-		}
+        assertEquals(line, bb.getInt());
+      }
+    }
 
-	};
+  };
 
-	@Test
-	public void linesGoUpAndDownTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation()) {
+  @Test
+  public void linesGoUpAndDownTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation()) {
 
-			LineTableReferenceClass arrayObject = new LineTableReferenceClass();
-			verifierUpAndDown.verify((Object) arrayObject);
+      LineTableReferenceClass arrayObject = new LineTableReferenceClass();
+      verifierUpAndDown.verify((Object) arrayObject);
 
-			// to prevent GC of the object
-			System.out.println(arrayObject);
+      // to prevent GC of the object
+      System.out.println(arrayObject);
 
-		}
-	}
+    }
+  }
 
-	JdwpVerifier verifierNativeMethod = new JdwpVerifier() {
+  JdwpVerifier verifierNativeMethod = new JdwpVerifier() {
 
-		@Override
-		protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
+    @Override
+    protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
-			// Prepare arguments
-			ElementInfo classInstance = (ElementInfo) passedObjects[0];
+      // Prepare arguments
+      ElementInfo classInstance = (ElementInfo) passedObjects[0];
 
-			ClassInfo clazz = classInstance.getClassInfo();
+      ClassInfo clazz = classInstance.getClassInfo();
 
-			MethodInfo method = clazz.getMethod("nativeMethod(Ljava/lang/Object;)Ljava/lang/String;", false);
-			LineTable lt = new LineTable(method);
-			lt.write(dataOutputStream);
+      MethodInfo method = clazz.getMethod("nativeMethod(Ljava/lang/Object;)Ljava/lang/String;", false);
+      LineTable lt = new LineTable(method);
+      lt.write(dataOutputStream);
 
-			// verify the results
-			ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      // verify the results
+      ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
 
-			/*
-			 * Test that native method has -1
-			 */
-			assertEquals(-1, bb.getLong());
-			assertEquals(-1, bb.getLong());
-			assertEquals(0, bb.getInt());
-		}
+      /*
+       * Test that native method has -1
+       */
+      assertEquals(-1, bb.getLong());
+      assertEquals(-1, bb.getLong());
+      assertEquals(0, bb.getInt());
+    }
 
-	};
+  };
 
-	@Test
-	public void nativeMethodTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation()) {
+  @Test
+  public void nativeMethodTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation()) {
 
-			LineTableReferenceClass arrayObject = new LineTableReferenceClass();
-			verifierNativeMethod.verify((Object) arrayObject);
+      LineTableReferenceClass arrayObject = new LineTableReferenceClass();
+      verifierNativeMethod.verify((Object) arrayObject);
 
-			// to prevent GC of the object
-			System.out.println(arrayObject);
+      // to prevent GC of the object
+      System.out.println(arrayObject);
 
-		}
-	}
+    }
+  }
 }

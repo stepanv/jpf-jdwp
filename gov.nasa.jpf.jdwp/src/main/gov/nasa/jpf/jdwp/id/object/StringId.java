@@ -6,8 +6,8 @@ import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ElementInfo;
 
 /**
- * This class implements the corresponding stringID common data type from the
- * JDWP Specification.
+ * This class implements the corresponding <code>stringID</code> common data
+ * type from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification</h2>
@@ -21,17 +21,17 @@ import gov.nasa.jpf.vm.ElementInfo;
  */
 public class StringId extends ObjectId {
 
-	/**
-	 * Constructs the string ID.
-	 * 
-	 * @param id
-	 *            The ID known by {@link ObjectIdManager}
-	 * @param object
-	 *            The {@link ElementInfo} instance that needs JDWP ID
-	 *            representation.
-	 */
-	public StringId(long id, ElementInfo object) {
-		super(Tag.STRING, id, object);
-	}
+  /**
+   * Constructs the string ID.
+   * 
+   * @param id
+   *          The ID known by {@link ObjectIdManager}
+   * @param object
+   *          The {@link ElementInfo} instance that needs JDWP ID
+   *          representation.
+   */
+  public StringId(long id, ElementInfo object) {
+    super(Tag.STRING, id, object);
+  }
 
 }

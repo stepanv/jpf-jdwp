@@ -32,346 +32,349 @@ import org.slf4j.LoggerFactory;
  */
 public class ObjectReferenceCommandTest extends TestJdwp {
 
-	public static void main(String[] testMethods) {
-		runTestsOfThisClass(testMethods);
-	}
+  public static void main(String[] testMethods) {
+    runTestsOfThisClass(testMethods);
+  }
 
-	/**
-	 * This is the reference class we query in this test set.
-	 * 
-	 * @author stepan
-	 * 
-	 */
-	public static class ObjectReferenceTestReferenceClass {
-		Object instanceObject = new Object();
-		String instanceString = "test";
-	}
+  /**
+   * This is the reference class we query in this test set.
+   * 
+   * @author stepan
+   * 
+   */
+  public static class ObjectReferenceTestReferenceClass {
+    Object instanceObject = new Object();
+    String instanceString = "test";
+  }
 
-	CommandVerifier objectReferenceVerifier = new CommandVerifier(ObjectReferenceCommand.SETVALUES) {
+  CommandVerifier objectReferenceVerifier = new CommandVerifier(ObjectReferenceCommand.SETVALUES) {
 
-		@Override
-		protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
-			ObjectId objectId = loadObjectId(0);
-			objectId.write(inputDataOutputStream);
-			
-			inputDataOutputStream.writeInt(1);
-			loadFieldId(objectId, 1).write(inputDataOutputStream);
-			loadObjectId(2).writeUntagged(inputDataOutputStream);
-		}
+    @Override
+    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+      ObjectId objectId = loadObjectId(0);
+      objectId.write(inputDataOutputStream);
 
-		@Override
-		protected void processOutput(ByteBuffer outputBytes) {
-			// empty on a purpose
+      inputDataOutputStream.writeInt(1);
+      loadFieldId(objectId, 1).write(inputDataOutputStream);
+      loadObjectId(2).writeUntagged(inputDataOutputStream);
+    }
 
-		}
-	};
+    @Override
+    protected void processOutput(ByteBuffer outputBytes) {
+      // empty on a purpose
 
-	Logger logger = LoggerFactory.getLogger(ObjectReferenceTestReferenceClass.class);
+    }
+  };
 
-	@Test
-	public void setValuesTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
-			// prepare and clear before the test
-			ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
-			String string = "testaaaa";
+  Logger logger = LoggerFactory.getLogger(ObjectReferenceTestReferenceClass.class);
 
-			objectReferenceVerifier.verify(objectRefClass, "instanceObject", string);
+  @Test
+  public void setValuesTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+      // prepare and clear before the test
+      ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
+      String string = "testaaaa";
 
-			assertEquals("testaaaa", objectRefClass.instanceObject);
-		}
-	}
+      objectReferenceVerifier.verify(objectRefClass, "instanceObject", string);
 
-	CommandVerifier referringObjectsVerifier = new CommandVerifier(ObjectReferenceCommand.REFERRINGOBJECTS) {
+      assertEquals("testaaaa", objectRefClass.instanceObject);
+    }
+  }
 
-		@Override
-		protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
-			loadObjectId(0).write(inputDataOutputStream);
-			inputDataOutputStream.writeInt(loadBoxObject(1, Integer.class));
-		}
+  CommandVerifier referringObjectsVerifier = new CommandVerifier(ObjectReferenceCommand.REFERRINGOBJECTS) {
 
-		@Override
-		protected void processOutput(ByteBuffer outputBytes) {
-			int foundReferringObjectNumber = outputBytes.getInt();
+    @Override
+    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+      loadObjectId(0).write(inputDataOutputStream);
+      inputDataOutputStream.writeInt(loadBoxObject(1, Integer.class));
+    }
 
-			storeToWrapper(2, mjiEnv.newInteger(foundReferringObjectNumber));
+    @Override
+    protected void processOutput(ByteBuffer outputBytes) {
+      int foundReferringObjectNumber = outputBytes.getInt();
 
-			for (int i = 0; i < foundReferringObjectNumber; ++i) {
-				outputBytes.get(); // we don't care about the tag byte
-				ObjectId referringObjectId = contextProvider.getObjectManager().readObjectId(outputBytes);
-				
-				storeToArray(3, i, referringObjectId.get().getObjectRef());
-			}
-		}
-	};
+      storeToWrapper(2, mjiEnv.newInteger(foundReferringObjectNumber));
 
-	/**
-	 * Basic test of referees.
-	 * 
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 */
-	@Test
-	public void referringObjectsTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+      for (int i = 0; i < foundReferringObjectNumber; ++i) {
+        outputBytes.get(); // we don't care about the tag byte
+        ObjectId referringObjectId = contextProvider.getObjectManager().readObjectId(outputBytes);
 
-			// we're testing mutable object .. immutable are weird
-			Object testedObject = new Object();
+        storeToArray(3, i, referringObjectId.get().getObjectRef());
+      }
+    }
+  };
 
-			// prepare and clear before the test
-			ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
-			objectRefClass.instanceObject = testedObject;
+  /**
+   * Basic test of referees.
+   * 
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   */
+  @Test
+  public void referringObjectsTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
 
-			// JPF runs GC at the end of the method and thus of compiler let
-			// these objects create it should be fine
-			@SuppressWarnings("unused")
-			Object[] arrayObject1 = new Object[] { "arrayObject1", null, "foo", new Object() };
-			Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), testedObject, "test", testedObject };
-			@SuppressWarnings("unused")
-			Object[] arrayObject3 = new Object[] { "arrayObject3", null, "test", new Object() };
+      // we're testing mutable object .. immutable are weird
+      Object testedObject = new Object();
 
-			Object[] foundReferringObjects = new Object[5];
-			ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
+      // prepare and clear before the test
+      ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
+      objectRefClass.instanceObject = testedObject;
 
-			// for convenience reasons, we're passing arguments as an single
-			// array, because this array will be created anyway and as such it
-			// will refer to the testedObject too
-			Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber, foundReferringObjects };
-			referringObjectsVerifier.verify(args);
+      // JPF runs GC at the end of the method and thus of compiler let
+      // these objects create it should be fine
+      @SuppressWarnings("unused")
+      Object[] arrayObject1 = new Object[] { "arrayObject1", null, "foo", new Object() };
+      Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), testedObject, "test", testedObject };
+      @SuppressWarnings("unused")
+      Object[] arrayObject3 = new Object[] { "arrayObject3", null, "test", new Object() };
 
-			assertEquals(3, foundReferringObjectNumber.wrappedObject.intValue());
-			List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
+      Object[] foundReferringObjects = new Object[5];
+      ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
 
-			// test that returned objects are really correct
-			assertTrue(returnedReferringObjectList.contains(arrayObject2));
-			assertTrue(returnedReferringObjectList.contains(args));
-			assertTrue(returnedReferringObjectList.contains(objectRefClass));
-		}
-	}
+      // for convenience reasons, we're passing arguments as an single
+      // array, because this array will be created anyway and as such it
+      // will refer to the testedObject too
+      Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber,
+          foundReferringObjects };
+      referringObjectsVerifier.verify(args);
 
-	/**
-	 * Tests whether correct number of referees is returned if it is required
-	 * less than how many there really is.
-	 * 
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 */
-	@Test
-	public void referringObjectsLimitedTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
-			// we're testing mutable object .. immutable are weird
-			Object testedObject = new Object();
+      assertEquals(3, foundReferringObjectNumber.wrappedObject.intValue());
+      List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
 
-			// prepare and clear before the test
-			ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
-			objectRefClass.instanceObject = testedObject;
+      // test that returned objects are really correct
+      assertTrue(returnedReferringObjectList.contains(arrayObject2));
+      assertTrue(returnedReferringObjectList.contains(args));
+      assertTrue(returnedReferringObjectList.contains(objectRefClass));
+    }
+  }
 
-			// JPF runs GC at the end of the method and thus of compiler let
-			// these objects create it should be fine
-			@SuppressWarnings("unused")
-			Object[] arrayObject1 = new Object[] { "arrayObject1", null, "foo", new Object() };
-			@SuppressWarnings("unused")
-			Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), testedObject, "test", testedObject };
-			@SuppressWarnings("unused")
-			Object[] arrayObject3 = new Object[] { "arrayObject3", null, "test", new Object() };
+  /**
+   * Tests whether correct number of referees is returned if it is required less
+   * than how many there really is.
+   * 
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   */
+  @Test
+  public void referringObjectsLimitedTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+      // we're testing mutable object .. immutable are weird
+      Object testedObject = new Object();
 
-			Object[] foundReferringObjects = new Object[2];
-			ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
+      // prepare and clear before the test
+      ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
+      objectRefClass.instanceObject = testedObject;
 
-			// for convenience reasons, we're passing arguments as an single
-			// array, because this array will be created anyway and as such it
-			// will refer to the testedObject too
-			Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber, foundReferringObjects };
-			referringObjectsVerifier.verify(args);
+      // JPF runs GC at the end of the method and thus of compiler let
+      // these objects create it should be fine
+      @SuppressWarnings("unused")
+      Object[] arrayObject1 = new Object[] { "arrayObject1", null, "foo", new Object() };
+      @SuppressWarnings("unused")
+      Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), testedObject, "test", testedObject };
+      @SuppressWarnings("unused")
+      Object[] arrayObject3 = new Object[] { "arrayObject3", null, "test", new Object() };
 
-			assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
+      Object[] foundReferringObjects = new Object[2];
+      ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
 
-			// we don't need to test which objects were returned since even the
-			// JDWP spec doesn't determine which should be returned
-		}
-	}
+      // for convenience reasons, we're passing arguments as an single
+      // array, because this array will be created anyway and as such it
+      // will refer to the testedObject too
+      Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber,
+          foundReferringObjects };
+      referringObjectsVerifier.verify(args);
 
-	/**
-	 * Tests whether the number of referees is correct if GC is performed.
-	 * 
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 */
-	@Test
-	public void referringObjectsAfterGCTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+      assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
 
-			// we're testing mutable object .. immutable are weird
-			Object testedObject = new Object();
+      // we don't need to test which objects were returned since even the
+      // JDWP spec doesn't determine which should be returned
+    }
+  }
 
-			// prepare and clear before the test
-			ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
-			objectRefClass.instanceObject = testedObject;
+  /**
+   * Tests whether the number of referees is correct if GC is performed.
+   * 
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   */
+  @Test
+  public void referringObjectsAfterGCTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
 
-			Object[] foundReferringObjects = new Object[5];
-			ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
+      // we're testing mutable object .. immutable are weird
+      Object testedObject = new Object();
 
-			// for convenience reasons, we're passing arguments as an single
-			// array, because this array will be created anyway and as such it
-			// will refer to the testedObject too
-			Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber, foundReferringObjects };
+      // prepare and clear before the test
+      ObjectReferenceTestReferenceClass objectRefClass = new ObjectReferenceTestReferenceClass();
+      objectRefClass.instanceObject = testedObject;
 
-			ObjectWrapper<WeakReference<Object>> wrapper = new ObjectWrapper<WeakReference<Object>>();
-			createWeaklyReferencedObject(wrapper, testedObject);
+      Object[] foundReferringObjects = new Object[5];
+      ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
 
-			referringObjectsVerifier.verify(args);
+      // for convenience reasons, we're passing arguments as an single
+      // array, because this array will be created anyway and as such it
+      // will refer to the testedObject too
+      Object[] args = new Object[] { testedObject, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber,
+          foundReferringObjects };
 
-			List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
+      ObjectWrapper<WeakReference<Object>> wrapper = new ObjectWrapper<WeakReference<Object>>();
+      createWeaklyReferencedObject(wrapper, testedObject);
 
-			// test weak reference object in a separate method
-			assertResultsBeforeGC(wrapper, foundReferringObjectNumber, returnedReferringObjectList);
+      referringObjectsVerifier.verify(args);
 
-			// test the rest of the returned objects
-			assertTrue(returnedReferringObjectList.contains(args));
-			assertTrue(returnedReferringObjectList.contains(objectRefClass));
+      List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
 
-			// cleanup
-			foundReferringObjects = new Object[5];
-			args[3] = foundReferringObjects;
-			returnedReferringObjectList = null;
+      // test weak reference object in a separate method
+      assertResultsBeforeGC(wrapper, foundReferringObjectNumber, returnedReferringObjectList);
 
-			// now we need to force JPF to run GC
-			List<WeakReference<Object>> gcEnforcerList = new ArrayList<WeakReference<Object>>(1);
-			gcEnforcerList.add(0, new WeakReference<Object>(new Object()));
-			while (gcEnforcerList.get(0).get() != null) {
-				gcEnforcerList.add(new WeakReference<Object>(new Object()));
-			}
+      // test the rest of the returned objects
+      assertTrue(returnedReferringObjectList.contains(args));
+      assertTrue(returnedReferringObjectList.contains(objectRefClass));
 
-			// an assertion whether the desired object was really cleared
-			// this is assertion is rather for programmers than for the test
-			// itself
-			assertTrue(wrapper.wrappedObject.get() == null);
+      // cleanup
+      foundReferringObjects = new Object[5];
+      args[3] = foundReferringObjects;
+      returnedReferringObjectList = null;
 
-			referringObjectsVerifier.verify(args);
+      // now we need to force JPF to run GC
+      List<WeakReference<Object>> gcEnforcerList = new ArrayList<WeakReference<Object>>(1);
+      gcEnforcerList.add(0, new WeakReference<Object>(new Object()));
+      while (gcEnforcerList.get(0).get() != null) {
+        gcEnforcerList.add(new WeakReference<Object>(new Object()));
+      }
 
-			assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
-			returnedReferringObjectList = Arrays.asList(foundReferringObjects);
+      // an assertion whether the desired object was really cleared
+      // this is assertion is rather for programmers than for the test
+      // itself
+      assertTrue(wrapper.wrappedObject.get() == null);
 
-			// test that returned objects are really correct
-			assertTrue(returnedReferringObjectList.contains(args));
-			assertTrue(returnedReferringObjectList.contains(objectRefClass));
-		}
-	}
+      referringObjectsVerifier.verify(args);
 
-	/**
-	 * Assert the results of the referring object that is weakly referenced.<br/>
-	 * It is taken into an account that it is not known whether GC was run
-	 * already.<br/>
-	 * The manipulation with the possibly collected object needs to be done in a
-	 * separated method because JPF doesn't perform GC otherwise.
-	 * 
-	 * @param wrapper
-	 *            The wrapper of the weak reference
-	 * @param foundReferringObjectNumber
-	 *            The number of found referring objects
-	 * @param returnedReferringObjectList
-	 *            The list of found referring objects
-	 */
-	private void assertResultsBeforeGC(ObjectWrapper<WeakReference<Object>> wrapper, ObjectWrapper<Integer> foundReferringObjectNumber,
-			List<Object> returnedReferringObjectList) {
-		Object possiblyCollectedObject = wrapper.wrappedObject.get();
+      assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
+      returnedReferringObjectList = Arrays.asList(foundReferringObjects);
 
-		if (possiblyCollectedObject != null) {
-			assertEquals(3, foundReferringObjectNumber.wrappedObject.intValue());
-			assertTrue(returnedReferringObjectList.contains(possiblyCollectedObject));
-		} else {
-			assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
-		}
-	}
+      // test that returned objects are really correct
+      assertTrue(returnedReferringObjectList.contains(args));
+      assertTrue(returnedReferringObjectList.contains(objectRefClass));
+    }
+  }
 
-	/**
-	 * For some reason JPF does GC only local variables that when a method is
-	 * finished. And not when just a scope ends.
-	 * 
-	 * @param reference
-	 */
-	private void createWeaklyReferencedObject(ObjectWrapper<WeakReference<Object>> reference, Object testedObject) {
-		Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), "test", testedObject, "test", testedObject };
+  /**
+   * Assert the results of the referring object that is weakly referenced.<br/>
+   * It is taken into an account that it is not known whether GC was run
+   * already.<br/>
+   * The manipulation with the possibly collected object needs to be done in a
+   * separated method because JPF doesn't perform GC otherwise.
+   * 
+   * @param wrapper
+   *          The wrapper of the weak reference
+   * @param foundReferringObjectNumber
+   *          The number of found referring objects
+   * @param returnedReferringObjectList
+   *          The list of found referring objects
+   */
+  private void assertResultsBeforeGC(ObjectWrapper<WeakReference<Object>> wrapper, ObjectWrapper<Integer> foundReferringObjectNumber,
+                                     List<Object> returnedReferringObjectList) {
+    Object possiblyCollectedObject = wrapper.wrappedObject.get();
 
-		reference.wrappedObject = new WeakReference<Object>(arrayObject2);
-	}
+    if (possiblyCollectedObject != null) {
+      assertEquals(3, foundReferringObjectNumber.wrappedObject.intValue());
+      assertTrue(returnedReferringObjectList.contains(possiblyCollectedObject));
+    } else {
+      assertEquals(2, foundReferringObjectNumber.wrappedObject.intValue());
+    }
+  }
 
-	/**
-	 * Tests whether referring objects of immutable objects are returned
-	 * correctly.
-	 * 
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 */
-	@Test
-	public void referringObjectsImmutableTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+  /**
+   * For some reason JPF does GC only local variables that when a method is
+   * finished. And not when just a scope ends.
+   * 
+   * @param reference
+   */
+  private void createWeaklyReferencedObject(ObjectWrapper<WeakReference<Object>> reference, Object testedObject) {
+    Object[] arrayObject2 = new Object[] { "arrayObject2", null, "foo", new Object(), "test", testedObject, "test", testedObject };
 
-			// Immutable objects are weird. Especially when it comes to strings.
-			// :-)
-			// If you use the same string "foo" in different location in your
-			// code it can be the same object instance.
-			// It's probably compiler who decides so.
+    reference.wrappedObject = new WeakReference<Object>(arrayObject2);
+  }
 
-			// prepare test data
-			String foo = "foo";
-			String anotherFoo = "f";
-			System.out.println(anotherFoo);
-			anotherFoo += "oo";
-			String[] allThreeFoos = new String[] { null, "ahoj", "foo", foo, anotherFoo }; // +
-			@SuppressWarnings("unused")
-			Object[] noFoo = new Object[] { null, "ahoj", "nofoo", null, anotherFoo };
-			@SuppressWarnings("unused")
-			Object[] noFooAtAll = new String[] { null, "ahoj", "nofoo", null, "nononoFoo" };
-			Object[] justRefFoos = new Object[] { null, "ahoj", foo, anotherFoo, Integer.valueOf(4) }; // +
-			String[] onlyCompileFoo = new String[] { null, new String(), "foo", "bar" }; // +
+  /**
+   * Tests whether referring objects of immutable objects are returned
+   * correctly.
+   * 
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   */
+  @Test
+  public void referringObjectsImmutableTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
 
-			// prepare wrappers for results
-			Object[] foundReferringObjects = new Object[5];
-			ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
+      // Immutable objects are weird. Especially when it comes to strings.
+      // :-)
+      // If you use the same string "foo" in different location in your
+      // code it can be the same object instance.
+      // It's probably compiler who decides so.
 
-			// run the command with proper arguments
-			Object[] args = new Object[] { foo, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber, foundReferringObjects };
-			referringObjectsVerifier.verify(args);
+      // prepare test data
+      String foo = "foo";
+      String anotherFoo = "f";
+      System.out.println(anotherFoo);
+      anotherFoo += "oo";
+      String[] allThreeFoos = new String[] { null, "ahoj", "foo", foo, anotherFoo }; // +
+      @SuppressWarnings("unused")
+      Object[] noFoo = new Object[] { null, "ahoj", "nofoo", null, anotherFoo };
+      @SuppressWarnings("unused")
+      Object[] noFooAtAll = new String[] { null, "ahoj", "nofoo", null, "nononoFoo" };
+      Object[] justRefFoos = new Object[] { null, "ahoj", foo, anotherFoo, Integer.valueOf(4) }; // +
+      String[] onlyCompileFoo = new String[] { null, new String(), "foo", "bar" }; // +
 
-			// test the correct number of returned referees
-			assertEquals(4, foundReferringObjectNumber.wrappedObject.intValue());
+      // prepare wrappers for results
+      Object[] foundReferringObjects = new Object[5];
+      ObjectWrapper<Integer> foundReferringObjectNumber = new ObjectWrapper<Integer>();
 
-			// test that returned objects are really correct
-			List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
-			assertTrue(returnedReferringObjectList.contains(args));
-			assertTrue(returnedReferringObjectList.contains(allThreeFoos));
-			assertTrue(returnedReferringObjectList.contains(justRefFoos));
-			assertTrue(returnedReferringObjectList.contains(onlyCompileFoo));
-		}
-	}
+      // run the command with proper arguments
+      Object[] args = new Object[] { foo, Integer.valueOf(foundReferringObjects.length), foundReferringObjectNumber, foundReferringObjects };
+      referringObjectsVerifier.verify(args);
 
-	/**
-	 * Tests whether null object triggers correct error state.
-	 * 
-	 * @throws SecurityException
-	 * @throws NoSuchFieldException
-	 * @throws IOException
-	 * @throws JdwpError
-	 */
-	@Test(expected = gov.nasa.jpf.jdwp.exception.InvalidObject.class)
-	public void referringObjectsNullTest() throws SecurityException, NoSuchFieldException, IOException, JdwpError {
+      // test the correct number of returned referees
+      assertEquals(4, foundReferringObjectNumber.wrappedObject.intValue());
 
-		String[] args = { "+target=HelloWorld" }; // using HelloWorld from
-		// jpf-core src/examples
-		Config config = new Config(args);
-		JPF jpf = new JPF(config);
-		VM vm = jpf.getVM();
+      // test that returned objects are really correct
+      List<Object> returnedReferringObjectList = Arrays.asList(foundReferringObjects);
+      assertTrue(returnedReferringObjectList.contains(args));
+      assertTrue(returnedReferringObjectList.contains(allThreeFoos));
+      assertTrue(returnedReferringObjectList.contains(justRefFoos));
+      assertTrue(returnedReferringObjectList.contains(onlyCompileFoo));
+    }
+  }
 
-		ByteArrayOutputStream dataOutputBytes = new ByteArrayOutputStream(0);
-		DataOutputStream dataOutputStream = new DataOutputStream(dataOutputBytes);
-		CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
+  /**
+   * Tests whether null object triggers correct error state.
+   * 
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   * @throws IOException
+   * @throws JdwpError
+   */
+  @Test(expected = gov.nasa.jpf.jdwp.exception.InvalidObject.class)
+  public void referringObjectsNullTest() throws SecurityException, NoSuchFieldException, IOException, JdwpError {
 
-		vm.initialize();
+    String[] args = { "+target=HelloWorld" }; // using HelloWorld from
+    // jpf-core src/examples
+    Config config = new Config(args);
+    JPF jpf = new JPF(config);
+    VM vm = jpf.getVM();
 
-		ByteBuffer bytes = ByteBuffer.allocate(200);
-		bytes.putLong(0);
-		ObjectReferenceCommand.REFERRINGOBJECTS.execute(bytes, dataOutputStream, contextProvider);
+    ByteArrayOutputStream dataOutputBytes = new ByteArrayOutputStream(0);
+    DataOutputStream dataOutputStream = new DataOutputStream(dataOutputBytes);
+    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
 
-		assertTrue("We should not reach this line of code.", false);
-	}
+    vm.initialize();
+
+    ByteBuffer bytes = ByteBuffer.allocate(200);
+    bytes.putLong(0);
+    ObjectReferenceCommand.REFERRINGOBJECTS.execute(bytes, dataOutputStream, contextProvider);
+
+    assertTrue("We should not reach this line of code.", false);
+  }
 }

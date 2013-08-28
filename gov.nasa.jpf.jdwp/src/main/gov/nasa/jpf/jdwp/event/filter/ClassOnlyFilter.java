@@ -31,26 +31,26 @@ import gov.nasa.jpf.vm.ClassInfo;
  */
 public class ClassOnlyFilter extends Filter<ClassOnlyFilterable> {
 
-	private ReferenceTypeId referenceTypeId;
+  private ReferenceTypeId referenceTypeId;
 
-	/**
-	 * Creates Class Only filter.
-	 * 
-	 * @param clazz
-	 *            Required class
-	 */
-	public ClassOnlyFilter(ReferenceTypeId clazz) {
-		super(ModKind.CLASS_ONLY, ClassOnlyFilterable.class);
-		this.referenceTypeId = clazz;
-	}
+  /**
+   * Creates Class Only filter.
+   * 
+   * @param clazz
+   *          Required class
+   */
+  public ClassOnlyFilter(ReferenceTypeId clazz) {
+    super(ModKind.CLASS_ONLY, ClassOnlyFilterable.class);
+    this.referenceTypeId = clazz;
+  }
 
-	@Override
-	public boolean matches(ClassOnlyFilterable event) throws InvalidIdentifier {
-		return event.matches(this);
-	}
+  @Override
+  public boolean matches(ClassOnlyFilterable event) throws InvalidIdentifier {
+    return event.matches(this);
+  }
 
-	public boolean matches(ClassInfo referenceType) throws InvalidIdentifier {
-		return referenceType.isInstanceOf(referenceTypeId.get());
-	}
+  public boolean matches(ClassInfo referenceType) throws InvalidIdentifier {
+    return referenceType.isInstanceOf(referenceTypeId.get());
+  }
 
 }
