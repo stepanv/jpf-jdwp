@@ -6,96 +6,124 @@ Java PathFinder JPDA README
 General Information about JPF JPDA 
 ==================================
 
-All sources here, at BitBucket such as:
- * gov.nasa.jpf.core
- * com.sun.jdi
- * eclipse.jdt.debug
+All following repositories at BitBucket:
+ * https://bitbucket.org/stepanv/jpf-jdwp
+ * https://bitbucket.org/stepanv/jpf-core
+ * https://bitbucket.org/stepanv/eclipse-jpf
 
-and including this repository are intended for my thesis.
+are intended for my master thesis. https://is.cuni.cz/studium/eng/dipl_st/index.php?doo=detail&did=114827
 
 Projects description
 --------------------
-Currently, two projects are located in this repo:
 
- 1. JDWP (debugee-side) to JPF implementation in project ``gov.nasa.jpf.jdwp``
-    
-    * for the network related layer, I'm using a part of GNU Classpath JDWP project (mainly written by Keith Seitz) 
+JPDA JDWP backend (debugee-side) for Java PathFinder implementation in JPF project ``jpf-jdwp``.
+For the network related layer, it is reused a part of GNU Classpath JDWP project (mainly written by Keith Seitz) .
 
- #. JDI (dubugger-side) to JPF implentation in project ``jdi-test``
-    
-    * meant as a proof of concept only
-    * not well structured, not well designed, (not worth of reading)
+This ``jpf-jdwp`` project depends on ``jpf-core`` from the repository stepanv/jpf-core which has several modifications in the ``jdwp-v7`` branch.
 
-JDWP-to-JPF Building and Installing
+Environment preparation
+=======================
+Several steps have to be followed:
+ 1. Clone ``jdwp-v7`` branch of ``jpf-core`` project from the stepanv/jpf-core repository and enable it in ``site.properties`` (while development of JDWP is in process there are always several modifications that aren't reflected in the default branch of ``jpf-core``)
+ #. Clone this repository and locate the ``jpf-jdwp`` project (in the root of the repo)
+ #. Add jpf-jdwp to your ``site.properties`` file and enable it as an extension: ::
+    jpf-jdwp = /path/to/the/project/jpf-jdwp
+    extensions = ${jpf-jdwp}, ... some other extensions ...
+
+Building and Installing
 ===================================
+To build the ``jpf-jdwp`` project use the Ant tool or Eclipse IDE.
+
+Building from command line
+--------------------------
+Just as with other JPF projects, run ant from the root of the ``jpf-jdwp`` project.
+
+Building from Eclipse IDE
+-------------------------
 
 Eclipse workspace preparation:
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
- 1. clone ``jdwp-v7`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
- #. clone this repository and import ``gov.nasa.jpf.jdwp`` into Eclipse (the ``default`` branch)
+ 1. Import the ``jpf-core`` project from the ``jdwp-v7`` branch of the ``stepanv/jpf-core`` repository into Eclipse
+ #. Import the ``jpf-jdwp`` project from this repository into Eclipse
+
 
 Running:
---------
-Currently, only manual JDWP setup is working (e.g. you must start both processes (JPF with JDWP enabled + the debugger) manually.
+========
+The easiest and the preferred way how to enable the JDWP is using ``eclipse-jpf`` plugin. For further details refer to https://bitbucket.org/stepanv/eclipse-jpf.
 
-Create new *Debug/Run - Java Application* configuration:
+Currently, there are 2 methods how to enable JDWP backend in JPF:
+ 1. Enabling JDWP by adding the JDWPListener in your JPF configuration
+ #. Running JDWP directly from it's main class. JDWP takes care of running JPF
+
+
+Running as a listener
+---------------------
+
+To enable JDWP listener, do
+ 1. Add jpf-jdwp to your ``site.properties`` file and enable it as an extension: ::
+    jpf-jdwp = /path/to/the/project/jpf-jdwp
+    extensions = ${jpf-jdwp}, ... some other extensions ...
+ #. Enable the ``gov.nasa.jpf.jdwp.JDWPListener`` listener in your JPF run configuration (as desribed at JPF wiki http://babelfish.arc.nasa.gov/trac/jpf/wiki/user/run): ::
+    +listener=gov.nasa.jpf.jdwp.JDWPListener (overrides)
+    ++listener=gov.nasa.jpf.jdwp.JDWPListener, (prepends)
+ #. Control the JDWP using the same options/values as when running the standard JDWP agentlib as desribed in http://docs.oracle.com/javase/6/docs/technotes/guides/jpda/conninv.html
+    a. Available options are: ``transport``, ``server``, ``address``, ``timeout`` and ``suspend``
+    #. All these options are set into one JPF property ``jpf-jdwp.jdwp``
+    #. As an example refer to: ::
+       +jpf-jdwp.jdwp=transport=dt_socket,server=y,suspend=y,address=8000
+ #. You have to setup a debugger side accordingly to what you set in the ``jpf-jdwp.jdwp`` property
+    a. Whether the debugger has to listen on a port
+    #. or to attach to some address:port
+
+Example
+-------
+Normally, you would just 
+ 1. Add following two lines into your ``.jpf`` file (assuming you prepared your environment correctly): ::
+    +listener=gov.nasa.jpf.jdwp.JDWPListener
+    +jpf-jdwp.jdwp=transport=dt_socket,server=y,suspend=y,address=8000
+ #. Attach your debugger to the port 8000
+  
+    
+Running JDWP directly
+---------------------
+As with a standard Java application you would need to
+ 1. Run a main class ``gov.nasa.jpf.jdwp.JDWPRunner``
+ #. Add ``JDWP`` property ``jpf-jdwp.jdwp`` with standard JDWP arguments.
+ #. Tell JPF which application you want to run using the property ``target`` and also to setup a classpath using ``classpath`` property
+
+Example
+-------
+In Eclipse IDE you would create new *Debug/Run - Java Application* configuration:
  1. Main class: ``gov.nasa.jpf.jdwp.JDWPRunner``
  #. As Program arguments you're supposed to include standard JPF arguments so that JPF is able to run a main class.
     For example: ``+target=your.package.MainClass +classpath=+,/path/to/the/compiled/classes/bin``
- #. To enable JDWP, add VM property ``jdwp`` with standard JDWP arguments.
-    For example (to start JDWP agent at localhost:51255): ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=51255``
+ #. To enable JDWP, add JPF property ``jpf-jdwp.jdwp`` with standard JDWP arguments.
+    For example (to start JDWP agent at localhost:51255): ``+jpf-jdwp.jdwp=transport=dt_socket,server=y,suspend=y,address=51255``
  #. Run or Debug it
 
 Now, Attach the debugger (assuming you're running JPF as a jdwp server ) by using *Remote Java Application* from the *Debug Configuration* wizzard.
 
 Apparently, it's possible to run it without Eclipse, but there is no build system yet.
-    
-Example:
---------
+
+
+Full working example in Eclipse:
+================================
+
 The first simple example is to run ``my.packagge.MainClass`` that is included in the JDWP project.
 
-Create new *Debug/Run - Java Application* configuration that will run JPF and the program in it:
+To enable JDWP in the application
+---------------------------------
+In Eclipse, create new *Debug/Run - Java Application* configuration that will run JPF and the program in it:
  1. Main class: ``gov.nasa.jpf.jdwp.JDWPRunner``
  #. As *Program arguments* set (do not substitute the placeholder/variable - Eclipse will do it for you automatically): ``+target=my.packagge.MainClass +classpath=+,${workspace_loc:jpf-jdwp/build/examples}``
- #. Enable JDWP by adding *VM argument*: ``-Djdwp=transport=dt_socket,server=y,suspend=y,address=8000`` 
+ #. Enable JDWP by adding one more thing to *Program arguments*: ``+jpf-jdwp.jdwp=transport=dt_socket,server=y,suspend=y,address=8000`` 
  #. Run it (you can also Debug it but that means you will debug JPF itself (including JDWP implementaion) too). It will stay suspended until you attach a debugger.
 
+To debug it
+-----------
 Create new *Debug - Remote Java Application* configuration that will attach the debugger to the application that is about to start.
  1. Put a breakpoint into the ``my.packagge.MainClass`` so that it gets suspended when the breakpoint is hit
  #. Connection Properties stay defualt: Host ``localhost`` and Port ``8000``
  #. Debug it
-
-Apparently, it's possible to run it without Eclipse, but there is no build system yet.
-
-JDI-to-JPF Building and Installing
-==================================
-
-**Right now, everything works with Eclipse Juno 20120920-0800 only!**
-
-To prepare Eclipse workspace:
------------------------------
-
- 1. clone ``com.sun.jdi`` and import it into Eclipse as existing project 
- #. clone ``eclipse-plugin`` branch of ``gov.nasa.jpf.core`` and import it into Eclipse
- #. clone ``jpf-inplace`` branch of eclipse.jdt.debug and import into Eclipse
-
-   a. ``org.eclipse.jdt.debug``
-   #. ``org.eclipse.jdt.launching``
-
- #. clone this repository and import it into Eclipse
-
-To fix Eclipse workspace:
--------------------------
-
- 1. Ensure you have jdk 1.6 installed and available in workspace
- #. Change Missing API baseline Error to Warning in *Preferences -> Plug-in Development -> API Baselines*
-
-To run the setup:
------------------
- 1. Debug one of the plugins as a Eclipse Application (i.e. all the plugins must be enabled in the target Eclipse instance)
-
-   a. Don't forget to increase PermSize: ``-XX:MaxPermSize=256m``
-
- #. When new Eclipse is running, create a java project and debug it.
 
