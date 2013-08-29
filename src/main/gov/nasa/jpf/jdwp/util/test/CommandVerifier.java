@@ -39,7 +39,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
     return (T) ((ElementInfo) passedObjects[i]).asBoxObject();
   }
 
-  protected FieldId toFieldId(ObjectId objectId, int i) {
+  protected FieldId loadFieldId(ObjectId objectId, int i) {
     String fieldString = passedObjectAs(i, ElementInfo.class).asString();
     FieldInfo fieldInfo = objectId.get().getFieldInfo(fieldString);
     return JdwpObjectManager.getInstance().getFieldId(fieldInfo);

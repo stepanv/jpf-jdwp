@@ -7,9 +7,10 @@ import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.ThreadInfo.State;
+import gov.nasa.jpf.vm.ThreadList;
+import gov.nasa.jpf.vm.VM;
 
 /**
  * This class implements the corresponding <code>threadID</code> common data
@@ -156,10 +157,8 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
    * @return
    */
   private static ThreadInfo getThreadInfo(ElementInfo elementInfo) {
-    // we can use any thread actually
-    ThreadInfo currentThreadInfo = ThreadInfo.getCurrentThread();
-    MJIEnv env = currentThreadInfo.getEnv();
-    return env.getThreadInfoForObjRef(elementInfo.getObjectRef());
+	ThreadList threadList = VM.getVM().getThreadList();
+	return threadList.getThreadInfoForObjRef(elementInfo.getObjectRef());
   }
 
 }

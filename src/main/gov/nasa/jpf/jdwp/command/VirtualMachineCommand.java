@@ -18,6 +18,7 @@ import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.ThreadList;
 import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
@@ -92,9 +93,11 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
   ALLTHREADS(4) {
     @Override
     public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-      ThreadInfo[] threads = VM.getVM().getLiveThreads();
-      os.writeInt(threads.length);
-      for (ThreadInfo thread : threads) {
+      ThreadList threadList = contextProvider.getVM().getThreadList();
+      
+      os.writeInt(threadList.getLiveThreadCount());
+      
+      for (ThreadInfo thread : threadList) {
         if (thread.isAlive()) {
           contextProvider.getObjectManager().getThreadId(thread).write(os);
         }
