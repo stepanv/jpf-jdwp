@@ -99,3 +99,6 @@ To run the setup:
 
  #. When new Eclipse is running, create a java project and debug it.
 
+About the author
+==================================
+Stepan Vavra <vavra.stepan AT gmail.com>
