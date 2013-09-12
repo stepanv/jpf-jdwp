@@ -24,6 +24,7 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.AbsentInformationException;
+import gov.nasa.jpf.jdwp.exception.InvalidFieldId;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.FieldId;
@@ -145,8 +146,15 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
       for (int i = 0; i < fields; ++i) {
         FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
         FieldInfo fieldInfo = fieldId.get();
+        
+        ClassInfo fieldClassInfo = fieldInfo.getClassInfo();
+        if (!classInfo.isInstanceOf(fieldClassInfo)) {
+          // this is here just for completeness
+          // it's not required since fieldId doesn't need classInfo to resolve
+          throw new InvalidFieldId(fieldId);
+        }
 
-        Fields fieldss = classInfo.getStaticElementInfo().getFields();
+        Fields fieldss = fieldClassInfo.getStaticElementInfo().getFields();
         Object object = fieldInfo.getValueObject(fieldss);
         Value val = Tag.classInfoToTag(fieldInfo.getTypeClassInfo()).value(object);
         val.writeTagged(os);
