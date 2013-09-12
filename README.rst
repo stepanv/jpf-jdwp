@@ -128,6 +128,17 @@ Create new *Debug - Remote Java Application* configuration that will attach the 
  #. Connection Properties stay defualt: Host ``localhost`` and Port ``8000``
  #. Debug it
 
-About the author
+About
 ==================================
-Stepan Vavra <vavra.stepan AT gmail.com>
+
+Websites
+--------
+Bitbucket links: http://stepanv.bitbucket.org
+
+GSoC 2013 JPDA for JPF main page: http://stepanv.bitbucket.org/gsoc2013
+
+Author
+------
+Stepan Vavra <vavra.stepan AT gmail.com> http://cz.linkedin.com/in/stepanvavra
+
+
