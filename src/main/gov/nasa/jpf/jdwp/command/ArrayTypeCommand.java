@@ -51,11 +51,11 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
       ClassInfo componentClassInfo = arrayTypeId.get().getComponentClassInfo();
       Heap heap = contextProvider.getVM().getHeap();
 
-      // TODO do a check for current thread
+      // the JDWP specification doesn't expect VM to associate an array creation with some thread
+      // and since JPF needs a thread we have to use any available one
       ThreadInfo threadInfo = contextProvider.getVM().getCurrentThread();
-
-      // TODO [for PJA] how to get a proper type???
       int typeCode = Types.getTypeCode(componentClassInfo.getSignature());
+      
       // this works for primitive types
       String type = Types.getElementDescriptorOfType(typeCode);
       if (type == null) {

@@ -39,73 +39,88 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte, ClassLoaderReferenceCommand> {
-  VISIBLECLASSES(1) {
-    @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-      JdwpObjectManager objectManager = contextProvider.getObjectManager();
+	/**
+	 * <h2>JDWP Specification</h2>
+	 * <p>
+	 * Returns a list of all classes which this class loader has been requested
+	 * to load. This class loader is considered to be an initiating class loader
+	 * for each class in the returned list. The list contains each reference
+	 * type defined by this loader and any types for which loading was delegated
+	 * by this class loader to another class loader.
+	 * </p><p>
+	 * The visible class list has useful properties with respect to the type
+	 * namespace. A particular type name will occur at most once in the list.
+	 * Each field or variable declared with that type name in a class defined by
+	 * this class loader must be resolved to that single type.
+	 * </p><p>
+	 * No ordering of the returned list is guaranteed.
+	 * </p>
+	 */
+	VISIBLECLASSES(1) {
+		@Override
+		public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+			JdwpObjectManager objectManager = contextProvider.getObjectManager();
 
-      // TODO maybe this will throw classcast exception ...
-      // has to be tested with system class loader!
-      ClassLoaderId classLoaderId = objectManager.readClassLoaderId(bytes);
-      ClassLoaderInfo classLoaderInfo = classLoaderId.getInfoObject();
+			// TODO maybe this will throw classcast exception ...
+			// has to be tested with system class loader!
+			ClassLoaderId classLoaderId = objectManager.readClassLoaderId(bytes);
+			ClassLoaderInfo classLoaderInfo = classLoaderId.getInfoObject();
 
-      if (classLoaderInfo == null) {
-        // system class loader
-        classLoaderInfo = ThreadInfo.getCurrentThread().getSystemClassLoaderInfo();
-      }
+			if (classLoaderInfo == null) {
+				// system class loader
+				classLoaderInfo = ThreadInfo.getCurrentThread().getSystemClassLoaderInfo();
+			}
 
-      logger.debug("Using classloader: {}", classLoaderInfo);
+			logger.debug("Using classloader: {}", classLoaderInfo);
 
-      ;
+			// we need to write the number of classes first
+			ByteArrayOutputStream loadedClassesOutputBytes = new ByteArrayOutputStream(0);
+			DataOutputStream loadedClassesOS = new DataOutputStream(loadedClassesOutputBytes);
 
-      // we need to write the number of classes first
-      ByteArrayOutputStream loadedClassesOutputBytes = new ByteArrayOutputStream(0);
-      DataOutputStream loadedClassesOS = new DataOutputStream(loadedClassesOutputBytes);
+			int classes = 0;
 
-      int classes = 0;
+			for (Iterator<ClassInfo> loadedClasses = classLoaderInfo.iterator(); loadedClasses.hasNext();) {
+				ClassInfo classInfo = loadedClasses.next();
+				// get the reference type for the class
+				ReferenceTypeId referenceTypeId = objectManager.getReferenceTypeId(classInfo);
+				referenceTypeId.writeTagged(loadedClassesOS);
 
-      for (Iterator<ClassInfo> loadedClasses = classLoaderInfo.iterator(); loadedClasses.hasNext();) {
-        ClassInfo classInfo = loadedClasses.next();
-        // get the reference type for the class
-        ReferenceTypeId referenceTypeId = objectManager.getReferenceTypeId(classInfo);
-        referenceTypeId.writeTagged(loadedClassesOS);
+				logger.debug("Class found: {}", referenceTypeId);
 
-        logger.debug("Class found: {}", referenceTypeId);
+				// increase the number of classes
+				++classes;
+			}
+			logger.trace("About to send classes (number: {}) as bytes: {}", classes, loadedClassesOutputBytes.toByteArray());
 
-        // increase the number of classes
-        ++classes;
-      }
-      logger.trace("About to send classes (number: {}) as bytes: {}", classes, loadedClassesOutputBytes.toByteArray());
+			os.writeInt(classes);
+			os.write(loadedClassesOutputBytes.toByteArray());
 
-      os.writeInt(classes);
-      os.write(loadedClassesOutputBytes.toByteArray());
+			logger.trace("Command end");
 
-      logger.trace("Command end");
+		}
+	};
 
-    }
-  };
+	final static Logger logger = LoggerFactory.getLogger(ClassLoaderReferenceCommand.class);
 
-  final static Logger logger = LoggerFactory.getLogger(ClassLoaderReferenceCommand.class);
+	private byte commandId;
 
-  private byte commandId;
+	private ClassLoaderReferenceCommand(int commandId) {
+		this.commandId = (byte) commandId;
+	}
 
-  private ClassLoaderReferenceCommand(int commandId) {
-    this.commandId = (byte) commandId;
-  }
+	private static ReverseEnumMap<Byte, ClassLoaderReferenceCommand> map = new ReverseEnumMap<Byte, ClassLoaderReferenceCommand>(
+			ClassLoaderReferenceCommand.class);
 
-  private static ReverseEnumMap<Byte, ClassLoaderReferenceCommand> map = new ReverseEnumMap<Byte, ClassLoaderReferenceCommand>(
-      ClassLoaderReferenceCommand.class);
+	@Override
+	public Byte identifier() {
+		return commandId;
+	}
 
-  @Override
-  public Byte identifier() {
-    return commandId;
-  }
+	@Override
+	public ClassLoaderReferenceCommand convert(Byte val) throws JdwpError {
+		return map.get(val);
+	}
 
-  @Override
-  public ClassLoaderReferenceCommand convert(Byte val) throws JdwpError {
-    return map.get(val);
-  }
-
-  @Override
-  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+	@Override
+	public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }
