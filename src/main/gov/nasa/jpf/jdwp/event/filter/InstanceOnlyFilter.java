@@ -21,8 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event.filter;
 
+import java.util.Objects;
+
 import gov.nasa.jpf.jdwp.event.InstanceOnlyFilterable;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.MJIEnv;
 
 /**
  * <p>
@@ -40,6 +44,13 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
   private ObjectId objectId;
 
+  /**
+   * Creates Instance Only Filter.
+   * 
+   * @param objectId
+   *          Required objectId (which can reference null {@link MJIEnv#NULL}
+   *          for static methods.
+   */
   public InstanceOnlyFilter(ObjectId objectId) {
     super(ModKind.INSTANCE_ONLY, InstanceOnlyFilterable.class);
     this.objectId = objectId;
@@ -47,8 +58,8 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
 
   @Override
   public boolean matches(InstanceOnlyFilterable event) {
-    // TODO not implemented yet
-    throw new RuntimeException("NOT IMPLEMENTED YET " + event + " ... " + objectId);
+    ElementInfo eventInstance = event.instance();
+    return Objects.equals(eventInstance, objectId.get());
   }
 
 }

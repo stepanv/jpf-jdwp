@@ -96,6 +96,11 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
       objectId.writeTagged(os);
     }
   }
+  
+  @Override
+  public ElementInfo instance() {
+    return objectBeingAccessed;
+  }
 
   @Override
   public FieldInfo getFieldInfo() {

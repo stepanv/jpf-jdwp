@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.exception.JdwpError;
 import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
@@ -48,7 +49,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
     @Override
     public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
         throws IOException, JdwpError {
-      int nameref = threadGroupElementInfo.getReferenceField("name");
+      int nameref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_NAME);
       ElementInfo name = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(nameref);
       JdwpString.write(name.asString(), os);
     }
@@ -64,7 +65,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
     @Override
     public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
         throws IOException, JdwpError {
-      int parentref = threadGroupElementInfo.getReferenceField("parent");
+      int parentref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_PARENT);
       ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
       logger.debug("Thread group parent: {}", parent);
 

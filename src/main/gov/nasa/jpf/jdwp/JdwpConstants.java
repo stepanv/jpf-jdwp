@@ -24,4 +24,28 @@ package gov.nasa.jpf.jdwp;
 public class JdwpConstants {
   public static final int MINOR = 1;
   public static final int MAJOR = 6;
+
+  /**
+   * Field name in {@link ThreadGroup} that references a parent
+   * <tt>ThreadGroup</tt>.<br/>
+   * This is environment dependent and may cause problems in the future if the
+   * field name changes!
+   */
+  public static final String FIELDNAME_THREADGROUP_PARENT = "parent";
+
+  /**
+   * Field name in {@link ThreadGroup} that references the name of the
+   * <tt>ThreadGroup</tt>.<br/>
+   * This is environment dependent and may cause problems in the future if the
+   * field name changes!
+   */
+  public static final String FIELDNAME_THREADGROUP_NAME = "name";
+  
+  /**
+   * Field name in {@link Thread} class that references the name of the
+   * <tt>ThreadGroup</tt> the thread belongs to.<br/>
+   * This is environment dependent and may cause problems in the future if the
+   * field name changes!
+   */
+  public static final String FIELDNAME_THREAD_GROUP = "group";
 }

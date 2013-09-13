@@ -21,6 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.vm.ElementInfo;
+
 public interface InstanceOnlyFilterable extends Event {
+
+  /**
+   * The instance associated with this event.
+   * 
+   * @return ElementInfo instance or <tt>null</tt> for statics
+   */
+  ElementInfo instance();
 
 }

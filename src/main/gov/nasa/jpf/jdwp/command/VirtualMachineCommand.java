@@ -141,7 +141,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
         int group = threadInfo.getThreadGroupRef();
         ElementInfo threadGroupElementInfo = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
 
-        int parentref = threadGroupElementInfo.getReferenceField("parent");
+        int parentref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_PARENT);
         ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
 
         if (parent == null) {
