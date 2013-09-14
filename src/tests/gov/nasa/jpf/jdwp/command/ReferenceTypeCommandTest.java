@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
+import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
@@ -245,11 +246,15 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 			
 			for (int i = 0; i < declared; ++i) {
 				// fieldId is thrown away
-				contextProvider.getObjectManager().readFieldId(outputBytes);
-				
-				storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
-				storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
-				storeToArray(2, outputArrayIndex++, mjiEnv.newInteger(outputBytes.getInt()));
+				try {
+          contextProvider.getObjectManager().readFieldId(outputBytes);
+          
+          storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+          storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+          storeToArray(2, outputArrayIndex++, mjiEnv.newInteger(outputBytes.getInt()));
+        } catch (InvalidIdentifier e) {
+          throw new IllegalStateException("No exceptions are allowed in this tests.", e);
+        }
 			}
 		}
 	};
@@ -263,7 +268,7 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 			Object[] foundFields = new Object[50];
 			ObjectWrapper<Integer> declared = new ObjectWrapper<Integer>();
 
-			instancesVerifier.verify(testedObject, declared, foundFields);
+			fieldsVerifier.verify(testedObject, declared, foundFields);
 			
 			assertEquals(2, declared.wrappedObject.intValue());
 			assertEquals("privateField", foundFields[0]);
