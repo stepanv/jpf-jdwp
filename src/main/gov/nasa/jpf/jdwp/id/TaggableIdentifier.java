@@ -36,6 +36,7 @@ import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
  * 
  * @see Identifier
  * @param <T>
+ *          Just to expose the template further to implementors.
  */
 public abstract class TaggableIdentifier<T> extends Identifier<T> {
 

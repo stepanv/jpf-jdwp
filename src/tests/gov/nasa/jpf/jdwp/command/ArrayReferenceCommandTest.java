@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommandTest.ObjectReferenceTestReferenceClass;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -165,7 +165,7 @@ public class ArrayReferenceCommandTest extends TestJdwp {
       ElementInfo stringElementInfo = VM.getVM().getHeap().newString("ModifiedStringValue2", ThreadInfo.getCurrentThread());
       // we need to create an association for this string instance in the Object
       // ID Manager
-      JdwpObjectManager.getInstance().getObjectId(stringElementInfo);
+      JdwpIdManager.getInstance().getObjectId(stringElementInfo);
 
       bytes.putLong(0);
       bytes.putLong(stringElementInfo.getObjectRef());
@@ -181,7 +181,7 @@ public class ArrayReferenceCommandTest extends TestJdwp {
 
   @Test
   public void setValuesTest() throws SecurityException, NoSuchFieldException {
-    if (verifyNoPropertyViolation("+classpath=+,C:\\Users\\stepan\\Data\\Mff\\mthesis\\public-sources\\gov.nasa.jpf.jpda\\gov.nasa.jpf.jdwp\\lib\\slf4j-api-1.7.5.jar,C:\\Users\\stepan\\Data\\Mff\\mthesis\\public-sources\\gov.nasa.jpf.jpda\\gov.nasa.jpf.jdwp\\lib\\slf4j-log4j12-1.7.5.jar")) {
+    if (verifyNoPropertyViolation()) {
 
       ArrayTestReferenceClass arrayObject = new ArrayTestReferenceClass();
 

@@ -24,7 +24,7 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.test.TestInError;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
@@ -98,7 +98,7 @@ public class ClassTypeCommandTest extends TestJdwp {
     dataOutputBytes = new ByteArrayOutputStream(0);
     dataOutputStream = new DataOutputStream(dataOutputBytes);
     bytes = ByteBuffer.allocate(200); // This "might" be enough
-    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
+    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpIdManager.getInstance());
 
     vm.initialize();
 

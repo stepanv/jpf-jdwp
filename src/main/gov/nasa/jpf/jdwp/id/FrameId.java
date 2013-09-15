@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidFrameId;
+import gov.nasa.jpf.jdwp.exception.id.InvalidFrameIdException;
 import gov.nasa.jpf.vm.StackFrame;
 
 /**
@@ -48,7 +48,7 @@ public class FrameId extends Identifier<StackFrame> {
    * @param stackFrame
    *          The {@link StackFrame} this identifier is created for.
    */
-  public FrameId(long id, StackFrame stackFrame) {
+  public FrameId(Long id, StackFrame stackFrame) {
     super(id, stackFrame);
   }
 
@@ -60,8 +60,8 @@ public class FrameId extends Identifier<StackFrame> {
    * Identifier)
    */
   @Override
-  public StackFrame nullObjectHandler() throws InvalidFrameId {
-    throw new InvalidFrameId(this);
+  public StackFrame nullObjectHandler() throws InvalidFrameIdException {
+    throw new InvalidFrameIdException(this);
   }
 
 }

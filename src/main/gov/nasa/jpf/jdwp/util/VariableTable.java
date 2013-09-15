@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.util;
 
+import gov.nasa.jpf.jdwp.exception.AbsentInformationException;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jvm.ClassFile;
 import gov.nasa.jpf.vm.Instruction;
@@ -52,21 +53,18 @@ public class VariableTable {
 
   private List<Slot> slots = new ArrayList<VariableTable.Slot>();
 
-  public VariableTable(MethodInfo methodInfo) {
+  public VariableTable(MethodInfo methodInfo) throws AbsentInformationException {
     logger.debug("Variable Table creation for method: {}", methodInfo);
 
     if (methodInfo.getLocalVars() != null) {
       for (LocalVarInfo localVarInfo : methodInfo.getLocalVars()) {
         slots.add(new Slot(localVarInfo, methodInfo));
       }
+    } else {
+      throw new AbsentInformationException("Method doesn't have variable information present: " + methodInfo
+          + " (Try to add debug info for the compilation.)");
     }
-    argCnt = methodInfo.getArgumentsSize(); // TODO this might be wrong ..
-    // see a comment bellow
-    // according to JDWP argCount is:
-    // The number of words in the frame used by arguments. Eight-byte
-    // arguments use two words; all others use one.
-    // I'm so unsure what exactly this means ... just TODO - has to be
-    // tested
+    argCnt = methodInfo.getArgumentsSize();
   }
 
   /**

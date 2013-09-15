@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -30,11 +30,30 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * The base class for all the monitor based events.<br/>
+ * This class aggregates all the common functionality at one place.
+ * 
+ * @author stepan
+ * 
+ */
 public class MonitorBase extends LocatableEvent {
 
   private ElementInfo taggedObject;
 
-  public MonitorBase(EventKind eventKind, ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
+  /**
+   * The general constructor. Hidden from the outside.
+   * 
+   * @param eventKind
+   *          The event kind of the monitor event.
+   * @param threadInfo
+   *          Thread which entered monitor
+   * @param location
+   *          location of contended monitor enter
+   * @param taggedObject
+   *          Monitor object reference
+   */
+  protected MonitorBase(EventKind eventKind, ThreadInfo threadInfo, ElementInfo taggedObject, Location location) {
     super(eventKind, threadInfo, location);
     this.taggedObject = taggedObject;
   }
@@ -45,7 +64,7 @@ public class MonitorBase extends LocatableEvent {
    */
   @Override
   protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-    ObjectId taggedObjectId = JdwpObjectManager.getInstance().getObjectId(taggedObject);
+    ObjectId taggedObjectId = JdwpIdManager.getInstance().getObjectId(taggedObject);
     taggedObjectId.write(os);
     getLocation().write(os);
 
@@ -53,7 +72,7 @@ public class MonitorBase extends LocatableEvent {
 
   @Override
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-    // empty
+    // empty .. no need to write an additional info
   }
 
 }

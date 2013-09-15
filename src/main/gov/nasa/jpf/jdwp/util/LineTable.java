@@ -85,9 +85,6 @@ public class LineTable {
       lineCodeIndex = instruction.getInstructionIndex();
       lineNumber = instruction.getLineNumber();
 
-      start = lineCodeIndex < start ? lineCodeIndex : start;
-      end = lineCodeIndex > end ? lineCodeIndex : end;
-
       lineRows.add(this);
 
       logger.debug("LINE TABLE: index: {} line: {} position: {} ... instruction: {}", lineCodeIndex, lineNumber, instruction.getPosition(),
@@ -108,7 +105,13 @@ public class LineTable {
     } else {
       if (methodInfo.getInstructions() != null) {
         int lastLineEntry = -1;
+        
         for (Instruction instruction : methodInfo.getInstructions()) {
+          
+          long lineCodeIndex = instruction.getInstructionIndex();
+          start = lineCodeIndex < start ? lineCodeIndex : start;
+          end = lineCodeIndex > end ? lineCodeIndex : end;
+          
           if (lastLineEntry != instruction.getLineNumber()) {
             lastLineEntry = instruction.getLineNumber();
             new LineTableItem(instruction);

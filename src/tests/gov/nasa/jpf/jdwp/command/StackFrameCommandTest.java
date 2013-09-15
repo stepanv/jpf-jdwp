@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -54,11 +54,11 @@ public class StackFrameCommandTest extends TestJdwp {
       ElementInfo stringElementInfo = VM.getVM().getHeap().newString("ModifiedStringValue2", ThreadInfo.getCurrentThread());
       // we need to create an association for this string instance in the
       // Object ID Manager
-      JdwpObjectManager.getInstance().getObjectId(stringElementInfo);
+      JdwpIdManager.getInstance().getObjectId(stringElementInfo);
       ElementInfo stringArgElementInfo = VM.getVM().getHeap().newString("argModified", ThreadInfo.getCurrentThread());
       // we need to create an association for this string instance in the
       // Object ID Manager
-      JdwpObjectManager.getInstance().getObjectId(stringArgElementInfo);
+      JdwpIdManager.getInstance().getObjectId(stringArgElementInfo);
 
       // 0: this
 
@@ -145,7 +145,7 @@ public class StackFrameCommandTest extends TestJdwp {
       // run the JDWP command
 
       StackFrameCommand.SETVALUES.execute(currentThread, currentThread.getTopFrame().getPrevious(), bytes, dataOutputStream,
-                                          contextProvider);
+                                          contextProvider, null, null);
 
       // results are verified in SuT
     }

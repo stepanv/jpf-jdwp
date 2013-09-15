@@ -21,26 +21,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.exception;
 
-public class VmDead extends JdwpError {
+/**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * The virtual machine is not running.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
+public class VmDeadException extends JdwpException {
 
   /**
 	 * 
 	 */
   private static final long serialVersionUID = -37532130944878131L;
 
-  public VmDead(String message, Throwable cause) {
+  /**
+   * Creates the VM Dead exception.
+   * 
+   * @param message
+   *          The message to be reported.
+   * @param cause
+   *          The exception cause to be chained.
+   */
+  public VmDeadException(String message, Throwable cause) {
     super(ErrorType.VM_DEAD, message, cause);
   }
 
-  public VmDead(String message) {
+  /**
+   * Creates the VM Dead exception.
+   * 
+   * @param message
+   *          The message to be reported.
+   */
+  public VmDeadException(String message) {
     super(ErrorType.VM_DEAD, message);
   }
 
-  public VmDead(Throwable cause) {
+  /**
+   * Creates the VM Dead exception.
+   * 
+   * @param cause
+   *          The exception cause to be chained.
+   */
+  public VmDeadException(Throwable cause) {
     super(ErrorType.VM_DEAD, cause);
   }
 
-  public VmDead() {
+  /**
+   * Creates the VM Dead exception.
+   */
+  public VmDeadException() {
     super(ErrorType.VM_DEAD);
   }
 

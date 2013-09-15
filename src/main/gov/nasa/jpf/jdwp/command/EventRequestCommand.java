@@ -25,16 +25,44 @@ import gnu.classpath.jdwp.Jdwp;
 import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.EventRequest;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * The {@link EventRequestCommand} enum class implements the
+ * {@link CommandSet#EVENTREQUEST} set of commands. For the detailed
+ * specification refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_EventRequest"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_EventRequest</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventRequestCommand> {
+
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Set an event request. When the event described by this request occurs, an
+   * {@link Event} is sent from the target VM. If an event occurs that has not
+   * been requested then it is not sent from the target VM. The two exceptions
+   * to this are the {@link EventKind#VM_START} Event and the
+   * {@link EventKind#VM_DEATH} Event which are automatically generated events.<br/>
+   * See {@link EventCommand#COMPOSITE} for further details.
+   * </p>
+   * 
+   * @see Event
+   * @see EventCommand#COMPOSITE
+   * @see EventRequest
+   */
   SET(1) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       EventRequest<Event> eventRequest = EventRequest.factory(bytes, contextProvider);
 
       Jdwp.getEventRequestManager().requestEvent(eventRequest);
@@ -43,25 +71,36 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
       os.writeInt(eventRequest.getId());
     }
   },
+
   /**
+   * <p>
+   * <h2>JDWP Specification</h2>
    * Clear an event request. See {@link EventKind} for a complete list of events
    * that can be cleared. Only the event request matching the specified event
    * kind and requestID is cleared. If there isn't a matching event request the
    * command is a no-op and does not result in an error. Automatically generated
    * events do not have a corresponding event request and may not be cleared
    * using this command.
+   * </p>
    */
   CLEAR(2) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
       Jdwp.getEventRequestManager().removeEventRequest(eventKind, bytes.getInt());
 
     }
   },
+
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Removes all set breakpoints, a no-op if there are no breakpoints set.
+   * </p>
+   */
   CLEARALLBREAKPOINTS(3) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       Jdwp.getEventRequestManager().clearEventRequests(EventKind.BREAKPOINT);
     }
   };
@@ -79,10 +118,10 @@ public enum EventRequestCommand implements Command, ConvertibleEnum<Byte, EventR
   }
 
   @Override
-  public EventRequestCommand convert(Byte val) throws JdwpError {
+  public EventRequestCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
   @Override
-  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
+  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
 }

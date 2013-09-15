@@ -21,6 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.event.filter.StepFilter;
+
+/**
+ * The {@link StepFilterable} interface aggregates all the events that can be
+ * filtered by the {@link StepFilter} filter and its subtypes.
+ * 
+ * @author stepan
+ * 
+ */
 public interface StepFilterable extends Locatable {
 
 }

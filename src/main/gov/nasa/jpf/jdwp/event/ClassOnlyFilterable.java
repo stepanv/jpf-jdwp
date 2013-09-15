@@ -22,10 +22,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 
+/**
+ * The {@link ClassOnlyFilterable} interface aggregates all the events that can
+ * be filtered by the {@link ClassOnlyFilter}.
+ * 
+ * @author stepan
+ * 
+ */
 public interface ClassOnlyFilterable extends Event {
 
-  boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifier;
+  /**
+   * Whether the event matches the
+   * 
+   * @param classOnlyFilter
+   * @return
+   * @throws InvalidIdentifierException
+   */
+  boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifierException;
 
 }

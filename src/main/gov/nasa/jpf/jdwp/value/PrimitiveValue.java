@@ -26,8 +26,10 @@ import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.command.StackFrameCommand;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.BooleanArrayFields;
 import gov.nasa.jpf.vm.ByteArrayFields;
@@ -62,7 +64,26 @@ import java.util.HashMap;
 public abstract class PrimitiveValue implements Value {
 
   public static enum Tag implements ConvertibleEnum<Byte, Tag> {
-    ARRAY(91, Object[].class), BYTE(66, byte.class, ByteArrayFields.class) {
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * '[' - an array object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    ARRAY(91, Object[].class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'B' - a byte value (1 byte).
+     * </p>
+     */
+    BYTE(66, byte.class, ByteArrayFields.class) {
 
       @Override
       public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
@@ -89,6 +110,13 @@ public abstract class PrimitiveValue implements Value {
         return new ByteValue((byte) stackFrame.peek());
       }
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'C' - a character value (2 bytes).
+     * </p>
+     */
     CHAR(67, char.class, CharArrayFields.class) {
 
       @Override
@@ -117,7 +145,26 @@ public abstract class PrimitiveValue implements Value {
       }
 
     },
-    OBJECT(76, Object.class), FLOAT(70, float.class, FloatArrayFields.class) {
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'L' - an object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    OBJECT(76, Object.class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'F' - a float value (4 bytes).
+     * </p>
+     */
+    FLOAT(70, float.class, FloatArrayFields.class) {
 
       @Override
       public Value value(ElementInfo elementInfo, FieldInfo fieldInfo) {
@@ -145,6 +192,13 @@ public abstract class PrimitiveValue implements Value {
       }
 
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'D' - a double value (8 bytes).
+     * </p>
+     */
     DOUBLE(68, double.class, DoubleArrayFields.class) {
 
       @Override
@@ -173,6 +227,13 @@ public abstract class PrimitiveValue implements Value {
       }
 
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'I' - an int value (4 bytes).
+     * </p>
+     */
     INT(73, int.class, IntArrayFields.class) {
 
       @Override
@@ -200,6 +261,13 @@ public abstract class PrimitiveValue implements Value {
         return new IntegerValue(stackFrame.peek());
       }
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'J' - a long value (8 bytes).
+     * </p>
+     */
     LONG(74, long.class, LongArrayFields.class) {
 
       @Override
@@ -228,6 +296,13 @@ public abstract class PrimitiveValue implements Value {
       }
 
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'S' - a short value (2 bytes).
+     * </p>
+     */
     SHORT(83, short.class, ShortArrayFields.class) {
 
       @Override
@@ -255,6 +330,13 @@ public abstract class PrimitiveValue implements Value {
         return new ShortValue((short) stackFrame.peek());
       }
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'V' - a void value (no bytes).
+     * </p>
+     */
     VOID(86, void.class) {
 
       @Override
@@ -282,6 +364,13 @@ public abstract class PrimitiveValue implements Value {
         return new VoidValue();
       }
     },
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'Z' - a boolean value (1 byte).
+     * </p>
+     */
     BOOLEAN(90, boolean.class, BooleanArrayFields.class) {
 
       @Override
@@ -310,8 +399,66 @@ public abstract class PrimitiveValue implements Value {
       }
 
     },
-    STRING(115, String.class), THREAD(116, Thread.class), THREAD_GROUP(103, ThreadGroup.class), CLASS_LOADER(108, ClassLoader.class), CLASS_OBJECT(
-        99, Class.class);
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 's' - a String object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    STRING(115, String.class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 't' - a Thread object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    THREAD(116, Thread.class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'g' - a ThreadGroup object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    THREAD_GROUP(103, ThreadGroup.class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'l' - a ClassLoader object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    CLASS_LOADER(108, ClassLoader.class),
+
+    /**
+     * <p>
+     * <h2>JDWP Specification</h2>
+     * 'c' - a class object object (objectID size).
+     * </p>
+     * <p>
+     * Note that this instance uses the default methods implementation from
+     * {@link Tag}.
+     * </p>
+     */
+    CLASS_OBJECT(99, Class.class);
 
     private byte tagId;
     private final Class<?> clazz;
@@ -336,8 +483,7 @@ public abstract class PrimitiveValue implements Value {
      * </p>
      * <p>
      * This method is used to query values from object instances as in
-     * {@link StackFrameCommand}. TODO is there a better way how to get a value
-     * from a StackFrame?
+     * {@link StackFrameCommand}.
      * </p>
      * 
      * @param object
@@ -351,7 +497,7 @@ public abstract class PrimitiveValue implements Value {
       } else {
         elementInfo = (ElementInfo) object;
       }
-      return JdwpObjectManager.getInstance().getObjectId(elementInfo);
+      return JdwpIdManager.getInstance().getObjectId(elementInfo);
     }
 
     /**
@@ -400,7 +546,7 @@ public abstract class PrimitiveValue implements Value {
 
     private static Value objRefToValue(int objRef) {
       ElementInfo fieldElementInfo = VM.getVM().getHeap().get(objRef);
-      return JdwpObjectManager.getInstance().getObjectId(fieldElementInfo);
+      return JdwpIdManager.getInstance().getObjectId(fieldElementInfo);
     }
 
     /**
@@ -415,7 +561,7 @@ public abstract class PrimitiveValue implements Value {
      */
     public Value peekValue(StackFrame stackFrame) {
       ElementInfo result = VM.getVM().getHeap().get(stackFrame.peek());
-      return JdwpObjectManager.getInstance().getObjectId(result);
+      return JdwpIdManager.getInstance().getObjectId(result);
     }
 
     /**
@@ -426,10 +572,12 @@ public abstract class PrimitiveValue implements Value {
      * @param bytes
      *          Source byte buffer
      * @return Value instance
-     * @throws JdwpError
+     * @throws InvalidObjectException
+     *           if the ID in the byte buffer is not a valid ID or has been
+     *           garbage collected
      */
-    public Value readValue(ByteBuffer bytes) {
-      return JdwpObjectManager.getInstance().readObjectId(bytes);
+    public Value readValue(ByteBuffer bytes) throws InvalidObjectException {
+      return JdwpIdManager.getInstance().readObjectId(bytes);
     }
 
     private static final ReverseEnumMap<Byte, Tag> map = new ReverseEnumMap<Byte, Tag>(Tag.class);
@@ -447,12 +595,12 @@ public abstract class PrimitiveValue implements Value {
       }
     }
 
-    public static Value bytesToValue(ByteBuffer bytes) throws JdwpError {
+    public static Value bytesToValue(ByteBuffer bytes) throws JdwpException {
       Tag tag = ARRAY.convert(bytes.get());
       return tag.readValue(bytes);
     }
 
-    public static Value taggedObjectToValue(byte tagByte, Object object) throws JdwpError {
+    public static Value taggedObjectToValue(byte tagByte, Object object) throws JdwpException {
       return map.get(tagByte).value(object);
     }
 
@@ -472,7 +620,7 @@ public abstract class PrimitiveValue implements Value {
     }
 
     @Override
-    public Tag convert(Byte val) throws JdwpError {
+    public Tag convert(Byte val) throws IllegalArgumentException {
       return map.get(val);
     }
 

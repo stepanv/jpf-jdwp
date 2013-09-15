@@ -22,6 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.exception;
 
 /**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * </p>
+ * 
  * The string is invalid.
  * 
  * Thrown when incoming string doesn't meet constraints.
@@ -29,7 +33,7 @@ package gov.nasa.jpf.jdwp.exception;
  * @author stepan
  * 
  */
-public class InvalidString extends JdwpError {
+public class InvalidStringException extends JdwpException {
 
   /**
 	 * 
@@ -42,7 +46,7 @@ public class InvalidString extends JdwpError {
    * @param invalidString
    *          The string that is invalid.
    */
-  public InvalidString(String invalidString) {
+  public InvalidStringException(String invalidString) {
     this(invalidString, null);
   }
 
@@ -54,7 +58,7 @@ public class InvalidString extends JdwpError {
    * @param message
    *          Additional message explaining why the string is invalid.
    */
-  public InvalidString(String invalidString, String message) {
+  public InvalidStringException(String invalidString, String message) {
     super(ErrorType.INVALID_STRING, "Invalid string: '" + invalidString + "'." + message != null ? " " + message : "");
   }
 
@@ -68,7 +72,7 @@ public class InvalidString extends JdwpError {
    * @param cause
    *          The cause of this exception.
    */
-  public InvalidString(String invalidString, String message, Throwable cause) {
+  public InvalidStringException(String invalidString, String message, Throwable cause) {
     super(ErrorType.INVALID_STRING, "Invalid string: '" + invalidString + "'." + message != null ? " " + message : "", cause);
   }
 

@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.type;
 
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.InvalidLocationException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
@@ -131,7 +132,7 @@ public class Location {
     return factory(instruction);
   }
 
-  private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws JdwpError {
+  private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws InvalidMethodIdException {
     logger.debug("looking for METHOD global id: {} of CLASS: {}", id, classInfo);
     for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
       if (id == methodInfo.getGlobalId()) {
@@ -143,13 +144,14 @@ public class Location {
     if (classInfo.getSuperClass() != null) {
       return methodInfoLookup(classInfo.getSuperClass(), id);
     }
-    throw new InvalidMethodId(new MethodId(id));
+    throw new InvalidMethodIdException(new MethodId(id));
   }
 
-  public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-    byte typeTag = bytes.get(); // TODO we have unique id for all
-    // referenceTypeIds regardless of its type
-    // tag
+  public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws InvalidIdentifierException, InvalidLocationException {
+    // we don't mix IDs of classes and interfaces and thus this byte is not
+    // required
+    @SuppressWarnings("unused")
+    byte typeTag = bytes.get();
     ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
 
     ClassInfo classInfo = referenceTypeId.get();
@@ -159,8 +161,13 @@ public class Location {
     long index = bytes.getLong();
 
     MethodInfo methodInfo = methodInfoLookup(classInfo, id);
+    Instruction instruction = methodInfo.getInstruction((int) index);
 
-    return new Location(methodInfo, (int) index, methodInfo.getInstruction((int) index));
+    if (instruction == null) {
+      throw new InvalidLocationException(classInfo, methodInfo, instruction, index);
+    }
+
+    return new Location(methodInfo, (int) index, instruction);
   }
 
   public Instruction getInstruction() {
@@ -173,7 +180,7 @@ public class Location {
     if (methodInfo != null) {
 
     }
-    JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
+    JdwpIdManager objectManager = JdwpIdManager.getInstance();
 
     ClassInfo classInfo = methodInfo.getClassInfo();
     objectManager.getReferenceTypeId(classInfo).writeTagged(os);

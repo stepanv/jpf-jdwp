@@ -23,7 +23,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.command.EventRequestCommand;
 import gov.nasa.jpf.jdwp.event.ClassFilterable;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.exception.JdwpException.ErrorType;
 
 /**
  * Class filters allow only certain classes, matching the provided pattern, to

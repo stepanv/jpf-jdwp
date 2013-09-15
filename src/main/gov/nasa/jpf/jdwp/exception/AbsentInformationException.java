@@ -21,25 +21,57 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.exception;
 
-public class AbsentInformationException extends JdwpError {
+/**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * Desired information is not available.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
+public class AbsentInformationException extends JdwpException {
 
   /**
 	 * 
 	 */
   private static final long serialVersionUID = 4479627949608944900L;
 
+  /**
+   * The constructor.
+   */
   public AbsentInformationException() {
     super(ErrorType.ABSENT_INFORMATION);
   }
 
+  /**
+   * The constructor.
+   * 
+   * @param message
+   *          The error message.
+   */
   public AbsentInformationException(String message) {
     super(ErrorType.ABSENT_INFORMATION, message);
   }
 
+  /**
+   * The constructor.
+   * 
+   * @param cause
+   *          The cause exception.
+   */
   public AbsentInformationException(Throwable cause) {
     super(ErrorType.ABSENT_INFORMATION, cause);
   }
 
+  /**
+   * The constructor.
+   * 
+   * @param message
+   *          The error message.
+   * @param cause
+   *          The cause exception.
+   */
   public AbsentInformationException(String message, Throwable cause) {
     super(ErrorType.ABSENT_INFORMATION, message, cause);
   }

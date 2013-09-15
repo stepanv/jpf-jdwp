@@ -62,6 +62,24 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * <p>
+ * This is the only one point how the JPF communicates with the JDWP backend.<br/>
+ * It is a common design that all the JPF extensions (such as this
+ * <i>jpf-jdwp</i> project) use only the <i>Listener API</i>.
+ * </p>
+ * <p>
+ * The flow of the program execution is delegated from the listener methods in
+ * this class to the JDWP back-end. Even though there are still other JDWP
+ * threads that can theoretically communicate with JPF but this is disallowed
+ * since JPF may not be in a consistent state and the information that may be
+ * obtained would be corrupted.
+ * </p>
+ * 
+ * @see JDWPRunner
+ * @author stepan
+ * 
+ */
 public class JDWPListener extends JDWPSearchBase implements VMListener {
 
   @Override
@@ -76,6 +94,18 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   // this is here TEMPORARILLY until we solve the JDWP singleton problem
   private Jdwp jdwp;
 
+  /**
+   * <p>
+   * This constructor is used by the JPF if this JDWP back-end is enabled in the
+   * <i>listener only</i> mode. (ie. The program is not executed from the
+   * {@link JDWPRunner#main(String[])} method.)
+   * </p>
+   * <p>
+   * To enable the JDWP back-end in such mode just enable this listener provided
+   * all the required classes are available on the <i>JPF native classpath</i>.<br/>
+   * (see <tt>jpf-core.native_classpath</tt>)
+   * </p>
+   */
   public JDWPListener() {
     runningAsListenerOnly = true;
 
@@ -111,6 +141,14 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     virtualMachine.getRunLock().lock();
   }
 
+  /**
+   * The standard way to initialize this listener.
+   * 
+   * @param jpf
+   *          The JPF.
+   * @param virtualMachine
+   *          The JDWP VM representation.
+   */
   public JDWPListener(JPF jpf, VirtualMachine virtualMachine) {
     this.virtualMachine = virtualMachine;
   }
@@ -222,6 +260,11 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     }
   }
 
+  /**
+   * This list is populated with all the classes that were loaded during the JPF
+   * startup prior the time it was allowed to start sending events because no
+   * such events were registered.
+   */
   List<ClassInfo> postponedLoadedClasses = new ArrayList<ClassInfo>();
 
   @Override
@@ -329,6 +372,16 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     return hasNonnullEventRequests(firstEventKind) || hasNonnullEventRequests(secondEventKind);
   }
 
+  /**
+   * The hander for uncaught exceptions.
+   * 
+   * @param vm
+   *          The VM.
+   * @param currentThread
+   *          The thread that generated the exception throw.
+   * @param thrownException
+   *          The exception to be thrown.
+   */
   private void uncaughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException) {
     Instruction instruction = vm.getInstruction();
     if (instruction != null) {
@@ -338,6 +391,21 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     }
   }
 
+  /**
+   * The hander for caught exceptions.
+   * 
+   * @param vm
+   *          The VM.
+   * @param currentThread
+   *          The thread that generated the exception throw.
+   * @param thrownException
+   *          The exception to be thrown.
+   * @param handlerFrame
+   *          The frame where this exception will be handled.
+   * @param matchingHandler
+   *          The representation of the handler that will handle this exception.
+   *          (At the handler frame if anyone is interested.)
+   */
   private void caughtExceptionThrown(VM vm, ThreadInfo currentThread, ElementInfo thrownException, StackFrame handlerFrame,
                                      ExceptionHandler matchingHandler) {
     Instruction instruction = vm.getInstruction();
@@ -382,6 +450,11 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
   Map<Integer, State> lastKnownThreadStates = new HashMap<Integer, ThreadInfo.State>();
 
+  /**
+   * This is a way how the thread mess is put in order.<br/>
+   * This is because of Eclipse bad implementation of incoming thread event
+   * notifications which is full of race conditions.
+   */
   public void fixThreadNotificationState() {
     for (ThreadInfo threadInfo : VM.getVM().getThreadList().getThreads()) {
 

@@ -45,7 +45,7 @@ import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -90,7 +90,7 @@ public class PacketProcessor implements PrivilegedAction {
     _connection = con;
     _shutdown = false;
 
-    ccp = new CommandContextProvider(con.getVm(), JdwpObjectManager.getInstance());
+    ccp = new CommandContextProvider(con.getVm(), JdwpIdManager.getInstance());
 
     // MAXIMUM is the value of the largest command set we may receive
     _outputBytes = new ByteArrayOutputStream();
@@ -166,10 +166,10 @@ public class PacketProcessor implements PrivilegedAction {
       try {
         gov.nasa.jpf.jdwp.command.CommandSet.execute(commandPkt.getCommand(), bb, _os, ccp);
         reply.setData(_outputBytes.toByteArray());
-      } catch (gov.nasa.jpf.jdwp.exception.VmDead e) {
+      } catch (gov.nasa.jpf.jdwp.exception.VmDeadException e) {
         logger.debug("VM is dead. Will send VM_DEAD error code...", e);
         reply.setErrorCode(e.getErrorType().identifier());
-      } catch (gov.nasa.jpf.jdwp.exception.JdwpError e) {
+      } catch (gov.nasa.jpf.jdwp.exception.JdwpException e) {
         logger.info("Command {} returns an error", commandPkt.getCommand(), e);
         reply.setErrorCode(e.getErrorType().identifier());
       }

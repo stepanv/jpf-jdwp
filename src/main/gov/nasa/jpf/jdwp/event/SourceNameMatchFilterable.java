@@ -21,6 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.event.filter.SourceNameMatchFilter;
+
+/**
+ * The {@link SourceNameMatchFilterable} interface aggregates all the events
+ * that can be filtered by the {@link SourceNameMatchFilter} filter.
+ * 
+ * @author stepan
+ * 
+ */
 public interface SourceNameMatchFilterable extends Event {
 
 }

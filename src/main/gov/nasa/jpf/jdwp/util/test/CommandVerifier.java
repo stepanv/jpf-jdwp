@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.util.test;
 
 import gov.nasa.jpf.jdwp.command.Command;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.Identifier;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -52,7 +53,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
   }
 
   protected ObjectId loadObjectId(int i) {
-    return JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[i]);
+    return JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[i]);
   }
 
   @SuppressWarnings("unchecked")
@@ -63,7 +64,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
   protected FieldId loadFieldId(ObjectId objectId, int i) {
     String fieldString = passedObjectAs(i, ElementInfo.class).asString();
     FieldInfo fieldInfo = objectId.get().getFieldInfo(fieldString);
-    return JdwpObjectManager.getInstance().getFieldId(fieldInfo);
+    return JdwpIdManager.getInstance().getFieldId(fieldInfo);
   }
 
   protected void storeToWrapper(int i, int objectReference) {
@@ -93,7 +94,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
 
   }
 
-  abstract protected void processOutput(ByteBuffer outputBytes);
+  abstract protected void processOutput(ByteBuffer outputBytes) throws InvalidIdentifierException;
 
   abstract protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException;
 

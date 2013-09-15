@@ -21,9 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.NotImplementedException;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.LineTable;
 import gov.nasa.jpf.jdwp.util.VariableTable;
@@ -34,6 +36,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * The {@link MethodCommand} enum class implements the {@link CommandSet#METHOD}
+ * set of commands. For the detailed specification refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_Method"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_Method</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodCommand> {
 
   /**
@@ -48,41 +60,61 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
    */
   LINETABLE(1) {
     @Override
-    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       LineTable lineTable = new LineTable(methodInfo);
       lineTable.write(os);
     }
   },
 
   /**
+   * <p>
+   * <h2>JDWP Specification</h2>
    * Returns variable information for the method. The variable table includes
    * arguments and locals declared within the method. For instance methods, the
    * "this" reference is included in the table. Also, synthetic variables may be
    * present.
+   * </p>
    */
   VARIABLETABLE(2) {
     @Override
-    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       VariableTable variableTable = new VariableTable(methodInfo);
       variableTable.write(os);
     }
   },
+  
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Retrieve the method's bytecodes as defined in the JVM Specification.
+   * Requires {@link CapabilitiesNew#CAN_GET_BYTECODES} capability.
+   * </p>
+   */
   BYTECODES(3) {
     @Override
-    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
-      throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      // can throw this exception as far as can get bytecodes capability is
+      // false.
+      throw new NotImplementedException();
     }
   },
+
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Determine if this method is obsolete. A method is obsolete if it has been
+   * replaced by a non-equivalent method using the
+   * {@link VirtualMachineCommand#REDEFINECLASSES} command. The original and
+   * redefined methods are considered equivalent if their bytecodes are the same
+   * except for indices into the constant pool and the referenced constants are
+   * equal.
+   * </p>
+   */
   ISOBSOLETE(4) {
     @Override
-    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
-      throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
-
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      // is ok as far as the redefine classes capability is false
+      throw new NotImplementedException();
     }
   },
 
@@ -98,8 +130,7 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
    */
   VARIABLETABLEWITHGENERIC(5) {
     @Override
-    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       VariableTable variableTable = new VariableTable(methodInfo);
       variableTable.writeGeneric(os);
 
@@ -119,15 +150,30 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
   }
 
   @Override
-  public MethodCommand convert(Byte val) throws JdwpError {
+  public MethodCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
-  public abstract void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-      throws IOException, JdwpError;
+  /**
+   * The {@link MethodCommand} specific extension of command execution.
+   * 
+   * @param methodInfo
+   *          The method that is associated with the method commands.
+   * @param bytes
+   *          The buffer of bytes that is used as an input of the command.
+   * @param os
+   *          The output stream that is used for a command output.
+   * @param contextProvider
+   *          The Context Provider.
+   * @throws IOException
+   *           If given input or output have I/O issues.
+   * @throws JdwpException
+   *           If any JDWP based error occurs.
+   */
+  public abstract void execute(MethodInfo methodInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
 
   @Override
-  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
     ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
     ClassInfo clazz = refId.get();
 

@@ -25,14 +25,14 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.StepFilterable;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Instruction;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -49,6 +49,10 @@ import java.util.logging.Logger;
  * constraints. This modifier can be used with step event kinds only.
  * </p>
  * 
+ * @see StepIntoFilter
+ * @see StepOutFilter
+ * @see StepOverFilter
+ * 
  * @author stepan
  * 
  */
@@ -57,6 +61,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
   private static Logger log = Logger.getLogger(StepFilter.class.getName());
 
   public static enum StepSize implements ConvertibleEnum<Integer, StepSize> {
+
     /** Step by the minimum possible amount (often a bytecode instruction). */
     MIN(0),
 
@@ -80,31 +85,34 @@ public abstract class StepFilter extends Filter<StepFilterable> {
     private static ReverseEnumMap<Integer, StepSize> map = new ReverseEnumMap<Integer, StepFilter.StepSize>(StepSize.class);
 
     @Override
-    public StepSize convert(Integer stepSizeId) throws JdwpError {
+    public StepSize convert(Integer stepSizeId) throws IllegalArgumentException {
       return map.get(stepSizeId);
     }
 
   }
 
   public static enum StepDepth implements ConvertibleEnum<Integer, StepDepth> {
+
     /** Step into any method calls that occur before the end of the step. */
     INTO(0) {
       @Override
-      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws InvalidThreadException, InvalidObjectException {
         return new StepIntoFilter(threadId, stepSize);
       }
     },
+
     /** Step over any method calls that occur before the end of the step. */
     OVER(1) {
       @Override
-      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws InvalidThreadException, InvalidObjectException {
         return new StepOverFilter(threadId, stepSize);
       }
     },
+
     /** Step out of the current method. */
     OUT(2) {
       @Override
-      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws JdwpError {
+      public StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws InvalidThreadException, InvalidObjectException {
         return new StepOutFilter(threadId, stepSize);
       }
     };
@@ -123,12 +131,26 @@ public abstract class StepFilter extends Filter<StepFilterable> {
     private static ReverseEnumMap<Integer, StepDepth> map = new ReverseEnumMap<Integer, StepDepth>(StepDepth.class);
 
     @Override
-    public StepDepth convert(Integer stepDepthId) throws JdwpError {
+    public StepDepth convert(Integer stepDepthId) throws IllegalArgumentException {
       return map.get(stepDepthId);
     }
 
-    public abstract StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider)
-        throws JdwpError;
+    /**
+     * Creates the specific step filter.
+     * 
+     * @param threadId
+     *          The thread associated with this filter.
+     * @param stepSize
+     *          The step size.
+     * @param contextProvider
+     *          The context provider.
+     * @return The {@link StepFilter} subtype instance.
+     * @throws InvalidThreadException
+     *           If given thread ID is not an ID of a thread.
+     * @throws InvalidObjectException
+     *           If given object ID is not valid or has been GCed.
+     */
+    public abstract StepFilter createStepFilter(ThreadId threadId, StepSize stepSize, CommandContextProvider contextProvider) throws InvalidThreadException, InvalidObjectException;
 
   }
 
@@ -171,9 +193,9 @@ public abstract class StepFilter extends Filter<StepFilterable> {
    * @param size
    *          Size of each step
    * @throws InvalidThreadException
-   * @throws InvalidObject
+   * @throws InvalidObjectException
    */
-  public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException, InvalidObject {
+  public StepFilter(ThreadId threadId, StepSize size) throws InvalidThreadException, InvalidObjectException {
     super(ModKind.STEP, StepFilterable.class);
 
     if (threadId.get() == null) {
@@ -230,14 +252,23 @@ public abstract class StepFilter extends Filter<StepFilterable> {
   }
 
   @Override
-  public boolean matches(StepFilterable event) throws InvalidObject {
+  public boolean matches(StepFilterable event) throws InvalidObjectException {
     return matches(event.getLocation().getInstruction(), event.getThread());
   }
 
+  /**
+   * The core algorithm of the step filtering.
+   * 
+   * @param currentInstruction
+   *          The instruction to match.
+   * @param currentThread
+   *          The thread to match
+   * @return Whether matched.
+   */
   private boolean matches(Instruction currentInstruction, ThreadInfo currentThread) {
 
     /* Are we in the right thread? */
-    if (JdwpObjectManager.getInstance().getThreadId(currentThread) != thread) {
+    if (JdwpIdManager.getInstance().getThreadId(currentThread) != thread) {
       return false;
     }
 
@@ -268,9 +299,8 @@ public abstract class StepFilter extends Filter<StepFilterable> {
       }
       break;
     default:
-      // TODO Error handling
-      throw new RuntimeException("dead block reached"); // TODO remove
-      // this
+      // the provided size is invalid hence it doesn't match
+      return false;
     }
 
     return false;
@@ -305,7 +335,23 @@ public abstract class StepFilter extends Filter<StepFilterable> {
 
   protected abstract boolean matches(int currentStackFrameSize, Instruction currentInstruction);
 
-  public static StepFilter factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+  /**
+   * Creates the {@link StepFilter} subtype that implements the actual
+   * filtering.
+   * 
+   * @param bytes
+   *          The buffer of bytes to create the step filter from.
+   * @param contextProvider
+   *          The Context provider.
+   * @return The newly created {@link StepFilter} instance.
+   * @throws IllegalArgumentException
+   *           If the sent depth of size are invalid.
+   * @throws InvalidObjectException
+   *           If any of the sent objects are invalid.
+   * @throws InvalidThreadException
+   *           If given thread ID is not an ID of a thread.
+   */
+  public static StepFilter factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws IllegalArgumentException, InvalidThreadException, InvalidObjectException {
     ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
     int size = bytes.getInt();
     int depth = bytes.getInt();

@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
@@ -95,8 +95,8 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // Prepare arguments
       Value[] values = new Value[2];
-      values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
-      values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
+      values[0] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
+      values[1] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
 
       ClassInfo clazz = ClassLoaderInfo.getSystemResolvedClassInfo("gov.nasa.jpf.jdwp.VirtualMachineHelperTest$MethodCallReferenceClass");
 
@@ -115,7 +115,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
-      ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId integerId = JdwpIdManager.getInstance().readObjectId(bb);
       clazz.getModifiableStaticElementInfo().setReferenceField("staticObject", integerId.get().getObjectRef());
 
       // no exception hence NullObject expected
@@ -152,8 +152,8 @@ public class VirtualMachineHelperTest extends TestJdwp {
       // Prepare arguments
       DynamicElementInfo classInstance = (DynamicElementInfo) passedObjects[0];
       Value[] values = new Value[2];
-      values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
-      values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[2]);
+      values[0] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
+      values[1] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[2]);
 
       ClassInfo clazz = classInstance.getClassInfo();
       MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
@@ -171,7 +171,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
-      ObjectId integerId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId integerId = JdwpIdManager.getInstance().readObjectId(bb);
       classInstance.setReferenceField("object", integerId.get().getObjectRef());
 
       // no exception hence NullObject expected
@@ -209,8 +209,8 @@ public class VirtualMachineHelperTest extends TestJdwp {
       // Prepare arguments
       DynamicElementInfo classInstance = (DynamicElementInfo) passedObjects[0];
       Value[] values = new Value[2];
-      values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
-      values[1] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[2]);
+      values[0] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[1]);
+      values[1] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[2]);
 
       ClassInfo clazz = classInstance.getClassInfo();
       MethodInfo method = clazz.getMethod("compute(Ljava/lang/Integer;Ljava/lang/Integer;)Ljava/lang/Integer;", false);
@@ -230,7 +230,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
       assertEquals(Tag.OBJECT.identifier().byteValue(), bb.get());
-      ObjectId exceptionId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId exceptionId = JdwpIdManager.getInstance().readObjectId(bb);
       classInstance.setReferenceField("object", exceptionId.get().getObjectRef());
 
       // verify there is nothing else left in the buffer
@@ -262,7 +262,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // Prepare arguments
       Value[] values = new Value[1];
-      values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
+      values[0] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
 
       ClassInfo clazz = ClassLoaderInfo.getSystemResolvedClassInfo("gov.nasa.jpf.jdwp.VirtualMachineHelperTest$MethodCallReferenceClass");
       MethodInfo method = clazz.getMethod("<init>(Ljava/lang/Integer;)V", false);
@@ -280,7 +280,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
-      ObjectId constructedObjectId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId constructedObjectId = JdwpIdManager.getInstance().readObjectId(bb);
       clazz.getModifiableStaticElementInfo().setReferenceField("staticObject", constructedObjectId.get().getObjectRef());
 
       // no exception hence NullObject expected
@@ -395,7 +395,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
       assertEquals(Tag.STRING.identifier().byteValue(), bb.get());
       // verify the primitive value result right in here since it's not that
       // easy to pass primitives back to SuT
-      ObjectId objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId objectId = JdwpIdManager.getInstance().readObjectId(bb);
       ElementInfo elementInfo = objectId.get();
       returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", elementInfo == null ? -1 : elementInfo.getObjectRef());
 
@@ -431,7 +431,7 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // Prepare arguments
       Value[] values = new Value[1];
-      values[0] = JdwpObjectManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
+      values[0] = JdwpIdManager.getInstance().getObjectId((ElementInfo) passedObjects[0]);
 
       DynamicElementInfo classReturnInstance = (DynamicElementInfo) passedObjects[1];
       ClassInfo returnClazz = classReturnInstance.getClassInfo();
@@ -454,13 +454,13 @@ public class VirtualMachineHelperTest extends TestJdwp {
 
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
-      ObjectId objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+      ObjectId objectId = JdwpIdManager.getInstance().readObjectId(bb);
       ElementInfo elementInfo = objectId.get();
       returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", elementInfo == null ? -1 : elementInfo.getObjectRef());
 
       // tag byte is checked in the SuT
       bb.get();
-      objectId = JdwpObjectManager.getInstance().readObjectId(bb);
+      objectId = JdwpIdManager.getInstance().readObjectId(bb);
       elementInfo = objectId.get();
       returnClazz.getModifiableStaticElementInfo().setReferenceField("staticThrowable",
                                                                      elementInfo == null ? -1 : elementInfo.getObjectRef());

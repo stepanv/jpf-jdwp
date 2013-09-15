@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event;
 
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gov.nasa.jpf.jdwp.command.CommandSet;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
@@ -29,7 +30,7 @@ import gov.nasa.jpf.jdwp.command.EventCommand;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.InvalidEventTypeException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -40,6 +41,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The base implementation of all events.<br/>
+ * All the common functionality of all events should go here.
+ * 
+ * @author stepan
+ * 
+ */
 public abstract class EventBase implements Event {
 
   private EventKind eventKind;
@@ -76,6 +84,15 @@ public abstract class EventBase implements Event {
     writeSpecific(os);
   }
 
+  /**
+   * This is how subtypes of this class write their additional information to
+   * the output stream.
+   * 
+   * @param os
+   *          The output stream
+   * @throws IOException
+   *           If an I/O error occurs.
+   */
   protected abstract void writeSpecific(DataOutputStream os) throws IOException;
 
   @Override
@@ -83,22 +100,71 @@ public abstract class EventBase implements Event {
     return "Event: " + super.toString() + ", kind: " + eventKind;
   }
 
+  /**
+   * All the kinds of events implemented as {@link ConvertibleEnum} enums so
+   * that they can be easily translated from their corresponding IDs.
+   * 
+   * <p>
+   * Some of the following event kinds do not have specified what they mean and
+   * technically cannot be used since there is no specification for them.<br/>
+   * Refer to the {@link EventKind#EventKind(int)} constructor and to the
+   * {@link EventKind#isFilterableBy(Filter)} method where an exception might be
+   * thrown in some situations.
+   * </p>
+   * 
+   * @author stepan
+   * 
+   */
   public static enum EventKind implements ConvertibleEnum<Byte, EventKind> {
     /** Never sent across JDWP */
     VM_DISCONNECTED(100),
+    /** Single step event kind */
+    SINGLE_STEP(1, SingleStepEvent.class),
+    /** Breakpoint hit event kind */
+    BREAKPOINT(2, BreakpointEvent.class),
+    /** Frame pop event kind */
+    FRAME_POP(3),
+    /** Exception thrown event kind */
+    EXCEPTION(4, ExceptionEvent.class),
+    /** User defined event kind */
+    USER_DEFINED(5),
+    /** Thread start event kind */
+    THREAD_START(6, ThreadStartEvent.class),
 
-    SINGLE_STEP(1, SingleStepEvent.class), BREAKPOINT(2, BreakpointEvent.class), FRAME_POP(3), EXCEPTION(4, ExceptionEvent.class), USER_DEFINED(
-        5), THREAD_START(6, ThreadStartEvent.class),
+    /** @see EventKind#THREAD_END */
+    THREAD_DEATH(7, ThreadDeathEvent.class),
 
-    /** JDWP.EventKind.THREAD_END */
-    THREAD_DEATH(7, ThreadDeathEvent.class), CLASS_PREPARE(8, ClassPrepareEvent.class), CLASS_UNLOAD(9, ClassUnloadEvent.class), CLASS_LOAD(
-        10), FIELD_ACCESS(20, FieldAccessEvent.class), FIELD_MODIFICATION(21, FieldModificationEvent.class), EXCEPTION_CATCH(30), METHOD_ENTRY(
-        40, MethodEntryEvent.class), METHOD_EXIT(41, MethodExitEvent.class), METHOD_EXIT_WITH_RETURN_VALUE(42,
-        MethodExitWithReturnValueEvent.class), MONITOR_CONTENDED_ENTER(43, MonitorContendedEnterEvent.class), MONITOR_CONTENDED_ENTERED(44,
-        MonitorContendedEnteredEvent.class), MONITOR_WAIT(45, MonitorWaitEvent.class), MONITOR_WAITED(46, MonitorWaitedEvent.class),
+    /** Class prepare event kind */
+    CLASS_PREPARE(8, ClassPrepareEvent.class),
+    /** Class unload event kind */
+    CLASS_UNLOAD(9, ClassUnloadEvent.class),
+    /** Class load event kind */
+    CLASS_LOAD(10),
+    /** Field access event kind */
+    FIELD_ACCESS(20, FieldAccessEvent.class),
+    /** Field modification event kind */
+    FIELD_MODIFICATION(21, FieldModificationEvent.class),
+    /** Exception catch event kind */
+    EXCEPTION_CATCH(30),
+    /** Method entry event kind */
+    METHOD_ENTRY(40, MethodEntryEvent.class),
+    /** Method exit event kind */
+    METHOD_EXIT(41, MethodExitEvent.class),
+    /** Method exit with a return value event kind */
+    METHOD_EXIT_WITH_RETURN_VALUE(42, MethodExitWithReturnValueEvent.class),
+    /** Monitor contended enter event kind */
+    MONITOR_CONTENDED_ENTER(43, MonitorContendedEnterEvent.class),
+    /** Monitor contended entered event kind */
+    MONITOR_CONTENDED_ENTERED(44, MonitorContendedEnteredEvent.class),
+    /** Monitor wait event kind */
+    MONITOR_WAIT(45, MonitorWaitEvent.class),
+    /** Monitor waited event kind */
+    MONITOR_WAITED(46, MonitorWaitedEvent.class),
 
-    /** JDWP.EventKind.VM_INIT */
-    VM_START(90, VmStartEvent.class), VM_DEATH(99, VmDeathEvent.class),
+    /** @see EventKind#VM_INIT */
+    VM_START(90, VmStartEvent.class),
+    /** VM death event kind */
+    VM_DEATH(99, VmDeathEvent.class),
 
     /** obsolete - was used in jvmdi */
     VM_INIT(VM_START),
@@ -108,18 +174,42 @@ public abstract class EventBase implements Event {
     private byte eventId;
     private Class<? extends Event> eventClass;
 
+    /**
+     * This constructor is here just to be able to create all the defined
+     * events. However, several of the defined events are not mentioned in the
+     * specification and thus cannot be used!
+     * 
+     * @see EventKind#isFilterableBy(Filter)
+     * @param eventId
+     *          The ID of this event kind.
+     */
     EventKind(int eventId) {
       this.eventId = (byte) eventId;
       this.eventClass = null;
     }
 
+    /**
+     * The proper constructor of the event kind enum.
+     * 
+     * @param eventId
+     *          The ID of the event kind.
+     * @param eventClass
+     *          The class this event kind is associated with.
+     */
     EventKind(int eventId, Class<? extends Event> eventClass) {
       this.eventId = (byte) eventId;
       this.eventClass = eventClass;
     }
 
+    /**
+     * Constructor for reuse of obsolete event kinds.
+     * 
+     * @param eventKind
+     *          The event kind to reuse.
+     */
     EventKind(EventKind eventKind) {
       this.eventId = eventKind.eventId;
+      this.eventClass = eventKind.eventClass;
     }
 
     @Override
@@ -129,15 +219,38 @@ public abstract class EventBase implements Event {
 
     private static ReverseEnumMap<Byte, EventKind> map = new ReverseEnumMap<Byte, EventKind>(EventKind.class);
 
+    /**
+     * Converts the given ID of and event to appropriate {@link EventKind}
+     * instance.
+     * 
+     * @param eventId
+     *          The event ID to convert.
+     * 
+     * @throws InvalidEventTypeException
+     *           If the event has no mapping.
+     */
     @Override
-    public EventKind convert(Byte eventId) throws JdwpError {
-      return map.get(eventId);
+    public EventKind convert(Byte eventId) throws InvalidEventTypeException {
+      try {
+        return map.get(eventId);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidEventTypeException(eventId, e);
+      }
     }
 
+    /**
+     * This is how this implementation checks whether debuggers use only correct
+     * filters for particular event.
+     * 
+     * @param filter
+     *          The filter to be checked whether it can modify this event.
+     * @return True or false.
+     */
     public boolean isFilterableBy(Filter<? extends Event> filter) {
       if (eventClass == null) {
-        return true; // Specification doesn't tell how to handle non
-        // existent Events like (CLASS_LOAD)... TODO
+        // Specification doesn't tell how to handle non
+        // existent Events like CLASS_LOAD, FRAME_POP etc...
+        throw new IllegalStateException("This event kind cannot be used! There is no specs for it! " + this);
       }
       return filter.getGenericClass().isAssignableFrom(eventClass);
     }
@@ -147,17 +260,17 @@ public abstract class EventBase implements Event {
 
   /**
    * Converts the events into to a single JDWP {@link EventCommand#COMPOSITE}
-   * packet
+   * packet.
    * <p>
    * TODO Reused from GNU Classpath Event.toPacket();
    * </p>
    * 
    * @param dos
-   *          the stream to which to write data
-   * @param eventToRequestMap
-   *          The events and their matching requests
+   *          The stream to which to write data.
+   * @param matchedEvents
+   *          The events to send.
    * @param suspendPolicy
-   *          the suspend policy enforced by the VM
+   *          The suspend policy enforced by the VM.
    * @returns a <code>JdwpPacket</code> of the events
    */
   public static JdwpPacket toPacket(DataOutputStream dos, List<? extends Event> matchedEvents, SuspendPolicy suspendPolicy) {

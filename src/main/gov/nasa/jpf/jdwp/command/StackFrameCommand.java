@@ -21,10 +21,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.InvalidSlotException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.NoMoreFramesException;
+import gov.nasa.jpf.jdwp.exception.ThreadNotSuspendedException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidFrameIdException;
 import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -41,6 +48,17 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link StackFrameCommand} enum class implements the
+ * {@link CommandSet#STACKFRAME} set of commands. For the detailed specification
+ * refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_StackFrame"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_StackFrame</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFrameCommand> {
   /**
    * <p>
@@ -56,7 +74,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
   GETVALUES(1) {
     @Override
     public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,
-                        CommandContextProvider contextProvider) throws IOException, JdwpError {
+                        CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws IOException, JdwpException {
       int slots = bytes.getInt();
       os.writeInt(slots);
 
@@ -67,16 +85,22 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
         Object object = null;
 
         LocalVarInfo localVarInfo = stackFrame.getLocalVarInfo(slot);
+        if (localVarInfo == null) {
+          throw new InvalidSlotException(stackFrame, slot);
+        }
 
         // object will remain as null (if it really is null)
         object = stackFrame.getLocalValueObject(localVarInfo);
 
+        // TODO solve == null for the object
+        
         Value value = Tag.taggedObjectToValue(tag, object);
         value.writeTagged(os);
 
       }
     }
   },
+
   /**
    * <p>
    * <h2>JDWP Specification</h2>
@@ -96,7 +120,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
   SETVALUES(2) {
     @Override
     public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,
-                        CommandContextProvider contextProvider) throws JdwpError {
+                        CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws JdwpException {
       int slotValues = bytes.getInt();
 
       StackFrame stackFrameModifiable = threadInfo.getModifiableFrame(stackFrame);
@@ -109,6 +133,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
       }
     }
   },
+
   /**
    * <p>
    * <h2>JDWP Specification</h2>
@@ -120,18 +145,27 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
   THISOBJECT(3) {
     @Override
     public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,
-                        CommandContextProvider contextProvider) throws IOException {
+                        CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws IOException {
+
+      // thisObject will be null for static frames
       ElementInfo thisObject = VM.getVM().getHeap().get(stackFrame.getThis());
 
       if (thisObject instanceof StaticElementInfo) {
-        // TODO this is possibly completely wrong
-        throw new IllegalArgumentException("Not sure whether we're allowed to return static elements");
+        throw new java.lang.IllegalArgumentException("Illegal object type: " + thisObject);
       }
+
+      // TODO solve == null
+      if (thisObject == null) {
+        NullObjectId.instanceWriteTagged(os);
+        return;
+      }
+
       ObjectId thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);
       logger.debug("Found this object id: {}, object itself: {}", thisObjectId, thisObject);
       thisObjectId.writeTagged(os);
     }
   },
+
   /**
    * <p>
    * <h2>JDWP Specification</h2>
@@ -142,15 +176,34 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
    * added back and if the invoke was not <code>invokestatic</code>,
    * <code>objectref</code> is added back as well. The Java virtual machine
    * program counter is restored to the opcode of the invoke instruction.
-   * <p>
    * </p>
-   * Since JDWP version 1.4. Requires canPopFrames capability - see
-   * {@link VirtualMachineCommand#CAPABILITIESNEW}. </p>
+   * Requires {@link CapabilitiesNew#CAN_POP_FRAMES} capability.
+   * 
+   * @since JDWP version 1.4.
    */
   POPFRAMES(4) {
     @Override
     public void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,
-                        CommandContextProvider contextProvider) {
+                        CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws ThreadNotSuspendedException, NoMoreFramesException, InvalidFrameIdException {
+
+      if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(threadInfo)) {
+        throw new ThreadNotSuspendedException();
+      }
+
+      boolean frameFound = false;
+      for (StackFrame frame : threadInfo) {
+        if (frame.equals(stackFrame)) {
+          frameFound = true;
+        }
+      }
+
+      if (!frameFound) {
+        throw new InvalidFrameIdException(frameId);
+      }
+
+      if (threadInfo.getTopFrame() == null) {
+        throw new NoMoreFramesException(threadInfo);
+      }
 
       for (StackFrame frame = threadInfo.getTopFrame(); (frame != null) && (frame != stackFrame); frame = frame.getPrevious()) {
         threadInfo.leave(); // that takes care of releasing locks
@@ -167,7 +220,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
   }
 
   @Override
-  public StackFrameCommand convert(Byte val) throws JdwpError {
+  public StackFrameCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
@@ -180,16 +233,16 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
   private static ReverseEnumMap<Byte, StackFrameCommand> map = new ReverseEnumMap<Byte, StackFrameCommand>(StackFrameCommand.class);
 
   @Override
-  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpError, IOException {
+  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpException, IOException {
     ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
     FrameId frameId = contextProvider.getObjectManager().readFrameId(bytes);
 
     // TODO frameId.get() should return InvalidFrame instead of
     // InvalidObject
-    execute(threadId.getInfoObject(), frameId.get(), bytes, os, contextProvider);
+    execute(threadId.getInfoObject(), frameId.get(), bytes, os, contextProvider, threadId, frameId);
   }
 
   public abstract void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,
-                               CommandContextProvider contextProvider) throws IOException, JdwpError;
+                               CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws IOException, JdwpException;
 
 }

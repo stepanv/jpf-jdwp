@@ -30,12 +30,12 @@ import java.util.List;
 
 /**
  * Event hierarchy root.
- * 
+ * <p>
  * With events, we want to use native JPF objects as long as possible, contrary
  * to the {@link Filter} facility. The reason is that an event can be created
- * and not been sent across JDWP (if it is filtered or a matching request is not
- * found). Not resolving the ID of JPF or SuT objects helps the performance.
- * 
+ * and not being sent across JDWP (if it is filtered or a matching request is
+ * not found). Not resolving the ID of JPF or SuT objects helps the performance.
+ * </p>
  * 
  * @author stepan
  * 

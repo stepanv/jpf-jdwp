@@ -25,10 +25,11 @@ import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.NotImplementedException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -65,89 +66,184 @@ import java.nio.ByteBuffer;
 public abstract class Filter<T extends Event> {
 
   public static enum ModKind implements ConvertibleEnum<Byte, ModKind> {
+
+    /**
+     * <p>
+     * Creates the Count filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link CountFilter} documentation.
+     * </p>
+     */
     COUNT(1) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         return new CountFilter(bytes.getInt());
       }
     },
+
+    /**
+     * <p>
+     * Creates the Conditional filter/modifier of a possibly sent event.<br/>
+     * </p>
+     * Note that this modifier/filter is meant for future use and doesn't have
+     * any use even in the JDWP JDK 7.
+     */
     CONDITIONAL(2) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-        // TODO Auto-generated method stub
-        throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
+        // this is ok as long as this agent is intended to implement JDWP JDK 7
+        // or lesser.
+        throw new NotImplementedException();
       }
     },
+
+    /**
+     * <p>
+     * Creates the Thread only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link ThreadOnlyFilter}
+     * documentation.
+     * </p>
+     */
     THREAD_ONLY(3) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
         return new ThreadOnlyFilter(threadId);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Class only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link ClassOnlyFilter}
+     * documentation.
+     * </p>
+     */
     CLASS_ONLY(4) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
         return new ClassOnlyFilter(referenceTypeId);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Class match filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link ClassMatchFilter}
+     * documentation.
+     * </p>
+     */
     CLASS_MATCH(5) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         String classPattern = JdwpString.read(bytes);
         return new ClassMatchFilter(classPattern);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Class exclude filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link ClassExcludeFilter}
+     * documentation.
+     * </p>
+     */
     CLASS_EXCLUDE(6) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         String classPattern = JdwpString.read(bytes);
         return new ClassExcludeFilter(classPattern);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Location only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link LocationOnlyFilter}
+     * documentation.
+     * </p>
+     */
     LOCATION_ONLY(7) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         Location location = Location.factory(bytes, contextProvider);
         return new LocationOnlyFilter(location);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Exception only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link ExceptionOnlyFilter}
+     * documentation.
+     * </p>
+     */
     EXCEPTION_ONLY(8) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         ReferenceTypeId exceptionOrNull = contextProvider.getObjectManager().readReferenceTypeId(bytes);
         boolean caught = bytes.get() != 0;
         boolean uncaught = bytes.get() != 0;
         return new ExceptionOnlyFilter(exceptionOrNull, caught, uncaught);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Field only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link FieldOnlyFilter}
+     * documentation.
+     * </p>
+     */
     FIELD_ONLY(9) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         ReferenceTypeId declaring = contextProvider.getObjectManager().readReferenceTypeId(bytes);
         FieldId fieldId = contextProvider.getObjectManager().readFieldId(bytes);
         return new FieldOnlyFilter(declaring, fieldId);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Step filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link StepFilter} documentation.
+     * </p>
+     */
     STEP(10) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         return StepFilter.factory(bytes, contextProvider);
       }
     },
+
+    /**
+     * <p>
+     * Creates the Instance only filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link InstanceOnlyFilter}
+     * documentation.
+     * </p>
+     */
     INSTANCE_ONLY(11) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
         ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
         return new InstanceOnlyFilter(objectId);
       }
     },
+    
+    /**
+     * <p>
+     * Creates the Source name match filter/modifier of a possibly sent event.<br/>
+     * For further information refer to the {@link InstanceOnlyFilter}
+     * documentation.
+     * </p>
+     */
     SOURCE_NAME_MATCH(12) {
       @Override
-      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-        // TODO Auto-generated method stub
-        throw new JdwpError(ErrorType.NOT_IMPLEMENTED);
+      public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
+        String sourceNamePattern = JdwpString.read(bytes);
+        return new SourceNameMatchFilter(sourceNamePattern);
       }
     };
 
@@ -165,11 +261,11 @@ public abstract class Filter<T extends Event> {
     private static ReverseEnumMap<Byte, ModKind> map = new ReverseEnumMap<Byte, Filter.ModKind>(ModKind.class);
 
     @Override
-    public ModKind convert(Byte val) throws JdwpError {
+    public ModKind convert(Byte val) throws IllegalArgumentException {
       return map.get(val);
     }
 
-    public abstract Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
+    public abstract Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException;
   }
 
   private ModKind modKind;
@@ -181,7 +277,7 @@ public abstract class Filter<T extends Event> {
     this.genericClazz = genericClass;
   }
 
-  public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+  public static Filter<? extends Event> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
     return ModKind.COUNT.convert(bytes.get()).createFilter(bytes, contextProvider);
   }
 
@@ -191,10 +287,10 @@ public abstract class Filter<T extends Event> {
    * @param event
    *          The event to be filtered.
    * @return True of false as a result of filtering.
-   * @throws InvalidObject
-   * @throws InvalidIdentifier
+   * @throws InvalidObjectException
+   * @throws InvalidIdentifierException
    */
-  public boolean matches(T event) throws InvalidIdentifier {
+  public boolean matches(T event) throws InvalidIdentifierException {
     return false;
   }
 

@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.FieldOnlyFilterable;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.FieldInfo;
@@ -37,7 +37,6 @@ import gov.nasa.jpf.vm.FieldInfo;
  * modifier can be used with field access and field modification event kinds
  * only.
  * </p>
- * TODO not done yet!
  * 
  * @author stepan
  * 
@@ -66,7 +65,7 @@ public class FieldOnlyFilter extends Filter<FieldOnlyFilterable> {
     try {
       FieldInfo fieldInfo = fieldId.get();
       return fieldInfo == event.getFieldInfo();
-    } catch (InvalidIdentifier e) {
+    } catch (InvalidIdentifierException e) {
       // if fieldId is not resolvable, this filter is not effective
       // anymore
       return false;

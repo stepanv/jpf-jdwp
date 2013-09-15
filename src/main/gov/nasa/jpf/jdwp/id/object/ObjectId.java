@@ -22,11 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.jdwp.exception.JdwpError.ErrorType;
+import gov.nasa.jpf.jdwp.exception.JdwpException.ErrorType;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.Identifier;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -153,12 +153,12 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
     return (DynamicElementInfo) heap.get(objectRef);
   }
 
-  public void disableCollection() throws InvalidObject {
+  public void disableCollection() throws InvalidObjectException {
     Heap heap = VM.getVM().getHeap();
     heap.registerPinDown(objectRef);
   }
 
-  public void enableCollection() throws InvalidObject {
+  public void enableCollection() throws InvalidObjectException {
     Heap heap = VM.getVM().getHeap();
     heap.releasePinDown(objectRef);
   }
@@ -175,7 +175,7 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
    * doesn't have a JDWP identifier yet (an instance of {@link ObjectId} or it's
    * subclasses).
    * 
-   * @see JdwpObjectManager#getObjectId(ElementInfo)
+   * @see JdwpIdManager#getObjectId(ElementInfo)
    * 
    * @param id
    *          Unique id that is used in the JDWP protocol to represent the given
@@ -227,7 +227,7 @@ public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements 
   }
 
   @Override
-  public DynamicElementInfo nullObjectHandler() throws InvalidIdentifier {
+  public DynamicElementInfo nullObjectHandler() throws InvalidIdentifierException {
 
     // TODO this is not used since ObjectId#get() completely overrides
     // Identifier#get()

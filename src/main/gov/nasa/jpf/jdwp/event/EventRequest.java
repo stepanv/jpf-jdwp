@@ -29,8 +29,8 @@ import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.EventBase.EventKind;
 import gov.nasa.jpf.jdwp.event.filter.Filter;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author stepan
  * 
  * @param <T>
+ *          The event this request is for.
  */
 public class EventRequest<T extends Event> {
 
@@ -90,7 +91,7 @@ public class EventRequest<T extends Event> {
     private static ReverseEnumMap<Byte, SuspendPolicy> map = new ReverseEnumMap<Byte, SuspendPolicy>(SuspendPolicy.class);
 
     @Override
-    public SuspendPolicy convert(Byte val) throws JdwpError {
+    public SuspendPolicy convert(Byte val) throws IllegalArgumentException {
       return map.get(val);
     }
 
@@ -110,7 +111,7 @@ public class EventRequest<T extends Event> {
   private static AtomicInteger requestIdCounter = new AtomicInteger(1);
 
   @SuppressWarnings("unchecked")
-  public static <T extends Event> EventRequest<T> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
+  public static <T extends Event> EventRequest<T> factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
     EventKind eventKind = EventKind.BREAKPOINT.convert(bytes.get());
     SuspendPolicy suspendPolicy = SuspendPolicy.ALL.convert(bytes.get());
 
@@ -191,7 +192,7 @@ public class EventRequest<T extends Event> {
         if (!filter.matches(event)) {
           return false;
         }
-      } catch (InvalidIdentifier e) {
+      } catch (InvalidIdentifierException e) {
         // if any invalid identifier problem occurred return false since
         // this filter is not applicable
         return false;

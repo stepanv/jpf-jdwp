@@ -23,8 +23,22 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 
+/**
+ * The {@link ExceptionOnlyFilterable} interface aggregates all the events that
+ * can be filtered by {@link ExceptionOnlyFilter}.
+ * 
+ * @author stepan
+ * 
+ */
 public interface ExceptionOnlyFilterable extends Event {
 
+  /**
+   * Forward the evaluation further using the visitor pattern.
+   * 
+   * @param exceptionOnlyFilter
+   *          The Exception only filter.
+   * @return Whether it matched.
+   */
   boolean visit(ExceptionOnlyFilter exceptionOnlyFilter);
 
 }

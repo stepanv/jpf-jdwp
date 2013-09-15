@@ -23,6 +23,22 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 
+/**
+ * The {@link ClassFilterable} joins all the events that can be filtered by the
+ * {@link ClassFilter} filter.
+ * 
+ * @author stepan
+ * 
+ */
 public interface ClassFilterable extends Event {
+
+  /**
+   * Whether this event matches with the class filter.
+   * 
+   * @param classFilter
+   *          The class filter that restricts this event to be reported only for
+   *          certain classes.
+   * @return True or false.
+   */
   public boolean matches(ClassFilter classFilter);
 }

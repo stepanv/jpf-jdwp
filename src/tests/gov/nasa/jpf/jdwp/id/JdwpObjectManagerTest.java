@@ -22,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.id;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
-import gov.nasa.jpf.jdwp.exception.InvalidFieldId;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -87,7 +87,7 @@ public class JdwpObjectManagerTest extends TestJdwp {
     FieldInfo storedFieldInfo = new FieldInfoStub("", "", 0);
     FieldInfo weaklyStoredFieldInfo = new FieldInfoStub("", "", 0);
 
-    fieldId = JdwpObjectManager.getInstance().getFieldId(storedFieldInfo);
+    fieldId = JdwpIdManager.getInstance().getFieldId(storedFieldInfo);
     weaklyReferencedFieldInfo = new WeakReference<FieldInfo>(weaklyStoredFieldInfo);
   }
 
@@ -95,10 +95,10 @@ public class JdwpObjectManagerTest extends TestJdwp {
    * Simple test whether JDWP Object Identifier Manager let GC to collect the
    * objects it manages the identifiers for.
    * 
-   * @throws InvalidIdentifier
+   * @throws InvalidIdentifierException
    */
-  @Test(expected = InvalidFieldId.class)
-  public void simpleNoIdentifierLeakingTest() throws InvalidIdentifier {
+  @Test(expected = InvalidFieldIdException.class)
+  public void simpleNoIdentifierLeakingTest() throws InvalidIdentifierException {
     storeElements();
 
     forceGc();
@@ -208,7 +208,7 @@ public class JdwpObjectManagerTest extends TestJdwp {
         public void execute() throws Exception {
           testedFrameId.get();
         }
-      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifier.class);
+      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifierException.class);
 
       // Now, we also want to test other related objects
       dataOutputStream.writeLong(testedFrameIdAsLong);
@@ -226,7 +226,7 @@ public class JdwpObjectManagerTest extends TestJdwp {
         public void execute() throws Exception {
           contextProvider.getObjectManager().readFrameId(bb);
         }
-      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifier.class);
+      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifierException.class);
     }
   };
 

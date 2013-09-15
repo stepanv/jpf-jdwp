@@ -23,13 +23,18 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.util.test.BasicJdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier.ObjectWrapper;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
+import gov.nasa.jpf.jdwp.value.JdwpString;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -117,5 +122,34 @@ public class VirtualMachineCommandTest extends TestJdwp {
       // 1 instance of this class
       assertEquals(1, ((Long) foundInstanceCounts[2]).longValue());
     }
+  }
+  
+  BasicJdwpVerifier classpathVerifier = new BasicJdwpVerifier() {
+
+    @Override
+    public void test() throws Throwable {
+      
+      initializeSimpleJPF();
+      VirtualMachineCommand.CLASSPATHS.execute(bytes, dataOutputStream, simpleJpfContextProvider());
+      wrapTheOutput();
+      
+      File dir = new File(JdwpString.read(outputBytes));
+      assertTrue(dir.exists() && dir.isDirectory());
+      
+      Set<String> foundClasspath = new HashSet<>();
+      int num = outputBytes.getInt();
+      for (int i = 0; i < num; ++i) {
+        String pathElement = JdwpString.read(outputBytes);
+        foundClasspath.add(pathElement);
+        System.out.println(pathElement);
+        assertTrue(new File(pathElement).exists());
+      }
+      
+    }
+    
+  };
+  @Test
+  public void classpathsTest() throws Throwable {
+    classpathVerifier.test();
   }
 }

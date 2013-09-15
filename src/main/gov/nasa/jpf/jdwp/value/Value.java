@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.value;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -94,7 +94,7 @@ public interface Value {
    * 
    * @param frame
    *          The stack frame where to push this value.
-   * @throws InvalidObject
+   * @throws InvalidObjectException
    */
   public void push(StackFrame frame);
 

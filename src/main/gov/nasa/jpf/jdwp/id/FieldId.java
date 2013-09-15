@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidFieldId;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.vm.FieldInfo;
 
 /**
@@ -57,8 +57,8 @@ public class FieldId extends Identifier<FieldInfo> {
   }
 
   @Override
-  public FieldInfo nullObjectHandler() throws InvalidIdentifier {
-    throw new InvalidFieldId(this);
+  public FieldInfo nullObjectHandler() throws InvalidIdentifierException {
+    throw new InvalidFieldIdException(this);
   }
 
 }

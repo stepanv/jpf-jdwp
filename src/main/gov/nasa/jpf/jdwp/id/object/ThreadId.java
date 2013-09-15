@@ -24,8 +24,9 @@ package gov.nasa.jpf.jdwp.id.object;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -110,11 +111,11 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
     private static ReverseEnumMap<Integer, ThreadStatus> map = new ReverseEnumMap<Integer, ThreadId.ThreadStatus>(ThreadStatus.class);
 
     @Override
-    public ThreadStatus convert(Integer val) throws JdwpError {
+    public ThreadStatus convert(Integer val) throws IllegalArgumentException  {
       return map.get(val);
     }
 
-    public static ThreadStatus read(int val) throws JdwpError {
+    public static ThreadStatus read(int val) throws JdwpException {
       return ZOMBIE.convert(val);
     }
   }

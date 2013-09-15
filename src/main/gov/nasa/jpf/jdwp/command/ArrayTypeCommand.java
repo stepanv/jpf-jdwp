@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -34,6 +35,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * The {@link ArrayTypeCommand} enum class implements the
+ * {@link CommandSet#ARRAYTYPE} set of commands. For the detailed specification
+ * refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ArrayType"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_ArrayType</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayTypeCommand> {
 
   /**
@@ -41,20 +53,25 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
    * <h2>JDWP Specification</h2>
    * Creates a new array object of this type with a given length.
    * </p>
+   * <p>
+   * <h2>JPF specifics</h2>
+   * JPF needs a thread to be able to create a new array; however, JPWP
+   * specification does not.<br/>
+   * Therefore a current thread is used which should work just fine.
+   * </p>
    */
   NEWINSTANCE(1) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ArrayTypeReferenceId arrayTypeId = contextProvider.getObjectManager().readArrayTypeReferenceId(bytes);
       int length = bytes.getInt();
 
       ClassInfo componentClassInfo = arrayTypeId.get().getComponentClassInfo();
       Heap heap = contextProvider.getVM().getHeap();
 
-      // TODO do a check for current thread
+      // use a current thread because it's the best what we can do
       ThreadInfo threadInfo = contextProvider.getVM().getCurrentThread();
 
-      // TODO [for PJA] how to get a proper type???
       int typeCode = Types.getTypeCode(componentClassInfo.getSignature());
       // this works for primitive types
       String type = Types.getElementDescriptorOfType(typeCode);
@@ -83,10 +100,8 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
   }
 
   @Override
-  public ArrayTypeCommand convert(Byte val) throws JdwpError {
+  public ArrayTypeCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
-  @Override
-  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

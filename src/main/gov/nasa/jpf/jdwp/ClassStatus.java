@@ -24,16 +24,42 @@ package gov.nasa.jpf.jdwp;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * The status of a class.<br/>
+ * Currently not really used in JPF. <br/>
+ * See <a href=
+ * "http://docs.oracle.com/javase/7/docs/platform/jvmti/jvmti.html#GetClassStatus"
+ * >http://docs.oracle.com/javase/7/docs/platform/jvmti/jvmti.html#
+ * GetClassStatus</a>
+ * 
+ * 
+ * @author stepan
+ * 
+ */
 public enum ClassStatus {
-	VERIFIED(1), PREPARED(2), INITIALIZED(4), ERROR(8);
+  VERIFIED(1), PREPARED(2), INITIALIZED(4), ERROR(8);
 
-	private int statusId;
+  private int statusId;
 
-	ClassStatus(int statusId) {
-		this.statusId = statusId;
-	}
+  /**
+   * The constructor.
+   * 
+   * @param statusId
+   *          The ID of the status.
+   */
+  ClassStatus(int statusId) {
+    this.statusId = statusId;
+  }
 
-	public void write(DataOutputStream os) throws IOException {
-		os.writeInt(statusId);
-	}
+  /**
+   * Writes the status to the output stream.
+   * 
+   * @param os
+   *          The output stream where to write the status.
+   * @throws IOException
+   *           If an I/O error occurs.
+   */
+  public void write(DataOutputStream os) throws IOException {
+    os.writeInt(statusId);
+  }
 }

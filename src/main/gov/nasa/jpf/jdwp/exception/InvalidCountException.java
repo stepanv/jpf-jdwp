@@ -21,17 +21,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.exception;
 
-import gov.nasa.jpf.jdwp.id.FrameId;
+import gov.nasa.jpf.jdwp.event.filter.CountFilter;
 
-public class InvalidFrameId extends InvalidIdentifier {
+/**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * </p>
+ * 
+ * @author stepan
+ * 
+ * The count is invalid.
+ * 
+ * This exception applies only for {@link CountFilter}.
+ * 
+ * @author stepan
+ * 
+ */
+public class InvalidCountException extends JdwpException {
 
   /**
 	 * 
 	 */
-  private static final long serialVersionUID = 6672423422452261216L;
+  private static final long serialVersionUID = 6057046391915954062L;
 
-  public InvalidFrameId(FrameId frameId) {
-    super(ErrorType.INVALID_FRAMEID, frameId);
+  /**
+   * Creates Invalid Count Exception.
+   * 
+   * @param count
+   *          The invalid count.
+   */
+  public InvalidCountException(int count) {
+    super(ErrorType.INVALID_COUNT, "Invalid count: '" + count + "' provided.");
   }
 
 }

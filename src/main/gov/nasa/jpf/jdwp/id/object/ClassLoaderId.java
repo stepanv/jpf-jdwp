@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -92,15 +92,15 @@ public class ClassLoaderId extends InfoObjectId<ClassLoaderInfo> {
    * @return The {@link ClassLoaderInfo} instance
    */
   private static ClassLoaderInfo getClassLoaderInfo(ElementInfo elementInfo) {
+    // We can use any thread. That is just fine.
     ThreadInfo currentThread = VM.getVM().getCurrentThread();
     MJIEnv env = currentThread.getMJIEnv();
-    // TODO maybe don't use current thread but something better...
 
     return env.getClassLoaderInfo(elementInfo.getObjectRef());
   }
 
   @Override
-  protected ClassLoaderInfo resolveInfoObject() throws InvalidObject {
+  protected ClassLoaderInfo resolveInfoObject() throws InvalidObjectException {
     return getClassLoaderInfo(get());
   }
 }

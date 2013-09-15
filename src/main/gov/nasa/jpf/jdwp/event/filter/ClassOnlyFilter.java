@@ -24,7 +24,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.event.ClassOnlyFilterable;
 import gov.nasa.jpf.jdwp.event.ClassPrepareEvent;
 import gov.nasa.jpf.jdwp.event.Locatable;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 
@@ -66,11 +66,11 @@ public class ClassOnlyFilter extends Filter<ClassOnlyFilterable> {
   }
 
   @Override
-  public boolean matches(ClassOnlyFilterable event) throws InvalidIdentifier {
+  public boolean matches(ClassOnlyFilterable event) throws InvalidIdentifierException {
     return event.matches(this);
   }
 
-  public boolean matches(ClassInfo referenceType) throws InvalidIdentifier {
+  public boolean matches(ClassInfo referenceType) throws InvalidIdentifierException {
     return referenceType.isInstanceOf(referenceTypeId.get());
   }
 

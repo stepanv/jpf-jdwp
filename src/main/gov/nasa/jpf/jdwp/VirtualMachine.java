@@ -29,7 +29,7 @@ import gov.nasa.jpf.jdwp.event.Event;
 import gov.nasa.jpf.jdwp.event.EventRequest;
 import gov.nasa.jpf.jdwp.event.VmDeathEvent;
 import gov.nasa.jpf.jdwp.event.VmStartEvent;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.SafeLock;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -48,6 +48,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * <p>
+ * The {@link VirtualMachine} class represents the VM for the JDWP back-end.
+ * That effectively means, all the VM related information JDWP needs to manage
+ * is down here.
+ * </p>
  * <p>
  * <h3>Synchronization</h3>
  * It's actually not clear how events and related consecutive debugger actions
@@ -126,6 +131,15 @@ public class VirtualMachine {
 
   private ExecutionManager executionManager = new ExecutionManager();
 
+  /**
+   * The {@link ExecutionManager} class implements JPF specific behavior (given
+   * by single threaded execution) and bridges the JDWP specification
+   * requirements.<br/>
+   * Note that this solution will never be perfect; just a trade-off.
+   * 
+   * @author stepan
+   * 
+   */
   public class ExecutionManager {
     boolean allThreadsSuspended = false;
 
@@ -252,6 +266,17 @@ public class VirtualMachine {
     }
 
     /**
+     * Whether the given thread is suspended by the debugger.
+     * 
+     * @param threadInfo
+     *          The thread.
+     * @return True or false.
+     */
+    public boolean isThreadSuspended(ThreadInfo threadInfo) {
+      return suspendCount(threadInfo) > 0;
+    }
+
+    /**
      * Blocks the execution of JPF.<br/>
      * It is allowed to block only from the thread that runs JPF itself. If
      * violated, {@link IllegalStateException} is thrown.<br/>
@@ -305,7 +330,7 @@ public class VirtualMachine {
     public static final boolean CAN_WATCH_FIELD_ACCESS = true;
 
     /** Can the VM get the bytecodes of a given method? */
-    public static final boolean CAN_GET_BYTECODES = true;
+    public static final boolean CAN_GET_BYTECODES = false;
 
     /**
      * Can the VM determine whether a field or method is synthetic? (that is,
@@ -397,21 +422,21 @@ public class VirtualMachine {
     public static final boolean CAN_REQUEST_MONITOR_EVENTS = true;
 
     /** Can the VM get monitors with frame depth info? */
-    public static final boolean CAN_GET_MONITOR_FRAME_INFO = true;
+    public static final boolean CAN_GET_MONITOR_FRAME_INFO = false;
 
     /** Can the VM filter class prepare events by source name? */
     public static final boolean CAN_USE_SOURCE_NAME_FILTERS = true;
 
     /** Can the VM return the constant pool information? */
-    public static final boolean CAN_GET_CONSTANT_POOL = true;
+    public static final boolean CAN_GET_CONSTANT_POOL = false;
 
     /** Can the VM force early return from a method? */
-    public static final boolean CAN_FORCE_EARLY_RETURN = true;
+    public static final boolean CAN_FORCE_EARLY_RETURN = false;
   }
 
   private List<ObjectId> disableCollectionObjects = new CopyOnWriteArrayList<ObjectId>();
 
-  public void disableCollection(ObjectId objectId) throws InvalidObject {
+  public void disableCollection(ObjectId objectId) throws InvalidObjectException {
     synchronized (disableCollectionObjects) {
       // TODO maybe we should use counters
       objectId.disableCollection();
@@ -422,7 +447,7 @@ public class VirtualMachine {
 
   }
 
-  public void enableCollection(ObjectId objectId) throws InvalidObject {
+  public void enableCollection(ObjectId objectId) throws InvalidObjectException {
     synchronized (disableCollectionObjects) {
       // TODO maybe we should use counters
       objectId.enableCollection();
@@ -439,7 +464,7 @@ public class VirtualMachine {
 
         try {
           objectId.enableCollection();
-        } catch (InvalidObject e) {
+        } catch (InvalidObjectException e) {
         }
         disableCollectionObjects.remove(objectId);
       }
@@ -588,5 +613,13 @@ public class VirtualMachine {
 
   public void setJdwp(Jdwp jdwp) {
     this.jdwp = jdwp;
+  }
+
+  public void holdEvents() {
+    jdwp.holdEvents();
+  }
+
+  public void releaseEvents() {
+    jdwp.releaseEvents();
   }
 }

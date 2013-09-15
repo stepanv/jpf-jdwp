@@ -22,32 +22,67 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.exception;
 
 /**
+ * <p>
  * This exception stands for any errors that may have happened during the
  * execution of JDWP commands.<br/>
- * Errors of this type are rather bugs than anthing else.
+ * Errors of this type are rather bugs than anything else.
+ * </p>
+ * 
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * An unexpected internal error has occurred.
+ * </p>
  * 
  * @author stepan
  * 
  */
-public class InternalException extends JdwpError {
+public class InternalException extends JdwpException {
 
   /**
 	 * 
 	 */
   private static final long serialVersionUID = -8092968568063765998L;
 
-  public InternalException(ErrorType errorType) {
+  /**
+   * Constructs the {@link InternalException} exception.
+   * 
+   * @see InternalException
+   */
+  public InternalException() {
     super(ErrorType.INTERNAL);
   }
 
+  /**
+   * Constructs the {@link InternalException} exception.
+   * 
+   * @param message
+   *          The message to report.
+   * @see InternalException
+   */
   public InternalException(String message) {
     super(ErrorType.INTERNAL, message);
   }
 
+  /**
+   * Constructs the {@link InternalException} exception.
+   * 
+   * @param cause
+   *          The cause of this exception.
+   * @see InternalException
+   */
   public InternalException(Throwable cause) {
     super(ErrorType.INTERNAL, cause);
   }
 
+  /**
+   * Constructs the {@link InternalException} exception.
+   * 
+   * @param message
+   *          The message to report.
+   * @param cause
+   *          The cause of this exception.
+   * @see InternalException
+   */
   public InternalException(String message, Throwable cause) {
     super(ErrorType.INTERNAL, message, cause);
   }

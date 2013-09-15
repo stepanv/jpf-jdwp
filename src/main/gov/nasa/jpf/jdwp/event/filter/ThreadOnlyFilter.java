@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.Threadable;
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -60,7 +60,7 @@ public class ThreadOnlyFilter extends Filter<Threadable> {
     try {
       threadInfo = threadId.getInfoObject();
       return event.getThread() == threadInfo;
-    } catch (InvalidObject e) {
+    } catch (InvalidObjectException e) {
       // info object is not accessible and therefore this filter is not
       // effective
       return false;

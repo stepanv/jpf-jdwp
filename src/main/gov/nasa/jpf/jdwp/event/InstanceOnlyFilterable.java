@@ -21,6 +21,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.event.filter.InstanceOnlyFilter;
+
+/**
+ * The {@link InstanceOnlyFilterable} interface aggregates all the events that
+ * can be filtered by the {@link InstanceOnlyFilter}. associated field.
+ * 
+ * @author stepan
+ * 
+ */
 public interface InstanceOnlyFilterable extends Event {
 
 }

@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -77,17 +77,17 @@ public abstract class InfoObjectId<T> extends ObjectId {
    * Tries to lazy load the object if it is null.
    * 
    * @return <tt>InfoObject</tt> instance
-   * @throws InvalidObject
+   * @throws InvalidObjectException
    *           If the <tt>InfoObject</tt> doesn't exist
    */
-  public T getInfoObject() throws InvalidObject {
+  public T getInfoObject() throws InvalidObjectException {
     T infoObject = infoObjectReference.get();
     if (infoObject == null) {
       infoObject = resolveInfoObject();
       if (infoObject != null) {
         infoObjectReference = new WeakReference<T>(infoObject);
       } else {
-        throw new InvalidObject(this);
+        throw new InvalidObjectException(this);
       }
     }
     return infoObject;
@@ -98,8 +98,8 @@ public abstract class InfoObjectId<T> extends ObjectId {
    * {@link InfoObjectId#getInfoObject()} in case lazy load is performed.
    * 
    * @return Info Object instance
-   * @throws InvalidObject
+   * @throws InvalidObjectException
    */
-  abstract protected T resolveInfoObject() throws InvalidObject;
+  abstract protected T resolveInfoObject() throws InvalidObjectException;
 
 }

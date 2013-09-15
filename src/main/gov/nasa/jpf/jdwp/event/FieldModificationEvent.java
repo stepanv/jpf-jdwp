@@ -23,7 +23,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.id.FieldId;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.type.Location;
@@ -97,7 +97,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
   @Override
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-    JdwpObjectManager objectManager = JdwpObjectManager.getInstance();
+    JdwpIdManager objectManager = JdwpIdManager.getInstance();
 
     // TODO this is not according the spec!
     ClassInfo fieldObjectClassInfo = fieldInfo.getClassInfo();

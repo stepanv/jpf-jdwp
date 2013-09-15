@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -100,7 +100,7 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
   @Override
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
-    ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(exception);
+    ObjectId objectId = JdwpIdManager.getInstance().getObjectId(exception);
     objectId.writeTagged(os);
     if (catchLocation == null) {
       // TODO when location is null, we need to send twice null long ...
@@ -119,10 +119,21 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
     return exceptionOnlyFilter.matches(this);
   }
 
+  /**
+   * Get the exception this event is associated with.
+   * 
+   * @return The exception.
+   */
   public ElementInfo getException() {
     return exception;
   }
 
+  /**
+   * Whether this exception event should be triggered for caught exceptions
+   * only.
+   * 
+   * @return True or false.
+   */
   public boolean isCaught() {
     return catchLocation != null;
   }

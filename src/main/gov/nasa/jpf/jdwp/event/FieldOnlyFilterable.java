@@ -21,10 +21,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import gov.nasa.jpf.jdwp.event.filter.FieldOnlyFilter;
 import gov.nasa.jpf.vm.FieldInfo;
 
+/**
+ * The {@link FieldOnlyFilterable} interface aggregates all the events that can
+ * be filtered by {@link FieldOnlyFilter}.
+ * 
+ * @author stepan
+ * 
+ */
 public interface FieldOnlyFilterable extends Event {
 
+  /**
+   * Get the field this event is associated with.
+   * 
+   * @return The field.
+   */
   FieldInfo getFieldInfo();
 
 }

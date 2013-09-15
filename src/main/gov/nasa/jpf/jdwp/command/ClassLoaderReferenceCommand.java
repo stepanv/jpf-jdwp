@@ -21,8 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -38,11 +39,42 @@ import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link ClassLoaderReferenceCommand} enum class implements the
+ * {@link CommandSet#CLASSLOADERREFERENCE} set of commands. For the detailed
+ * specification refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ClassLoaderReference"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_ClassLoaderReference</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte, ClassLoaderReferenceCommand> {
+
+  /**
+   * <h2>JDWP Specification</h2>
+   * <p>
+   * Returns a list of all classes which this class loader has been requested to
+   * load. This class loader is considered to be an initiating class loader for
+   * each class in the returned list. The list contains each reference type
+   * defined by this loader and any types for which loading was delegated by
+   * this class loader to another class loader.
+   * </p>
+   * <p>
+   * The visible class list has useful properties with respect to the type
+   * namespace. A particular type name will occur at most once in the list. Each
+   * field or variable declared with that type name in a class defined by this
+   * class loader must be resolved to that single type.
+   * </p>
+   * <p>
+   * No ordering of the returned list is guaranteed.
+   * </p>
+   */
   VISIBLECLASSES(1) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
-      JdwpObjectManager objectManager = contextProvider.getObjectManager();
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      JdwpIdManager objectManager = contextProvider.getObjectManager();
 
       // TODO maybe this will throw classcast exception ...
       // has to be tested with system class loader!
@@ -55,8 +87,6 @@ public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte
       }
 
       logger.debug("Using classloader: {}", classLoaderInfo);
-
-      ;
 
       // we need to write the number of classes first
       ByteArrayOutputStream loadedClassesOutputBytes = new ByteArrayOutputStream(0);
@@ -102,10 +132,8 @@ public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte
   }
 
   @Override
-  public ClassLoaderReferenceCommand convert(Byte val) throws JdwpError {
+  public ClassLoaderReferenceCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
-  @Override
-  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

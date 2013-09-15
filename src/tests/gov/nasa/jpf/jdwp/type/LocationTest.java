@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.type;
 
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
@@ -101,7 +101,7 @@ public class LocationTest extends TestJdwp {
        */
       assertEquals(TypeTag.CLASS.identifier().byteValue(), bb.get());
       // ObjectId objectId =
-      ReferenceTypeId refId = JdwpObjectManager.getInstance().readReferenceTypeId(bb);
+      ReferenceTypeId refId = JdwpIdManager.getInstance().readReferenceTypeId(bb);
       assertEquals(clazz, refId.get());
       assertEquals(method.getGlobalId(), bb.getLong());
       assertEquals(instruction.getInstructionIndex(), bb.getLong());

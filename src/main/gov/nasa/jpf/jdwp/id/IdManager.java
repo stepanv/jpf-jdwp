@@ -21,91 +21,117 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.vm.ElementInfo;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IdManager<I extends Identifier<T>, T> {
+/**
+ * <p>
+ * This class provides a simple infrastructure for managing IDs of particular
+ * type of objects from the VM.
+ * </p>
+ * <p>
+ * This manager holds an identifier for some object from the VM as long as the
+ * object itself is not collected.<br/>
+ * It guaranteed that this manager doesn't block such a managed object from
+ * being collected.<br/>
+ * It is also guaranteed that this manager doesn't keep a particular identifier
+ * of an object if this object was collected and thus this identifier is
+ * collected as well.
+ * </p>
+ * 
+ * <p>
+ * This class is intended to be thread safe.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ * @param <I>
+ *          The family of identifiers that will represent the family of VM
+ *          objects this manager is created for.
+ * @param <T>
+ *          The family of VM objects this ID manager will manage IDs for.
+ * @param <E>
+ *          An exception that is thrown if no identifier exists for given ID.
+ */
+public abstract class IdManager<I extends Identifier<T>, T, E extends InvalidIdentifierException> {
 
   final static Logger logger = LoggerFactory.getLogger(IdManager.class);
 
-  public interface IdFactory<I, T> {
-    I create(long id, T object);
+  /**
+   * Creates ID Manager without a support for <i>null IDs</i>.
+   */
+  public IdManager() {
   }
 
-  // TODO when an identifier doesn't contain mapping to an object it should
-  // remove itself from here (to prevent memory leaking)
-  private Map<Long, I> idToIdentifierMap = new WeakHashMap<Long, I>();
+  /**
+   * Creates ID Manager.
+   * <p>
+   * This constructor enables support for <i>null IDs</i> that are represented
+   * by the given null identifier.<br/>
+   * Such a null identifier must be provided by the implementors.
+   * </p>
+   * 
+   * @param nullIdentifier
+   *          The null identifier instance that will represent <tt>ID == 0</tt>.
+   */
+  public IdManager(I nullIdentifier) {
+    identifierSet.put(nullIdentifier, new WeakReference<I>(nullIdentifier));
+  }
+
+  /**
+   * The map that stores the set of all available identifiers.<br/>
+   * A particular identifier can be retrieved using the
+   * {@link IdentifierPointer} instance.
+   */
+  private Map<I, WeakReference<I>> identifierSet = new WeakHashMap<I, WeakReference<I>>();
+
+  /**
+   * A map that translates VM objects into an identifier.
+   */
   private Map<T, I> objectToIdentifierMap = new WeakHashMap<T, I>();
+
+  /**
+   * Zero value is for the nullIdentifier
+   */
   private Long idGenerator = (long) 1;
-  private IdFactory<I, T> idFactory;
 
-  public IdManager(IdFactory<I, T> idFactory) {
-    this.idFactory = idFactory;
-  }
-
+  /**
+   * Gets or creates an identifier for the given VM object.
+   * 
+   * @param object
+   *          The VM object that has to be represented by an identifier.
+   * @return The identifier to represent the VM object in the whole JPDA.
+   */
   public synchronized I getIdentifierId(T object) {
-    // TODO if object == null we should probably return NullObjectId (which
-    // is incompatible with ObjectId children which is BAD)
+
     if (object == null) {
-      throw new RuntimeException("Null is not allowed here!");
+      // null objects should be filtered at the higher level of abstraction!
+      throw new IllegalStateException("Null is not allowed here!");
     }
+
     if (objectToIdentifierMap.containsKey(object)) {
-      // System.out.println("ALREADY EXISTS: " +
-      // objectToIdentifierMap.get(object).toString() + " object:" +
-      // object + " class:" + object.getClass());
+      // identifier exists
+
       I identifier = objectToIdentifierMap.get(object);
-      try {
-        /*
-         * This section is just for debugging purposes TODO delete this
-         */
-        T alternateObject = identifier.get();
-        if (!alternateObject.equals(object)) {
-          logger.error("A BIG PROBLEM!");
-          logger.error("BIG PROBLEM: " + object + " maps to: " + alternateObject);
-
-          logger.error("Object hash code: " + object.hashCode());
-          logger.error("Alternate hash code: " + alternateObject.hashCode());
-
-          HashMap<T, I> testMap = new HashMap<T, I>();
-          testMap.put(alternateObject, identifier);
-          if (testMap.containsKey(object)) {
-            logger.error("WEIRD FOR THE SECOND TIME!");
-          }
-
-          Map<T, I> testWeakMap = new WeakHashMap<T, I>();
-          testWeakMap.put(alternateObject, identifier);
-          if (testWeakMap.containsKey(object)) {
-            logger.error("WEIRD FOR THE THIRD TIME!");
-          }
-          logger.error("{}", objectToIdentifierMap.get(object));
-
-          if (alternateObject instanceof ElementInfo && object instanceof ElementInfo) {
-            if (((ElementInfo) alternateObject).getObjectRef() == ((ElementInfo) object).getObjectRef()) {
-              // I'm so not sure what to do here ... TODO .. is
-              // this ok or not?
-              return identifier;
-            }
-          }
-
-          throw new RuntimeException("BIG PROBLEM: " + object + " maps to: " + alternateObject);
-        }
-      } catch (InvalidIdentifier e) {
-        // alternateObject is used just for debugging purposes
-      }
+      logger.debug("Identifier for object: '{}' found: '{}'", object, identifier);
       return identifier;
+
     } else {
+      // identifier doesn't exist, lets create one
+
       Long id = idGenerator++;
-      I identifier = idFactory.create(id, object);
+      I identifier = createIdentifier(id, object);
       objectToIdentifierMap.put(object, identifier);
-      idToIdentifierMap.put(id, identifier);
+      identifierSet.put(identifier, new WeakReference<I>(identifier));
 
       if (logger.isDebugEnabled()) {
         if (object instanceof ElementInfo) {
@@ -116,24 +142,81 @@ public class IdManager<I extends Identifier<T>, T> {
         }
       }
 
-      // try {
-      // if (identifier.get() != object) {
-      // System.out.println("WTF?");
-      // I identifier2 = idFactory.create(id, object);
-      // if (identifier2.get() != object) {
-      // System.out.println("WTF 2?");
-      // }
-      //
-      // }
-      // } catch (InvalidObject e) {
-      // }
-
       return identifier;
     }
   }
 
-  public synchronized I readIdentifier(ByteBuffer bytes) {
-    // TODO throw ErrorType.INVALID_OBJECT
-    return idToIdentifierMap.get(bytes.getLong());
+  /**
+   * Gets an identifier for the given ID.<br/>
+   * If the given ID represents an object that was discarded, exception is
+   * thrown.
+   * 
+   * @param id
+   *          The ID that an identifier is looked for.
+   * @return The identifier.
+   * @throws E
+   *           If the object that is represented by the given ID was discarded.
+   */
+  private synchronized I get(long id) throws E {
+    IdentifierPointer pointer = new IdentifierPointer(id);
+    Reference<I> ref = identifierSet.get(pointer);
+    if (ref == null) {
+      // there is no such ID registered by this ID manager
+      throw identifierNotFound(id);
+    }
+    I identifier = ref.get();
+    if (identifier == null) {
+      // this may happen only if <tt>identifier</tt> was just discarded between
+      // the <tt>get</tt> call from the hashmap
+      // and the get call of the reference
+      if (identifierSet.get(pointer) == null) {
+        // it really happened! The object collection really happened between the
+        // two <tt>get</tt> calls above
+        throw identifierNotFound(id);
+      } else {
+        // this should not ever happen... see the theory behind explanation in
+        // this file
+        throw new IllegalStateException("The idea behind this manager prooved to be wrong! This is very very bad!");
+      }
+    }
+    return identifier;
   }
+
+  /**
+   * Reads an identifier from the buffer of bytes.
+   * 
+   * @param bytes
+   *          The buffer of bytes to read the identifier from.
+   * @return The identifier.
+   * @throws E
+   *           If the identifier was discarded or was not registered by this ID
+   *           manager.
+   */
+  public I readIdentifier(ByteBuffer bytes) throws E {
+    return get(bytes.getLong());
+  }
+
+  /**
+   * Create Identifier for the given object to be represented by the given ID
+   * for the JDWP communication.<br/>
+   * This is how subtypes of this class define which Identifier subtypes are
+   * represented by this ID manager.
+   * 
+   * @param id
+   *          The ID to represent the given object.
+   * @param object
+   *          The object to be represented by the ID
+   * @return The identifier encapsulation of the given ID for the given object.
+   */
+  public abstract I createIdentifier(Long id, T object);
+
+  /**
+   * This is how subtypes of this class define the exception to be thrown if an
+   * identifier was not found which means it did not exist or it was discarded.
+   * 
+   * @param id
+   *          The ID of the desired identifier.
+   * @return An exception that will be thrown.
+   */
+  public abstract E identifierNotFound(long id);
 }

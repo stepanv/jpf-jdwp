@@ -339,8 +339,51 @@ public class Jdwp extends Thread {
   public static void sendEvents(List<Event> events, SuspendPolicy suspendPolicy) throws IOException {
     Jdwp jdwp = getDefault();
     if (jdwp != null && isDebugging) {
-      synchronized (jdwp._connection) {
-        jdwp._connection.sendEvents(events, suspendPolicy);
+      synchronized (jdwp.holdEventsList) {
+        if (jdwp.holdEvents) {
+          // put it into a queue
+          jdwp.holdEventsList.add(new HoldEvents(events, suspendPolicy));
+        } else {
+          synchronized (jdwp._connection) {
+            jdwp._connection.sendEvents(events, suspendPolicy);
+          }
+        }
+      }
+    }
+  }
+
+  private static class HoldEvents {
+    private List<Event> events;
+    private SuspendPolicy suspendPolicy;
+
+    HoldEvents(List<Event> events, SuspendPolicy suspendPolicy) {
+      this.events = events;
+      this.suspendPolicy = suspendPolicy;
+    }
+  }
+
+  private List<HoldEvents> holdEventsList = new LinkedList<>();
+  private boolean holdEvents = false;
+
+  public void holdEvents() {
+    synchronized (holdEventsList) {
+      holdEvents = true;
+    }
+    
+  }
+
+  public void releaseEvents() {
+    synchronized (holdEventsList) {
+      holdEvents = false;
+      for (HoldEvents holdEvents : holdEventsList) {
+        synchronized (_connection) {
+          try {
+            _connection.sendEvents(holdEvents.events, holdEvents.suspendPolicy);
+          } catch (IOException e) {
+            // we're ok with any io exception
+            // let's try to continue
+          }
+        }
       }
     }
   }

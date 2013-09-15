@@ -22,9 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.JPF.Status;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.InternalException;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.exception.VmDead;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.VmDeadException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,6 +34,14 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class aggregates all the possible commands of the JDWP API.<br/>
+ * The mapping from the set to the command itself is done in the
+ * {@link CommandSet} constructor.
+ * 
+ * @author stepan
+ * 
+ */
 public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 
   /**
@@ -126,6 +135,12 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
 
   private ConvertibleEnum<Byte, ? extends Command> commandConverterSample;
 
+  /**
+   * Get the command converter enum instance sample so that some particular ID
+   * can be translated to the appropriate instance.
+   * 
+   * @return Any enum instance.
+   */
   public ConvertibleEnum<Byte, ? extends Command> getCommandConverterSample() {
     return commandConverterSample;
   }
@@ -135,9 +150,9 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
     this.commandConverterSample = commandConverterSample;
   }
 
-  private CommandSet(int commandSetId, Class<? extends ConvertibleEnum<Byte, ? extends Command>> commandConverterSample) {
+  private CommandSet(int commandSetId, Class<? extends ConvertibleEnum<Byte, ? extends Command>> commandConverterClazz) {
     this.commandSetId = (byte) commandSetId;
-    this.commandConverterSample = commandConverterSample.getEnumConstants()[0];
+    this.commandConverterSample = commandConverterClazz.getEnumConstants()[0];
   }
 
   @Override
@@ -146,14 +161,38 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
   }
 
   @Override
-  public CommandSet convert(Byte val) throws JdwpError {
+  public CommandSet convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
   final static Logger logger = LoggerFactory.getLogger(CommandSet.class);
 
-  public static void execute(Command command, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-      throws IOException, JdwpError {
+  /**
+   * Execute particular command using the buffer of bytes as an input and data
+   * output stream as an output.<br/>
+   * This command execution only delegates the execution to the appropriate
+   * class ({@link Command} instances).
+   * 
+   * @param command
+   *          The command to execute.
+   * @param bytes
+   *          The buffer of bytes that is used as an input of the command.
+   * @param os
+   *          The output stream that is used for a command output.
+   * @param contextProvider
+   *          The Context Provider.
+   * @throws IOException
+   *           If given input or output have I/O issues.
+   * @throws JdwpException
+   *           If any JDWP based error occurs.
+   * @throws Error
+   *           If the {@link Error} exception was thrown during the command
+   *           execution.
+   * @throws RuntimeException
+   *           If the {@link RuntimeException} was thrown during the command
+   *           execution.
+   */
+  public static void execute(Command command, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
 
     // this will help to not mask the eventual exception thrown in the try
     // block
@@ -169,7 +208,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
     } catch (Error e) {
       logger.error("Fatal error occured during the execution of command: {} (class: {})", command, command.getClass(), e);
       chainError = e;
-    } catch (JdwpError e) {
+    } catch (JdwpException e) {
       chainError = e;
     } finally {
       contextProvider.getVirtualMachine().getRunLock().unlock();
@@ -182,15 +221,15 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
         // rather than anything else
         if (chainError != null) {
           // we still want to keep track of the error
-          throw new VmDead(errorString, chainError);
+          throw new VmDeadException(errorString, chainError);
         } else {
-          throw new VmDead(errorString);
+          throw new VmDeadException(errorString);
         }
       }
 
       if (chainError != null) {
-        if (chainError instanceof JdwpError) {
-          throw (JdwpError) chainError;
+        if (chainError instanceof JdwpException) {
+          throw (JdwpException) chainError;
         } else if (chainError instanceof Error) {
           throw (Error) chainError;
         } else if (chainError instanceof RuntimeException) {

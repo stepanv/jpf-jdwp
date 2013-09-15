@@ -24,8 +24,9 @@ package gov.nasa.jpf.jdwp.command;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier.ObjectWrapper;
@@ -111,7 +112,7 @@ public class ObjectReferenceCommandTest extends TestJdwp {
     }
 
     @Override
-    protected void processOutput(ByteBuffer outputBytes) {
+    protected void processOutput(ByteBuffer outputBytes) throws InvalidObjectException {
       int foundReferringObjectNumber = outputBytes.getInt();
 
       storeToWrapper(2, mjiEnv.newInteger(foundReferringObjectNumber));
@@ -375,10 +376,10 @@ public class ObjectReferenceCommandTest extends TestJdwp {
    * @throws SecurityException
    * @throws NoSuchFieldException
    * @throws IOException
-   * @throws JdwpError
+   * @throws JdwpException
    */
-  @Test(expected = gov.nasa.jpf.jdwp.exception.InvalidObject.class)
-  public void referringObjectsNullTest() throws SecurityException, NoSuchFieldException, IOException, JdwpError {
+  @Test(expected = gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException.class)
+  public void referringObjectsNullTest() throws SecurityException, NoSuchFieldException, IOException, JdwpException {
 
     String[] args = { "+target=HelloWorld" }; // using HelloWorld from
     // jpf-core src/examples
@@ -388,7 +389,7 @@ public class ObjectReferenceCommandTest extends TestJdwp {
 
     ByteArrayOutputStream dataOutputBytes = new ByteArrayOutputStream(0);
     DataOutputStream dataOutputStream = new DataOutputStream(dataOutputBytes);
-    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpObjectManager.getInstance());
+    CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpIdManager.getInstance());
 
     vm.initialize();
 

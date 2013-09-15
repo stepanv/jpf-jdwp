@@ -21,6 +21,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
+/**
+ * This interface provides a simple infrastructure for enums so that every enum
+ * instance has it's own unique identifier.
+ * 
+ * @author stepan
+ * 
+ * @param <T>
+ *          The type that is used for <tt>Enum</tt> identification.
+ */
 public interface IdentifiableEnum<T> {
+
+  /**
+   * The ID that identifies this enum instance.
+   * 
+   * @return the ID of this enum instance.
+   */
   T identifier();
 }

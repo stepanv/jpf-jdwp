@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.Event;
-import gov.nasa.jpf.jdwp.exception.InvalidCount;
+import gov.nasa.jpf.jdwp.exception.InvalidCountException;
 
 /**
  * <p>
@@ -61,14 +61,14 @@ public class CountFilter extends Filter<Event> {
    * @param count
    *          The event is not reported for <code>count - 1</code> times. Use 1
    *          to report it immediately.
-   * @throws InvalidCount
+   * @throws InvalidCountException
    *           In case the count is invalid (i.e. zero or less).
    */
-  public CountFilter(int count) throws InvalidCount {
+  public CountFilter(int count) throws InvalidCountException {
     super(ModKind.COUNT, Event.class);
 
     if (count <= 0) {
-      throw new InvalidCount(count);
+      throw new InvalidCountException(count);
     }
 
     this.count = count;

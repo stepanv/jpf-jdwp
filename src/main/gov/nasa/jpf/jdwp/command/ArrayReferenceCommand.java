@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -33,6 +34,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * The {@link ArrayReferenceCommand} enum class implements the
+ * {@link CommandSet#ARRAYREFERENCE} set of commands. For the detailed
+ * specification refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ArrayReference"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_ArrayReference</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, ArrayReferenceCommand> {
 
   /**
@@ -43,8 +55,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
    */
   LENGTH(1) {
     @Override
-    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       os.writeInt(array.arrayLength());
     }
   },
@@ -64,8 +75,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
    */
   GETVALUES(2) {
     @Override
-    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       int first = bytes.getInt();
       int length = bytes.getInt();
 
@@ -99,8 +109,7 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
    */
   SETVALUES(3) {
     @Override
-    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpError {
+    public void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       int first = bytes.getInt();
       int values = bytes.getInt();
 
@@ -129,15 +138,30 @@ public enum ArrayReferenceCommand implements Command, ConvertibleEnum<Byte, Arra
   }
 
   @Override
-  public ArrayReferenceCommand convert(Byte val) throws JdwpError {
+  public ArrayReferenceCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
-  public abstract void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-      throws IOException, JdwpError;
+  /**
+   * The array reference command specific implementation.
+   * 
+   * @param array
+   *          The array referenced in the command.
+   * @param bytes
+   *          The buffer of bytes that is used as an input of the command.
+   * @param os
+   *          The output stream that is used for a command output.
+   * @param contextProvider
+   *          The Context Provider.
+   * @throws IOException
+   *           If given input or output have I/O issues.
+   * @throws JdwpException
+   *           If any JDWP based error occurs.
+   */
+  public abstract void execute(ElementInfo array, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
 
   @Override
-  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+  public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
     ArrayId arrayId = contextProvider.getObjectManager().readArrayId(bytes);
     execute(arrayId.get(), bytes, os, contextProvider);
 

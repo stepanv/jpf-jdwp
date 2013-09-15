@@ -21,11 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
 /**
  * Universal identifier container for any object that needs to be referenced by
@@ -34,21 +35,23 @@ import java.lang.ref.WeakReference;
  * there is no other reference.<br/>
  * It is also important to not store the reference anywhere else in the JDWP
  * back-end itself to not prevent the GC collection. The referenced object is
- * likely to be stored in the {@link JdwpObjectManager} instance and there the
+ * likely to be stored in the {@link JdwpIdManager} instance and there the
  * references must be intentionally handled with care.<br/>
  * It is also convenient to immediately reflect the referenced object collection
  * which is done by using {@link WeakReference} references.
  * 
  * @author stepan
  * 
- * @see JdwpObjectManager
+ * @see JdwpIdManager
  * 
  * @param <T>
  */
 public abstract class Identifier<T> {
 
+  public static final long NULL_IDENTIFIER_ID = 0L;
+
   public static int SIZE = 8;
-  private long id;
+  private Long id;
   private WeakReference<T> objectReference;
 
   /**
@@ -61,18 +64,48 @@ public abstract class Identifier<T> {
   @SuppressWarnings("unused")
   private T object;
 
-  public Identifier(long id, T object) {
+  /**
+   * The constructor of an identifier.
+   * 
+   * @param id
+   *          The ID.
+   * @param object
+   *          The object this identifier represents.
+   */
+  public Identifier(Long id, T object) {
     this.objectReference = new WeakReference<T>(object);
     this.id = id;
   }
 
+  /**
+   * Whether this identifier represents a <tt>null</tt> object.
+   * 
+   * @return True or False.
+   */
   public boolean isNull() {
     return objectReference.get() == null;
   }
 
-  public abstract T nullObjectHandler() throws InvalidIdentifier;
+  /**
+   * Forward the control of what happens if this identifier represents
+   * represents a <tt>null</tt> object.
+   * 
+   * @return An object the null identifier represents.
+   * @throws InvalidIdentifierException
+   *           Or may throw an exception.
+   */
+  public abstract T nullObjectHandler() throws InvalidIdentifierException;
 
-  public T get() throws InvalidIdentifier {
+  /**
+   * Gets the object this identifier represents.<br/>
+   * If it is null, the result of {@link Identifier#nullObjectHandler()} is
+   * returned (or thrown).
+   * 
+   * @return The object this identifier represents.
+   * @throws InvalidIdentifierException
+   *           If this identifier is invalid.
+   */
+  public T get() throws InvalidIdentifierException {
     T object = objectReference.get();
 
     if (object == null) {
@@ -95,11 +128,30 @@ public abstract class Identifier<T> {
     os.writeLong(id);
   }
 
+  @Override
   public String toString() {
     try {
       return super.toString() + ", reference: " + get() + ", id: " + id;
-    } catch (InvalidIdentifier e) {
+    } catch (InvalidIdentifierException e) {
       return "invalid reference, id: " + id;
     }
   }
+
+  @Override
+  public int hashCode() {
+    return id.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Long) {
+      return id.equals(obj);
+    }
+    if (obj instanceof Identifier<?>) {
+      return Objects.equals(id, ((Identifier<?>) obj).id)
+          && Objects.equals(objectReference.get(), ((Identifier<?>) obj).objectReference.get());
+    }
+    return false;
+  }
+
 }

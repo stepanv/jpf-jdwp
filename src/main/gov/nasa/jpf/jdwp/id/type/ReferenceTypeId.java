@@ -21,17 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.type;
 
-import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
-import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.exception.InvalidReferenceType;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.reference.InvalidReferenceTypeException;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.vm.ClassInfo;
-
-import java.nio.ByteBuffer;
 
 /**
  * This class implements the corresponding <code>referenceTypeID</code> common
@@ -51,33 +45,27 @@ import java.nio.ByteBuffer;
  * 
  * @param <T>
  */
-public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
+public abstract class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
-  public enum TypeTag implements ConvertibleEnum<Byte, TypeTag> {
+  public enum TypeTag implements IdentifiableEnum<Byte> {
+
     /** ReferenceType is a class. */
-    CLASS(1) {
-      @Override
-      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-        throw new RuntimeException("NOT IMPLEMENTED YET");
-      }
-    },
+    CLASS(1),
+
     /** ReferenceType is an interface. */
-    INTERFACE(2) {
-      @Override
-      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-        throw new RuntimeException("NOT IMPLEMENTED YET");
-      }
-    },
+    INTERFACE(2),
+
     /** ReferenceType is an array. */
-    ARRAY(3) {
-      @Override
-      public ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-        throw new RuntimeException("NOT IMPLEMENTED YET");
-      }
-    };
+    ARRAY(3);
 
     private byte typeTagId;
 
+    /**
+     * Constructs {@link TypeTag} Type tag identifier.
+     * 
+     * @param typeTagId
+     *          The type tag ID.
+     */
     TypeTag(int typeTagId) {
       this.typeTagId = (byte) typeTagId;
     }
@@ -86,15 +74,6 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
     public Byte identifier() {
       return typeTagId;
     }
-
-    private static ReverseEnumMap<Byte, TypeTag> map = new ReverseEnumMap<Byte, ReferenceTypeId.TypeTag>(TypeTag.class);
-
-    @Override
-    public TypeTag convert(Byte val) throws JdwpError {
-      return map.get(val);
-    }
-
-    public abstract ReferenceTypeId createReferenceTypeId(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError;
 
   }
 
@@ -108,11 +87,21 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
    * @param classInfo
    *          The {@link ClassInfo} that stands for the desired reference type.
    */
-  public ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
+  protected ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
     super(id, classInfo);
     this.typeTag = typeTag;
   }
 
+  /**
+   * Constructs the {@link ReferenceTypeId} or some of its subtypes for the
+   * given class.
+   * 
+   * @param id
+   *          The desired ID that will identify the given class across the JDWP.
+   * @param classInfo
+   *          The class representation to create the reference ID for.
+   * @return The reference ID.
+   */
   public static ReferenceTypeId factory(long id, ClassInfo classInfo) {
     if (classInfo.isArray()) {
       return new ArrayTypeReferenceId(id, classInfo);
@@ -124,19 +113,14 @@ public class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
     return new ClassTypeReferenceId(id, classInfo);
   }
 
-  public static ReferenceTypeId factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpError {
-    return TypeTag.ARRAY.convert(bytes.get()).createReferenceTypeId(bytes, contextProvider);
-    // TODO delete this if it is unused .. and also all other methods
-  }
-
   @Override
   public IdentifiableEnum<Byte> getIdentifier() {
     return typeTag;
   }
 
   @Override
-  public ClassInfo nullObjectHandler() throws InvalidIdentifier {
-    throw new InvalidReferenceType(this);
+  public ClassInfo nullObjectHandler() throws InvalidIdentifierException {
+    throw new InvalidReferenceTypeException(this);
   }
 
 }

@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
@@ -56,6 +56,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The helper class for JPF VM related algorithms, functions and procedures.
+ * 
+ * @author stepan
+ * 
+ */
 public class VirtualMachineHelper {
 
   final static Logger logger = LoggerFactory.getLogger(VirtualMachineHelper.class);
@@ -110,7 +116,7 @@ public class VirtualMachineHelper {
     return frameCount;
   }
 
-  public static MethodInfo getClassMethod(ClassInfo clazz, long id) throws JdwpError {
+  public static MethodInfo getClassMethod(ClassInfo clazz, long id) throws JdwpException {
     logger.debug("looking for METHOD global id:  of CLASS: {}", id, clazz);
     for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
       if (id == methodInfo.getGlobalId()) {
@@ -122,7 +128,7 @@ public class VirtualMachineHelper {
     if (clazz.getSuperClass() != null) {
       return getClassMethod(clazz.getSuperClass(), id);
     }
-    throw new InvalidMethodId(new MethodId(id));
+    throw new InvalidMethodIdException(new MethodId(id));
   }
 
   public static class MethodResult {
@@ -131,6 +137,7 @@ public class VirtualMachineHelper {
 
     public MethodResult(Value value, ObjectId exception) {
       // TODO use Null object pattern everywhere ...
+      // TODO == null
       this.value = value != null ? value : NullObjectId.getInstance();
       this.exception = exception != null ? exception : NullObjectId.getInstance();
     }
@@ -186,14 +193,11 @@ public class VirtualMachineHelper {
 
   private static MethodResult invokeMethod(DynamicElementInfo object, MethodInfo method, Value[] values, ThreadInfo thread, int options,
                                            boolean isConstructor) {
-    // TODO (maybe this is not a TODO) we're supposed to resume all threads
+    // we're supposed to resume all threads
     // unless INVOKE_SINGLE_THREADED was specified - to prevent deadlocks
     // we're not able to achieve this with JPF since JPF would inspect all
     // states and report where the deadlock occurs
 
-    // TODO [for PJA] What is the best way to execute a method
-    // it's typical, we want to execute obj.toString() when generating a
-    // popup of a hover info when inspecting an object
     logger.info("Executing method: " + method + " of object instance: " + object);
 
     DirectCallStackFrame frame = method.createDirectCallStackFrame(thread, values.length);
@@ -256,7 +260,7 @@ public class VirtualMachineHelper {
       logger.debug("# hidden method execution failed, leaving nativeHiddenRoundtrip: ", ux);
       ExceptionInfo exceptionInfo = thread.getPendingException();
       thread.clearPendingException();
-      ObjectId exception = JdwpObjectManager.getInstance().getObjectId(exceptionInfo.getException());
+      ObjectId exception = JdwpIdManager.getInstance().getObjectId(exceptionInfo.getException());
       thread.popFrame(); // this is still the DirectCallStackFrame, and we
       // want to continue execution
       return new MethodResult(null, exception);
@@ -264,12 +268,12 @@ public class VirtualMachineHelper {
 
     Value returnValue;
     if (isConstructor) {
-      returnValue = JdwpObjectManager.getInstance().getObjectId(constructedElementInfo);
+      returnValue = JdwpIdManager.getInstance().getObjectId(constructedElementInfo);
     } else {
       returnValue = ValueUtils.methodReturnValue(method, frame);
     }
 
-    logger.info("# exit nativeHiddenRoundtrip: {}", returnValue);
+    logger.info("# exit nativeHiddenRoundtrip; returned: {}", returnValue);
 
     return new MethodResult(returnValue, null);
 
@@ -281,7 +285,8 @@ public class VirtualMachineHelper {
    * @param searchedObjRef
    *          The reference of the object instance that is searched for.
    * @param maxReferrers
-   *          The maximum number of referees that is to be returned.
+   *          The maximum number of referees that is to be returned or zero for
+   *          all of them.
    * @param contextProvider
    *          The context provider instance.
    * @return The set of all objectId that has a reference to the given object
@@ -357,7 +362,8 @@ public class VirtualMachineHelper {
    * @param classInfo
    *          Represents the class the instances all searched for.
    * @param maxInstances
-   *          The maximum number of instances to be returned.
+   *          The maximum number of instances to be returned or if zero all are
+   *          returned.
    * @param contextProvider
    *          The context provider.
    * @return The list of all instances.

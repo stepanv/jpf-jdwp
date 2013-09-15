@@ -35,3 +35,11 @@ DONE x.2.question Co s StackFrame - kdyz tam neco menim - narozdil od ElementInf
 15. Cleanup exception structure - use the same name convention everywhere
 
 16. zkontrolovat, ze vsechny commandy ke vsem enablovanym capabilities jsou implementovany
+
+=======================================
+Mame v JPF Class status viz JVMTI http://docs.oracle.com/javase/7/docs/platform/jvmti/jvmti.html#GetClassStatus. Pokud ano, tak je to potreba doimplementovat (ClassStatus).
+Najit vsechny NotImplementedException!
+Vyhodit vsechny enumy ven!
+Count the thread suspension - VirtualMachine#STOP, VirtualMachine#RESUME
+Zaridit moznost cteni major a minor verse - ReferenceType#CLASSFILEVERSION
+zrusit visitor patterny u filteru a udelat to stejne jednoduse jako je to u FieldOnlyFilter resp FieldOnlyFilterable

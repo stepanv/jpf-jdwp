@@ -19,8 +19,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
  */
 
-package gov.nasa.jpf.jdwp.command;
+package gov.nasa.jpf.jdwp.exception;
 
-public class CommandProcessor {
+/**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * The functionality is not implemented in this virtual machine.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
+public class NotImplementedException extends JdwpException {
+
+  /**
+	 * 
+	 */
+  private static final long serialVersionUID = -3022850035823199665L;
+
+  /**
+   * Creates the Not implemented exception.
+   */
+  public NotImplementedException() {
+    super(ErrorType.NOT_IMPLEMENTED);
+  }
+
+  /**
+   * Creates the Not implemented exception.
+   * 
+   * @param message
+   *          The message to be reported.
+   */
+  public NotImplementedException(String message) {
+    super(ErrorType.NOT_IMPLEMENTED, message);
+  }
 
 }

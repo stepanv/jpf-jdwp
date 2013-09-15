@@ -45,6 +45,9 @@ public class JDWPListenerBase implements VMListener {
 
   final static Logger logger = LoggerFactory.getLogger(JDWPListenerBase.class);
 
+  /**
+   * The constructor.
+   */
   public JDWPListenerBase() {
   }
 

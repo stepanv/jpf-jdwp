@@ -25,8 +25,8 @@ import gov.nasa.jpf.jdwp.ClassStatus;
 import gov.nasa.jpf.jdwp.event.EventRequest.SuspendPolicy;
 import gov.nasa.jpf.jdwp.event.filter.ClassFilter;
 import gov.nasa.jpf.jdwp.event.filter.ClassOnlyFilter;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -82,7 +82,7 @@ public class ClassPrepareEvent extends ThreadableEvent implements Threadable, Cl
 
   @Override
   protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
-    JdwpObjectManager.getInstance().getReferenceTypeId(classInfo).writeTagged(os);
+    JdwpIdManager.getInstance().getReferenceTypeId(classInfo).writeTagged(os);
     JdwpString.write(classInfo.getSignature(), os);
     os.writeInt(status);
   }
@@ -93,7 +93,7 @@ public class ClassPrepareEvent extends ThreadableEvent implements Threadable, Cl
   }
 
   @Override
-  public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifier {
+  public boolean matches(ClassOnlyFilter classOnlyFilter) throws InvalidIdentifierException {
     return classOnlyFilter.matches(classInfo);
   }
 

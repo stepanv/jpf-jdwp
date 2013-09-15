@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
-import gov.nasa.jpf.jdwp.exception.InvalidMethodId;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.vm.MethodInfo;
 
 /**
@@ -54,12 +54,12 @@ public class MethodId extends Identifier<MethodInfo> {
    *          The numerical ID of this identifier.
    */
   public MethodId(long globalMethodId) {
-    super(0, MethodInfo.getMethodInfo((int) globalMethodId));
+    super(globalMethodId, MethodInfo.getMethodInfo((int) globalMethodId));
   }
 
   @Override
-  public MethodInfo nullObjectHandler() throws InvalidIdentifier {
-    throw new InvalidMethodId(this);
+  public MethodInfo nullObjectHandler() throws InvalidIdentifierException {
+    throw new InvalidMethodIdException(this);
   }
 
 }

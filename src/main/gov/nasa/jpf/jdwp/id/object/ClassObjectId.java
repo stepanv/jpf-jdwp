@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -77,7 +77,7 @@ public class ClassObjectId extends InfoObjectId<ClassInfo> {
   }
 
   @Override
-  protected ClassInfo resolveInfoObject() throws InvalidObject {
+  protected ClassInfo resolveInfoObject() throws InvalidObjectException {
     return getClassInfo(get());
   }
 }

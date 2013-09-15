@@ -22,15 +22,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
-import gov.nasa.jpf.jdwp.exception.InvalidIdentifier;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.util.test.BasicJdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier.ObjectWrapper;
 import gov.nasa.jpf.jdwp.util.test.JdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -40,7 +42,10 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -50,9 +55,10 @@ public class ReferenceTypeCommandTest extends TestJdwp {
     runTestsOfThisClass(args);
   }
 
-	static class ReferenceClassSuper {
-		private Object privateSuperField;
-	}
+  static class ReferenceClassSuper {
+    private Object privateSuperField;
+  }
+
   /**
    * This is the reference class we query in this test set.
    * 
@@ -62,9 +68,9 @@ public class ReferenceTypeCommandTest extends TestJdwp {
   static class ReferenceClass {
     void method() {
     }
-		
-		private Object privateField;
-		static String staticStringField;
+
+    private Object privateField;
+    static String staticStringField;
 
     public String methodStrint(String string) {
       return "";
@@ -125,35 +131,35 @@ public class ReferenceTypeCommandTest extends TestJdwp {
 
     }
   }
-	
+
   private abstract static class ReferenceTypeCommandVerifier extends CommandVerifier {
 
-		public ReferenceTypeCommandVerifier(Command command) {
-			super(command);
-		}
-		
-		protected abstract void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException;
-		
+    public ReferenceTypeCommandVerifier(Command command) {
+      super(command);
+    }
+
+    protected abstract void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException;
+
     @Override
-		final protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+    final protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
       ObjectId objectId = loadObjectId(0);
       ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(objectId.get().getClassInfo());
       referenceTypeId.write(inputDataOutputStream);
-			
-			postprepareInput(inputDataOutputStream);
-		}
-		
-	}
 
-	CommandVerifier instancesVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.INSTANCES) {
+      postprepareInput(inputDataOutputStream);
+    }
 
-		@Override
-		protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+  }
+
+  CommandVerifier instancesVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.INSTANCES) {
+
+    @Override
+    protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
       inputDataOutputStream.writeInt(loadBoxObject(1, Integer.class));
     }
 
     @Override
-    protected void processOutput(ByteBuffer outputBytes) {
+    protected void processOutput(ByteBuffer outputBytes) throws InvalidIdentifierException {
       int foundInstancesCount = outputBytes.getInt();
       storeToWrapper(2, mjiEnv.newInteger(foundInstancesCount));
 
@@ -227,53 +233,168 @@ public class ReferenceTypeCommandTest extends TestJdwp {
       instancesVerifier.verify(testedObject, Integer.valueOf(foundInstances.length), foundInstancesNumber, foundInstances);
 
       assertEquals(2, foundInstancesNumber.wrappedObject.intValue());
-		}
-	}
-	
-	CommandVerifier fieldsVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.FIELDS) {
-
-		@Override
-		protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
-			// empty on a purpose
-		}
-
-		@Override
-		protected void processOutput(ByteBuffer outputBytes) {
-			int declared = outputBytes.getInt();
-			storeToWrapper(1, mjiEnv.newInteger(declared));
-
-			int outputArrayIndex = 0;
-			
-			for (int i = 0; i < declared; ++i) {
-				// fieldId is thrown away
-				try {
-          contextProvider.getObjectManager().readFieldId(outputBytes);
-          
-          storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
-          storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
-          storeToArray(2, outputArrayIndex++, mjiEnv.newInteger(outputBytes.getInt()));
-        } catch (InvalidIdentifier e) {
-          throw new IllegalStateException("No exceptions are allowed in this tests.", e);
-        }
-			}
-		}
-	};
-	
-	@Test
-	public void fieldsTest() throws SecurityException, NoSuchFieldException {
-		if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
-
-			ReferenceClass testedObject = new ReferenceClass();
-
-			Object[] foundFields = new Object[50];
-			ObjectWrapper<Integer> declared = new ObjectWrapper<Integer>();
-
-			fieldsVerifier.verify(testedObject, declared, foundFields);
-			
-			assertEquals(2, declared.wrappedObject.intValue());
-			assertEquals("privateField", foundFields[0]);
-			assertEquals("staticStringField", foundFields[3]);
-			
     }
+  }
+
+  CommandVerifier fieldsVerifier = new ReferenceTypeCommandVerifier(ReferenceTypeCommand.FIELDS) {
+
+    @Override
+    protected void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+      // empty on a purpose
+    }
+
+    @Override
+    protected void processOutput(ByteBuffer outputBytes) throws InvalidIdentifierException {
+      int declared = outputBytes.getInt();
+      storeToWrapper(1, mjiEnv.newInteger(declared));
+
+      int outputArrayIndex = 0;
+
+      for (int i = 0; i < declared; ++i) {
+        // fieldId is thrown away
+        contextProvider.getObjectManager().readFieldId(outputBytes);
+
+        storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+        storeToArray(2, outputArrayIndex++, mjiEnv.newString(JdwpString.read(outputBytes)));
+        storeToArray(2, outputArrayIndex++, mjiEnv.newInteger(outputBytes.getInt()));
+      }
+    }
+  };
+
+  @Test
+  public void fieldsTest() throws SecurityException, NoSuchFieldException {
+    if (verifyNoPropertyViolation(/* "+listener=.jdwp.JDWPListener" */)) {
+
+      ReferenceClass testedObject = new ReferenceClass();
+
+      Object[] foundFields = new Object[50];
+      ObjectWrapper<Integer> declared = new ObjectWrapper<Integer>();
+
+      fieldsVerifier.verify(testedObject, declared, foundFields);
+
+      assertEquals(2, declared.wrappedObject.intValue());
+      assertEquals("privateField", foundFields[0]);
+      assertEquals("staticStringField", foundFields[3]);
+
+    }
+  }
+
+  /**
+   * A reference class for nested types test.
+   * 
+   * @author stepan
+   * 
+   */
+  private static class NestedTypesReferenceClass {
+    private static class Foo {
+    }
+
+    public class Bar {
+      private class BarNested {
+      }
+    }
+
+    interface FooBar {
+      public interface BarNestedInterface {
+      }
+    }
+  }
+
+  BasicJdwpVerifier nestedTypesVerifier = new BasicJdwpVerifier() {
+
+    @Override
+    public void test() throws Throwable {
+      initializeSimpleJPF();
+
+      ClassInfo classInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(NestedTypesReferenceClass.class.getName());
+
+      simpleJpfContextProvider().getObjectManager().getReferenceTypeId(classInfo);
+
+      ReferenceTypeCommand.NESTEDTYPES.execute(classInfo, bytes, dataOutputStream, simpleJpfContextProvider());
+
+      wrapTheOutput();
+
+      List<String> foundNestedTypes = new LinkedList<>();
+      int classes = outputBytes.getInt();
+      for (int i = 0; i < classes; ++i) {
+        outputBytes.get();
+        ClassInfo foundNestedType = simpleJpfContextProvider().getObjectManager().readReferenceTypeId(outputBytes).get();
+        foundNestedTypes.add(foundNestedType.getName());
+      }
+
+      assertEquals(3, classes);
+      assertTrue(foundNestedTypes.contains(NestedTypesReferenceClass.FooBar.class.getName()));
+      assertFalse(foundNestedTypes.contains(NestedTypesReferenceClass.Bar.BarNested.class.getName()));
+      assertTrue(foundNestedTypes.contains(NestedTypesReferenceClass.Foo.class.getName()));
+      assertFalse(foundNestedTypes.contains(NestedTypesReferenceClass.FooBar.BarNestedInterface.class.getName()));
+    }
+
+  };
+
+  /**
+   * Test the nested types command.
+   */
+  @Test
+  public void nestedTypesTest() throws Throwable {
+    nestedTypesVerifier.test();
+  }
+  
+  /**
+   * A reference class for interfaces test.
+   * 
+   * @author stepan
+   * 
+   */
+  private static class InterfacesReferenceClass implements NestedTypesReferenceClass.FooBar {
+    private static class Foo {
+    }
+
+    public abstract class Bar extends HashMap implements NestedTypesReferenceClass.FooBar, Iterable {
+      private class BarNested {
+      }
+    }
+
+    interface FooBar {
+      public interface BarNestedInterface {
+      }
+    }
+  }
+  
+  BasicJdwpVerifier interfacesVerifier = new BasicJdwpVerifier() {
+
+    @Override
+    public void test() throws Throwable {
+      initializeSimpleJPF();
+
+      ClassInfo classInfo = ClassLoaderInfo.getCurrentResolvedClassInfo(InterfacesReferenceClass.Bar.class.getName());
+
+      simpleJpfContextProvider().getObjectManager().getReferenceTypeId(classInfo);
+
+      ReferenceTypeCommand.INTERFACES.execute(classInfo, bytes, dataOutputStream, simpleJpfContextProvider());
+
+      wrapTheOutput();
+
+      List<String> foundInterfaces = new LinkedList<>();
+      int classes = outputBytes.getInt();
+      for (int i = 0; i < classes; ++i) {
+        ClassInfo interfaceType = simpleJpfContextProvider().getObjectManager().readInterfaceTypeId(outputBytes).get();
+        foundInterfaces.add(interfaceType.getName());
+      }
+
+      assertEquals(2, classes);
+      assertTrue(foundInterfaces.contains(Iterable.class.getName()));
+      assertFalse(foundInterfaces.contains(Map.class.getName()));
+      assertTrue(foundInterfaces.contains(NestedTypesReferenceClass.FooBar.class.getName()));
+      assertFalse(foundInterfaces.contains(NestedTypesReferenceClass.FooBar.BarNestedInterface.class.getName()));
+    }
+
+  };
+
+  /**
+   * Test the nested types command.
+   */
+  @Test
+  public void interfacesTest() throws Throwable {
+    interfacesVerifier.test();
   }
 }

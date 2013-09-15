@@ -19,19 +19,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
  */
 
-package gov.nasa.jpf.jdwp.exception;
+package gov.nasa.jpf.jdwp.exception.id;
 
-import gov.nasa.jpf.jdwp.id.object.ThreadId;
+import gov.nasa.jpf.jdwp.id.MethodId;
 
-public class InvalidThreadException extends InvalidObject {
-
-  public InvalidThreadException(ThreadId threadId) {
-    super(ErrorType.INVALID_THREAD, threadId);
-  }
+/**
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * Invalid method.
+ * </p>
+ * 
+ * @author stepan
+ * 
+ */
+public class InvalidMethodIdException extends InvalidIdentifierException {
 
   /**
 	 * 
 	 */
-  private static final long serialVersionUID = 203403989030955960L;
+  private static final long serialVersionUID = 1467080209913560977L;
+
+  /**
+   * Constructs the {@link InvalidMethodIdException} exception.
+   * 
+   * @param methodId
+   *          The invalid methodID to report.
+   * @see InvalidIdentifierException
+   * @see InvalidMethodIdException
+   */
+  public InvalidMethodIdException(MethodId methodId) {
+    super(ErrorType.INVALID_METHODID, methodId);
+  }
 
 }

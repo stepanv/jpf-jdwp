@@ -21,7 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.id.object.StringId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -30,10 +31,28 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * The {@link StringReferenceCommand} enum class implements the
+ * {@link CommandSet#STRINGREFERENCE} set of commands. For the detailed
+ * specification refer to <a href=
+ * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_StringReference"
+ * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
+ * JDWP_StringReference</a> JDWP 1.6 Specification pages.
+ * 
+ * @author stepan
+ * 
+ */
 public enum StringReferenceCommand implements Command, ConvertibleEnum<Byte, StringReferenceCommand> {
+
+  /**
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * Returns the characters contained in the string.
+   * </p>
+   */
   VALUE(1) {
     @Override
-    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError {
+    public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       StringId stringId = contextProvider.getObjectManager().readStringId(bytes);
       ElementInfo elementInfo = stringId.get();
       JdwpString.write(elementInfo.asString(), os);
@@ -54,10 +73,8 @@ public enum StringReferenceCommand implements Command, ConvertibleEnum<Byte, Str
   }
 
   @Override
-  public StringReferenceCommand convert(Byte val) throws JdwpError {
+  public StringReferenceCommand convert(Byte val) throws IllegalArgumentException {
     return map.get(val);
   }
 
-  @Override
-  public abstract void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpError;
 }

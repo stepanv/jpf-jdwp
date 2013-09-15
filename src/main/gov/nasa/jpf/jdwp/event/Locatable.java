@@ -24,10 +24,18 @@ package gov.nasa.jpf.jdwp.event;
 import gov.nasa.jpf.jdwp.type.Location;
 
 /**
+ * The {@link Locatable} interface gathers all events that have an associated
+ * location.
  * 
  * @author stepan
  * 
  */
 public interface Locatable extends Threadable, ClassFilterable, ClassOnlyFilterable, InstanceOnlyFilterable {
+
+  /**
+   * The location this event is associated with.
+   * 
+   * @return The location.
+   */
   public Location getLocation();
 }

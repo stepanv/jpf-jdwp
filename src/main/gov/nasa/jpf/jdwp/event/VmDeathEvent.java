@@ -24,8 +24,17 @@ package gov.nasa.jpf.jdwp.event;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+/**
+ * Notification of the VM death.
+ * 
+ * @author stepan
+ * 
+ */
 public class VmDeathEvent extends EventBase {
 
+  /**
+   * Constructs this event.
+   */
   public VmDeathEvent() {
     super(EventKind.VM_DEATH);
   }

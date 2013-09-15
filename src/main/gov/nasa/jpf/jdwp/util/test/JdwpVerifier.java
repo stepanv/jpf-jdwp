@@ -23,14 +23,9 @@ package gov.nasa.jpf.jdwp.util.test;
 
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.VM;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @author stepan
  * 
  */
-public abstract class JdwpVerifier {
+public abstract class JdwpVerifier extends BasicJdwpVerifier {
 
   final static Logger logger = LoggerFactory.getLogger(JdwpVerifier.class);
 
@@ -68,10 +63,7 @@ public abstract class JdwpVerifier {
     }
   }
 
-  protected ByteArrayOutputStream dataOutputBytes;
-  protected DataOutputStream dataOutputStream;
   protected CommandContextProvider contextProvider;
-  protected ByteBuffer bytes;
 
   /**
    * This method implements the JDWP verification which is run outside of SuT.
@@ -109,32 +101,8 @@ public abstract class JdwpVerifier {
   }
 
   protected void init() {
-    dataOutputBytes = new ByteArrayOutputStream(0);
-    dataOutputStream = new DataOutputStream(dataOutputBytes);
-    bytes = ByteBuffer.allocate(200); // This "might" be enough
-    contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpObjectManager.getInstance());
-  }
-
-  protected void clear() {
-    try {
-      dataOutputBytes.close(); // has no effect
-      dataOutputStream.close();
-    } catch (IOException e) {
-      // we don't care let's try to go further
-    }
-  }
-
-  protected void reset() {
-    try {
-      dataOutputBytes.close(); // has no effect
-      dataOutputStream.close();
-    } catch (IOException e) {
-      // we don't care let's try to go further
-    }
-
-    dataOutputBytes = new ByteArrayOutputStream(0);
-    dataOutputStream = new DataOutputStream(dataOutputBytes);
-    bytes.clear();
+    super.init();
+    contextProvider = new CommandContextProvider(new VirtualMachine(VM.getVM().getJPF()), JdwpIdManager.getInstance());
   }
 
 }

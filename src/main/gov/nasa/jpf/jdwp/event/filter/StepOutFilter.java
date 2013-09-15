@@ -21,8 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event.filter;
 
-import gov.nasa.jpf.jdwp.exception.InvalidObject;
-import gov.nasa.jpf.jdwp.exception.InvalidThreadException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.vm.Instruction;
@@ -35,7 +35,7 @@ import gov.nasa.jpf.vm.Instruction;
  */
 public class StepOutFilter extends StepFilter {
 
-  public StepOutFilter(ThreadId thread, StepSize size) throws InvalidThreadException, InvalidObject {
+  public StepOutFilter(ThreadId thread, StepSize size) throws InvalidThreadException, InvalidObjectException {
     super(thread, size);
   }
 

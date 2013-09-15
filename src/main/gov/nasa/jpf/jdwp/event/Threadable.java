@@ -23,6 +23,19 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.vm.ThreadInfo;
 
+/**
+ * The {@link Threadable} interface aggregates all the events that have an
+ * associated thread.
+ * 
+ * @author stepan
+ * 
+ */
 public interface Threadable extends Event {
+
+  /**
+   * Gets the associated thread of this event.
+   * 
+   * @return The thread.
+   */
   public ThreadInfo getThread();
 }

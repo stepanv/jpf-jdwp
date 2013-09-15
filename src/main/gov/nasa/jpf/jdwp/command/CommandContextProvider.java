@@ -23,31 +23,66 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.vm.VM;
 
+/**
+ * This class provides a context for commands so that all possibly required JDWP
+ * or JPF objects are accessed in a uniform way.
+ * 
+ * @author stepan
+ * 
+ */
 public class CommandContextProvider {
 
   private VirtualMachine virtualMachine;
-  private JdwpObjectManager objectManager;
+  private JdwpIdManager objectManager;
 
-  public CommandContextProvider(VirtualMachine virtualMachine, JdwpObjectManager objectManager) {
+  /**
+   * Creates the Command Context Provider.
+   * 
+   * @param virtualMachine
+   *          Virtual Machine instance
+   * @param objectManager
+   *          JDWP ID manager
+   */
+  public CommandContextProvider(VirtualMachine virtualMachine, JdwpIdManager objectManager) {
     this.virtualMachine = virtualMachine;
     this.objectManager = objectManager;
   }
 
-  public JdwpObjectManager getObjectManager() {
+  /**
+   * Get the JDWP ID Manager
+   * 
+   * @return The JDWP ID Manager.
+   */
+  public JdwpIdManager getObjectManager() {
     return objectManager;
   }
 
+  /**
+   * Get the JPF Virtual Machine class representation.
+   * 
+   * @return The VM.
+   */
   public VM getVM() {
     return VM.getVM();
   }
 
+  /**
+   * Get JPF.
+   * 
+   * @return JPF
+   */
   public JPF getJPF() {
     return getVM().getJPF();
   }
 
+  /**
+   * Get the JDWP Virtual Machine class representation.
+   * 
+   * @return the JDWP VM.
+   */
   public VirtualMachine getVirtualMachine() {
     return virtualMachine;
   }

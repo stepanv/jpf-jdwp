@@ -40,7 +40,7 @@ package gnu.classpath.jdwp.transport;
 
 import gov.nasa.jpf.jdwp.command.Command;
 import gov.nasa.jpf.jdwp.command.CommandSet;
-import gov.nasa.jpf.jdwp.exception.JdwpError;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -113,7 +113,7 @@ public class JdwpCommandPacket extends JdwpPacket {
 
   // Reads command packet data from the given buffer, starting
   // at the given offset
-  protected int myFromBytes(byte[] bytes, int index) throws JdwpError {
+  protected int myFromBytes(byte[] bytes, int index) throws JdwpException {
     int i = 0;
 
     _commandSet = CommandSet.ARRAYREFERENCE.convert(bytes[index + i++]);

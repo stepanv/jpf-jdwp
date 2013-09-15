@@ -23,7 +23,7 @@ package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.command.VirtualMachineCommand;
 import gov.nasa.jpf.jdwp.id.FieldId;
-import gov.nasa.jpf.jdwp.id.JdwpObjectManager;
+import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
@@ -83,16 +83,16 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
     // TODO this is not according the spec!
     fieldObjectClassInfo = fieldInfo.getClassInfo();
 
-    ReferenceTypeId referenceTypeId = JdwpObjectManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
+    ReferenceTypeId referenceTypeId = JdwpIdManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
     referenceTypeId.writeTagged(os);
 
-    FieldId fieldId = JdwpObjectManager.getInstance().getFieldId(fieldInfo);
+    FieldId fieldId = JdwpIdManager.getInstance().getFieldId(fieldInfo);
     fieldId.write(os);
 
     if (objectBeingAccessed instanceof StaticElementInfo) {
       NullObjectId.instanceWriteTagged(os);
     } else {
-      ObjectId objectId = JdwpObjectManager.getInstance().getObjectId(objectBeingAccessed);
+      ObjectId objectId = JdwpIdManager.getInstance().getObjectId(objectBeingAccessed);
       objectId.writeTagged(os);
     }
   }
