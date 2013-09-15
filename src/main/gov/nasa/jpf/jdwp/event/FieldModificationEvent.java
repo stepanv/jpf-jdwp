@@ -121,6 +121,11 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
   public FieldInfo getFieldInfo() {
     return fieldInfo;
   }
+  
+  @Override
+  public ElementInfo instance() {
+    return objectBeingModified;
+  }
 
   @Override
   public String toString() {

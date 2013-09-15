@@ -480,6 +480,10 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
   }
 
   private static ReverseEnumMap<Byte, ReferenceTypeCommand> map = new ReverseEnumMap<Byte, ReferenceTypeCommand>(ReferenceTypeCommand.class);
+  /**
+   * JPF stores sources with it's path but we need to return only the name
+   * itself.
+   */
   private static final Pattern SOURCEFILENAME_FIX_PATTERN = Pattern.compile("^.*[/\\\\]");
 
   @Override

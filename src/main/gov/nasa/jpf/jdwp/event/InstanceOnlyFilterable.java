@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event;
 
 import gov.nasa.jpf.jdwp.event.filter.InstanceOnlyFilter;
+import gov.nasa.jpf.vm.ElementInfo;
 
 /**
  * The {@link InstanceOnlyFilterable} interface aggregates all the events that
@@ -31,5 +32,12 @@ import gov.nasa.jpf.jdwp.event.filter.InstanceOnlyFilter;
  * 
  */
 public interface InstanceOnlyFilterable extends Event {
+
+  /**
+   * The instance associated with this event.
+   * 
+   * @return ElementInfo instance or <tt>null</tt> for statics
+   */
+  ElementInfo instance();
 
 }

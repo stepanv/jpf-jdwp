@@ -92,7 +92,6 @@ public class ClassLoaderId extends InfoObjectId<ClassLoaderInfo> {
    * @return The {@link ClassLoaderInfo} instance
    */
   private static ClassLoaderInfo getClassLoaderInfo(ElementInfo elementInfo) {
-    // We can use any thread. That is just fine.
     ThreadInfo currentThread = VM.getVM().getCurrentThread();
     MJIEnv env = currentThread.getMJIEnv();
 

@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.VirtualMachine.ExecutionManager;
@@ -186,8 +187,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
   THREADGROUP(5) {
     @Override
     protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      int group = threadInfo.getThreadGroupRef();
-      ElementInfo ei = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
+      int group = threadInfo.getThreadObject().getReferenceField(JdwpConstants.FIELDNAME_THREAD_GROUP);
+      ElementInfo ei = contextProvider.getVM().getHeap().get(group);
       ThreadGroupId groupId = contextProvider.getObjectManager().getThreadGroupId(ei);
       groupId.write(os);
     }

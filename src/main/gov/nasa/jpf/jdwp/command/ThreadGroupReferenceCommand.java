@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.exception.JdwpException;
+import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
@@ -63,7 +64,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
   NAME(1) {
     @Override
     public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      int nameref = threadGroupElementInfo.getReferenceField("name");
+      int nameref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_NAME);
       ElementInfo name = contextProvider.getVM().getHeap().get(nameref);
       JdwpString.write(name.asString(), os);
     }
@@ -78,7 +79,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
   PARENT(2) {
     @Override
     public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      int parentref = threadGroupElementInfo.getReferenceField("parent");
+      int parentref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_PARENT);
       ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
       logger.debug("Thread group parent: {}", parent);
 
@@ -110,7 +111,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
       DataOutputStream childrenDos = new DataOutputStream(childrenOs);
 
       // get the threads first
-      int threadsref = threadGroupElementInfo.getReferenceField("threads");
+      int threadsref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_THREADS);
       ElementInfo threads = contextProvider.getVM().getHeap().get(threadsref);
 
       int childThreads = 0;
@@ -132,7 +133,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
       childrenOs = new ByteArrayOutputStream(0);
       childrenDos = new DataOutputStream(childrenOs);
 
-      int groupsref = threadGroupElementInfo.getReferenceField("groups");
+      int groupsref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_GROUPS);
       ElementInfo groups = contextProvider.getVM().getHeap().get(groupsref);
 
       int childGroups = 0;
