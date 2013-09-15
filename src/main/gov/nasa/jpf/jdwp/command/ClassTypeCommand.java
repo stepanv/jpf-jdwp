@@ -22,15 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
-import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper.MethodResult;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.ThreadNotSuspendedException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
-import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -46,8 +44,8 @@ import java.nio.ByteBuffer;
 
 /**
  * The {@link ClassTypeCommand} enum class implements the
- * {@link CommandSet#CLASSTYPE} set of commands. For the detailed
- * specification refer to <a href=
+ * {@link CommandSet#CLASSTYPE} set of commands. For the detailed specification
+ * refer to <a href=
  * "http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#JDWP_ClassObjectReference"
  * >http://docs.oracle.com/javase/6/docs/platform/jpda/jdwp/jdwp-protocol.html#
  * JDWP_ClassObjectReference</a> JDWP 1.6 Specification pages.
@@ -65,18 +63,12 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
    */
   SUPERCLASS(1) {
     @Override
-    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpException {
+    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ClassInfo superClassInfo = classInfo.getSuperClass();
-
-      // The superclass (null if the class ID for java.lang.Object is
-      // specified).
-      if (superClassInfo == null) {
-        NullObjectId.instantWrite(os);
-      } else {
-        ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(superClassInfo);
-        referenceTypeId.write(os);
-      }
+      
+      // if classInfo is java.lang.Object, then NullReference is returned
+      ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(superClassInfo);
+      referenceTypeId.write(os);
 
     }
   },
@@ -95,8 +87,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
    */
   SETVALUES(2) {
     @Override
-    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpException {
+    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       int values = bytes.getInt();
 
       ElementInfo staticElementInfo = classInfo.getModifiableStaticElementInfo();
@@ -170,8 +161,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
    */
   INVOKEMETHOD(3) {
     @Override
-    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpException {
+    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ThreadId threadId = JdwpIdManager.getInstance().readThreadId(bytes);
       MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
 
@@ -183,7 +173,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
       }
 
       int options = bytes.getInt();
-      
+
       ThreadInfo thread = threadId.getInfoObject();
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(thread)) {
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
@@ -251,8 +241,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
    */
   NEWINSTANCE(4) {
     @Override
-    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-        throws IOException, JdwpException {
+    public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ThreadId threadId = JdwpIdManager.getInstance().readThreadId(bytes);
       MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
 
@@ -264,7 +253,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
       }
 
       int options = bytes.getInt();
-      
+
       ThreadInfo thread = threadId.getInfoObject();
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(thread)) {
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
@@ -297,11 +286,10 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
   @Override
   public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-    ClassTypeReferenceId classTypeId = contextProvider.getObjectManager().readClassTypeId(bytes);
+    ReferenceTypeId classTypeId = contextProvider.getObjectManager().readClassTypeId(bytes);
     execute(classTypeId.get(), bytes, os, contextProvider);
   }
 
-  public abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider)
-      throws IOException, JdwpException;
+  public abstract void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
 
 }

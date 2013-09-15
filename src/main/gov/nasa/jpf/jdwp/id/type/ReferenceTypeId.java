@@ -75,4 +75,9 @@ public interface ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
   }
 
+  boolean isArrayType();
+
+  boolean isClassType();
+  boolean isInterfaceType();
+
 }

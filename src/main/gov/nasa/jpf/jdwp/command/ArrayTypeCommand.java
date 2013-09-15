@@ -21,10 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
-import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Heap;
@@ -63,7 +63,7 @@ public enum ArrayTypeCommand implements Command, ConvertibleEnum<Byte, ArrayType
   NEWINSTANCE(1) {
     @Override
     public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ArrayTypeReferenceId arrayTypeId = contextProvider.getObjectManager().readArrayTypeReferenceId(bytes);
+      ReferenceTypeId arrayTypeId = contextProvider.getObjectManager().readArrayTypeReferenceId(bytes);
       int length = bytes.getInt();
 
       ClassInfo componentClassInfo = arrayTypeId.get().getComponentClassInfo();

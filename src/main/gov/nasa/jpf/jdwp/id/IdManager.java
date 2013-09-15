@@ -85,6 +85,7 @@ public abstract class IdManager<I extends Identifier<T>, T, E extends InvalidIde
    */
   public IdManager(I nullIdentifier) {
     identifierSet.put(nullIdentifier, new WeakReference<I>(nullIdentifier));
+    objectToIdentifierMap.put(null, nullIdentifier);
   }
 
   /**
@@ -113,11 +114,6 @@ public abstract class IdManager<I extends Identifier<T>, T, E extends InvalidIde
    */
   public synchronized I getIdentifierId(T object) {
 
-    if (object == null) {
-      // null objects should be filtered at the higher level of abstraction!
-      throw new IllegalStateException("Null is not allowed here!");
-    }
-
     if (objectToIdentifierMap.containsKey(object)) {
       // identifier exists
 
@@ -127,6 +123,10 @@ public abstract class IdManager<I extends Identifier<T>, T, E extends InvalidIde
 
     } else {
       // identifier doesn't exist, lets create one
+      
+      if (object == null) {
+        throw new IllegalStateException("NULL objects not supported by this ID Manager instance! " + this);
+      }
 
       Long id = idGenerator++;
       I identifier = createIdentifier(id, object);

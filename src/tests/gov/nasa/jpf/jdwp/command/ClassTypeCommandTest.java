@@ -25,6 +25,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
+import gov.nasa.jpf.jdwp.id.object.special.NullReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.test.TestInError;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
@@ -129,7 +130,10 @@ public class ClassTypeCommandTest extends TestJdwp {
 
       outputBytes = ByteBuffer.wrap(dataOutputBytes.toByteArray());
       refTypeId = contextProvider.getObjectManager().readReferenceTypeId(outputBytes);
-      assertEquals(null, refTypeId);
+      assertEquals(NullReferenceId.getInstance(), refTypeId);
+      
+      // check the null as well
+      assertEquals(0L, ByteBuffer.wrap(dataOutputBytes.toByteArray()).getLong());
 
       resetBuffers();
 

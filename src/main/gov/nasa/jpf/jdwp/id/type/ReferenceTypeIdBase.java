@@ -75,13 +75,13 @@ public abstract class ReferenceTypeIdBase extends TaggableIdentifierBase<ClassIn
    */
   public static ReferenceTypeId factory(long id, ClassInfo classInfo) {
     if (classInfo.isArray()) {
-      return new ArrayTypeReferenceId(id, classInfo);
+      return new ArrayTypeReferenceIdImpl(id, classInfo);
     }
     if (classInfo.isInterface()) {
-      return new InterfaceTypeReferenceId(id, classInfo);
+      return new InterfaceTypeReferenceIdImpl(id, classInfo);
     }
 
-    return new ClassTypeReferenceId(id, classInfo);
+    return new ClassTypeReferenceIdImpl(id, classInfo);
   }
 
   @Override
@@ -93,5 +93,22 @@ public abstract class ReferenceTypeIdBase extends TaggableIdentifierBase<ClassIn
   public ClassInfo nullObjectHandler() throws InvalidIdentifierException {
     throw new InvalidReferenceTypeException(this);
   }
+
+  @Override
+  public boolean isArrayType() {
+    return TypeTag.ARRAY.equals(typeTag);
+  }
+  
+  @Override
+  public boolean isClassType() {
+    return TypeTag.CLASS.equals(typeTag);
+  }
+  
+  @Override
+  public boolean isInterfaceType() {
+    return TypeTag.INTERFACE.equals(typeTag);
+  }
+  
+  
 
 }

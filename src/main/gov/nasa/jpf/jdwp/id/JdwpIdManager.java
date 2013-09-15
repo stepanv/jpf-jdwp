@@ -28,9 +28,7 @@ import gov.nasa.jpf.jdwp.exception.id.reference.InvalidArrayTypeException;
 import gov.nasa.jpf.jdwp.exception.id.reference.InvalidClassTypeException;
 import gov.nasa.jpf.jdwp.exception.id.reference.InvalidReferenceTypeException;
 import gov.nasa.jpf.jdwp.id.object.ObjectIdManager;
-import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
-import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
-import gov.nasa.jpf.jdwp.id.type.InterfaceTypeReferenceId;
+import gov.nasa.jpf.jdwp.id.object.special.NullReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeIdBase;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -41,7 +39,6 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -143,6 +140,10 @@ public class JdwpIdManager extends ObjectIdManager {
    * 
    */
   private static class ReferenceIdManager extends IdManager<ReferenceTypeId, ClassInfo, InvalidReferenceTypeException> {
+    
+    public ReferenceIdManager() {
+      super(NullReferenceId.getInstance());
+    }
 
     @Override
     public ReferenceTypeId createIdentifier(Long id, ClassInfo classInfo) {
@@ -221,39 +222,6 @@ public class JdwpIdManager extends ObjectIdManager {
   }
 
   /**
-   * Inner method that accumulates the casting and read logics for subtypes of
-   * reference ID identifiers.
-   * 
-   * @param bytes
-   *          The byte buffer to read the reference ID from.
-   * @param referenceClass
-   *          The class of the desired reference that is to be returned.
-   * @param exceptionClass
-   *          The class of the exception to be thrown if the ID is a reference
-   *          ID but does not stand for the desired reference that has to be
-   *          returned.
-   * @return The subtype <tt>T</tt> of reference ID.
-   * @throws E
-   *           If given ID is a reference ID but is not ID of subtype <tt>T</tt>
-   * @throws InvalidReferenceTypeException
-   *           If given ID is not a reference ID or was GCed.
-   */
-  private <T extends ReferenceTypeId, E extends InvalidReferenceTypeException> T readSubReferenceTypeId(ByteBuffer bytes,
-                                                                                                        Class<T> referenceClass,
-                                                                                                        Class<E> exceptionClass) throws E, InvalidReferenceTypeException {
-    ReferenceTypeId referenceTypeId = readReferenceTypeId(bytes);
-    if (referenceClass.isInstance(referenceTypeId)) {
-      return referenceClass.cast(referenceTypeId);
-    }
-    try {
-      throw exceptionClass.getConstructor(referenceClass).newInstance(referenceTypeId);
-    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-        | SecurityException e) {
-      throw new IllegalStateException("Implementation error", e);
-    }
-  }
-
-  /**
    * Reads Array Reference ID from the given buffer of bytes.
    * 
    * @param bytes
@@ -264,8 +232,12 @@ public class JdwpIdManager extends ObjectIdManager {
    * @throws InvalidReferenceTypeException
    *           If the given ID is not a known reference ID.
    */
-  public ArrayTypeReferenceId readArrayTypeReferenceId(ByteBuffer bytes) throws InvalidArrayTypeException, InvalidReferenceTypeException {
-    return readSubReferenceTypeId(bytes, ArrayTypeReferenceId.class, InvalidArrayTypeException.class);
+  public ReferenceTypeId readArrayTypeReferenceId(ByteBuffer bytes) throws InvalidArrayTypeException, InvalidReferenceTypeException {
+    ReferenceTypeId refId = readReferenceTypeId(bytes);
+    if (!refId.isArrayType()) {
+      throw new InvalidArrayTypeException(refId);
+    }
+    return refId;
   }
 
   /**
@@ -279,8 +251,12 @@ public class JdwpIdManager extends ObjectIdManager {
    * @throws InvalidReferenceTypeException
    *           If the given ID is not a known reference ID.
    */
-  public ClassTypeReferenceId readClassTypeId(ByteBuffer bytes) throws InvalidClassTypeException, InvalidReferenceTypeException {
-    return readSubReferenceTypeId(bytes, ClassTypeReferenceId.class, InvalidClassTypeException.class);
+  public ReferenceTypeId readClassTypeId(ByteBuffer bytes) throws InvalidClassTypeException, InvalidReferenceTypeException {
+    ReferenceTypeId refId = readReferenceTypeId(bytes);
+    if (!refId.isClassType()) {
+      throw new InvalidClassTypeException(refId);
+    }
+    return refId;
   }
 
   /**
@@ -293,8 +269,12 @@ public class JdwpIdManager extends ObjectIdManager {
    *           If the given ID is not a valid class reference ID or if the given
    *           ID is not a known reference ID.
    */
-  public InterfaceTypeReferenceId readInterfaceTypeId(ByteBuffer bytes) throws InvalidReferenceTypeException {
-    return readSubReferenceTypeId(bytes, InterfaceTypeReferenceId.class, InvalidReferenceTypeException.class);
+  public ReferenceTypeId readInterfaceTypeId(ByteBuffer bytes) throws InvalidReferenceTypeException {
+    ReferenceTypeId refId = readReferenceTypeId(bytes);
+    if (!refId.isInterfaceType()) {
+      throw new InvalidReferenceTypeException(refId);
+    }
+    return refId;
   }
 
   /**
