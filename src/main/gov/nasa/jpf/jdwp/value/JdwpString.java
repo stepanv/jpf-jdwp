@@ -23,8 +23,8 @@ package gov.nasa.jpf.jdwp.value;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 /**
  * This class implements the corresponding JDWP Specification for strings sent
@@ -88,13 +88,7 @@ public class JdwpString {
     int size = bytes.getInt();
     byte[] string = new byte[size];
     bytes.get(string);
-    try {
-      return new String(string, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      // ALL VMs MUST implements UTF-8 (If compiled with 1.7, there is
-      // already constant for this
-      throw new RuntimeException("This VM doesn't conform to Java VM Specification!", e);
-    }
+    return new String(string, Charset.forName("UTF-8"));
   }
 
 }
