@@ -38,7 +38,7 @@ import gov.nasa.jpf.vm.StackFrame;
  * @author stepan
  * 
  */
-public class FrameId extends Identifier<StackFrame> {
+public class FrameId extends IdentifierBase<StackFrame> {
 
   /**
    * Frame ID constructor.

@@ -32,6 +32,7 @@ import gov.nasa.jpf.jdwp.id.type.ArrayTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ClassTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.InterfaceTypeReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
+import gov.nasa.jpf.jdwp.id.type.ReferenceTypeIdBase;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -145,7 +146,7 @@ public class JdwpIdManager extends ObjectIdManager {
 
     @Override
     public ReferenceTypeId createIdentifier(Long id, ClassInfo classInfo) {
-      return ReferenceTypeId.factory(id, classInfo);
+      return ReferenceTypeIdBase.factory(id, classInfo);
     }
 
     @Override

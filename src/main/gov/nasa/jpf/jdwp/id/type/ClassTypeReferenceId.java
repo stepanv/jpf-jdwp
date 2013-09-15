@@ -37,7 +37,7 @@ import gov.nasa.jpf.vm.ClassInfo;
  * 
  * @author stepan
  */
-public class ClassTypeReferenceId extends ReferenceTypeId {
+public class ClassTypeReferenceId extends ReferenceTypeIdBase {
 
   /**
    * Class Type ID constructor.

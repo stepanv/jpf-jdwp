@@ -22,8 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.id.type;
 
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
-import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
-import gov.nasa.jpf.jdwp.exception.id.reference.InvalidReferenceTypeException;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.vm.ClassInfo;
 
@@ -45,7 +43,7 @@ import gov.nasa.jpf.vm.ClassInfo;
  * 
  * @param <T>
  */
-public abstract class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
+public interface ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
   public enum TypeTag implements IdentifiableEnum<Byte> {
 
@@ -75,52 +73,6 @@ public abstract class ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
       return typeTagId;
     }
 
-  }
-
-  private TypeTag typeTag;
-
-  /**
-   * Reference Type ID constructor.
-   * 
-   * @param id
-   *          The numerical ID of this identifier.
-   * @param classInfo
-   *          The {@link ClassInfo} that stands for the desired reference type.
-   */
-  protected ReferenceTypeId(TypeTag typeTag, long id, ClassInfo classInfo) {
-    super(id, classInfo);
-    this.typeTag = typeTag;
-  }
-
-  /**
-   * Constructs the {@link ReferenceTypeId} or some of its subtypes for the
-   * given class.
-   * 
-   * @param id
-   *          The desired ID that will identify the given class across the JDWP.
-   * @param classInfo
-   *          The class representation to create the reference ID for.
-   * @return The reference ID.
-   */
-  public static ReferenceTypeId factory(long id, ClassInfo classInfo) {
-    if (classInfo.isArray()) {
-      return new ArrayTypeReferenceId(id, classInfo);
-    }
-    if (classInfo.isInterface()) {
-      return new InterfaceTypeReferenceId(id, classInfo);
-    }
-
-    return new ClassTypeReferenceId(id, classInfo);
-  }
-
-  @Override
-  public IdentifiableEnum<Byte> getIdentifier() {
-    return typeTag;
-  }
-
-  @Override
-  public ClassInfo nullObjectHandler() throws InvalidIdentifierException {
-    throw new InvalidReferenceTypeException(this);
   }
 
 }

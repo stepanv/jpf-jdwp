@@ -45,7 +45,7 @@ import gov.nasa.jpf.vm.MethodInfo;
  * @author stepan
  * 
  */
-public class MethodId extends Identifier<MethodInfo> {
+public class MethodId extends IdentifierBase<MethodInfo> {
 
   /**
    * Method ID constructor.

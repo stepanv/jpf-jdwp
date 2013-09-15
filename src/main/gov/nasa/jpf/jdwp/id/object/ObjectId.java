@@ -28,6 +28,7 @@ import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.Identifier;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
+import gov.nasa.jpf.jdwp.id.TaggableIdentifierBase;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -103,7 +104,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class ObjectId extends TaggableIdentifier<DynamicElementInfo> implements Value {
+public class ObjectId extends TaggableIdentifierBase<DynamicElementInfo> implements Value {
 
   private Tag tag;
 

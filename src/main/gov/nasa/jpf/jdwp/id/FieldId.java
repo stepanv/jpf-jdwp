@@ -42,7 +42,7 @@ import gov.nasa.jpf.vm.FieldInfo;
  * @author stepan
  * 
  */
-public class FieldId extends Identifier<FieldInfo> {
+public class FieldId extends IdentifierBase<FieldInfo> {
 
   /**
    * Field ID constructor.

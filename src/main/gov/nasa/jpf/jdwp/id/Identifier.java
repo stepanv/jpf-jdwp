@@ -26,7 +26,6 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.Objects;
 
 /**
  * Universal identifier container for any object that needs to be referenced by
@@ -46,45 +45,18 @@ import java.util.Objects;
  * 
  * @param <T>
  */
-public abstract class Identifier<T> {
+public interface Identifier<T> {
 
   public static final long NULL_IDENTIFIER_ID = 0L;
-
   public static int SIZE = 8;
-  private Long id;
-  private WeakReference<T> objectReference;
 
-  /**
-   * This is here to keep the reference in case we don't want a garbage
-   * collection
-   * 
-   * TODO [for PJA] do I do it correctly? Maybe this is completely wrong and I
-   * need to tell JPF directly to not collect it
-   */
-  @SuppressWarnings("unused")
-  private T object;
-
-  /**
-   * The constructor of an identifier.
-   * 
-   * @param id
-   *          The ID.
-   * @param object
-   *          The object this identifier represents.
-   */
-  public Identifier(Long id, T object) {
-    this.objectReference = new WeakReference<T>(object);
-    this.id = id;
-  }
 
   /**
    * Whether this identifier represents a <tt>null</tt> object.
    * 
    * @return True or False.
    */
-  public boolean isNull() {
-    return objectReference.get() == null;
-  }
+  public boolean isNull();
 
   /**
    * Forward the control of what happens if this identifier represents
@@ -94,7 +66,7 @@ public abstract class Identifier<T> {
    * @throws InvalidIdentifierException
    *           Or may throw an exception.
    */
-  public abstract T nullObjectHandler() throws InvalidIdentifierException;
+  public T nullObjectHandler() throws InvalidIdentifierException;
 
   /**
    * Gets the object this identifier represents.<br/>
@@ -105,14 +77,7 @@ public abstract class Identifier<T> {
    * @throws InvalidIdentifierException
    *           If this identifier is invalid.
    */
-  public T get() throws InvalidIdentifierException {
-    T object = objectReference.get();
-
-    if (object == null) {
-      return nullObjectHandler();
-    }
-    return object;
-  }
+  public T get() throws InvalidIdentifierException;
 
   /**
    * Writes identifier as is into the given stream. <br/>
@@ -124,34 +89,6 @@ public abstract class Identifier<T> {
    * @throws IOException
    *           If an I/O Error occurs.
    */
-  final public void write(DataOutputStream os) throws IOException {
-    os.writeLong(id);
-  }
-
-  @Override
-  public String toString() {
-    try {
-      return super.toString() + ", reference: " + get() + ", id: " + id;
-    } catch (InvalidIdentifierException e) {
-      return "invalid reference, id: " + id;
-    }
-  }
-
-  @Override
-  public int hashCode() {
-    return id.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (obj instanceof Long) {
-      return id.equals(obj);
-    }
-    if (obj instanceof Identifier<?>) {
-      return Objects.equals(id, ((Identifier<?>) obj).id)
-          && Objects.equals(objectReference.get(), ((Identifier<?>) obj).objectReference.get());
-    }
-    return false;
-  }
+  public void write(DataOutputStream os) throws IOException;
 
 }
