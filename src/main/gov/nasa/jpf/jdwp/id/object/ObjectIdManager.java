@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidArrayException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassLoaderException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassObjectException;
@@ -48,6 +49,8 @@ import java.util.WeakHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.sun.xml.internal.txw2.IllegalSignatureException;
 
 /**
  * <p>
@@ -253,11 +256,15 @@ public class ObjectIdManager {
           throw new IllegalStateException("The Object ID manager contains incompatible identifier for object: '" + object + "'", e);
         }
 
-        if (!object.equals(objectId.get())) {
-          // this exception proves that we cannot compare element infos ...
-          // if this happens a redesign is required
-          throw new IllegalStateException(String.format("Object '%s' is not object '%s' for objectId '%s'", object, objectId.get(),
-                                                        objectId));
+        try {
+          if (!object.equals(objectId.get())) {
+            // this exception proves that we cannot compare element infos ...
+            // if this happens a redesign is required
+            throw new IllegalStateException(String.format("Object '%s' is not object '%s' for objectId '%s'", object, objectId.get(),
+                                                          objectId));
+          }
+        } catch (InvalidIdentifierException e) {
+          throw new IllegalSignatureException("This should be a dead code!");
         }
 
       } else {
@@ -312,7 +319,7 @@ public class ObjectIdManager {
   private IdFactory<ObjectId, InvalidObjectException> defaultIdFactory = new IdFactory<ObjectId, InvalidObjectException>(ObjectId.class) {
     @Override
     public ObjectId createIdentifier(long id, ElementInfo object) {
-      return ObjectId.objectIdFactory(id, object);
+      return ObjectIdImpl.objectIdFactory(id, object);
     }
 
     @Override

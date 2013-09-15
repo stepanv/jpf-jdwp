@@ -141,7 +141,7 @@ public class ReferenceTypeCommandTest extends TestJdwp {
     protected abstract void postprepareInput(DataOutputStream inputDataOutputStream) throws IOException;
 
     @Override
-    final protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+    final protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException, InvalidIdentifierException {
       ObjectId objectId = loadObjectId(0);
       ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().getReferenceTypeId(objectId.get().getClassInfo());
       referenceTypeId.write(inputDataOutputStream);

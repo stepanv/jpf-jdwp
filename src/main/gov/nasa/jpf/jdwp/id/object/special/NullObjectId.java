@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object.special;
 
-import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.ObjectIdImpl;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.StackFrame;
 
@@ -37,7 +37,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public class NullObjectId extends ObjectId {
+public class NullObjectId extends ObjectIdImpl {
 
   private NullObjectId() {
     super(Tag.OBJECT, 0, -1);

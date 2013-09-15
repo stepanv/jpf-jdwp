@@ -24,6 +24,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 import java.util.Objects;
 
 import gov.nasa.jpf.jdwp.event.InstanceOnlyFilterable;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MJIEnv;
@@ -59,7 +60,14 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
   @Override
   public boolean matches(InstanceOnlyFilterable event) {
     ElementInfo eventInstance = event.instance();
-    return Objects.equals(eventInstance, objectId.get());
+    ElementInfo matchInstance;
+    try {
+      matchInstance = objectId.get();
+    } catch (InvalidIdentifierException e) {
+      // if discarded, return false
+      return false;
+    }
+    return Objects.equals(eventInstance, matchInstance);
   }
 
 }

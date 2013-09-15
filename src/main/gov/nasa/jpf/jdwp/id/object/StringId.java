@@ -40,7 +40,7 @@ import gov.nasa.jpf.vm.ElementInfo;
  * @author stepan
  * 
  */
-public class StringId extends ObjectId {
+public class StringId extends ObjectIdImpl {
 
   /**
    * Constructs the string ID.

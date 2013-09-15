@@ -38,7 +38,7 @@ import gov.nasa.jpf.vm.ElementInfo;
  * @author stepan
  * 
  */
-public class ArrayId extends ObjectId {
+public class ArrayId extends ObjectIdImpl {
 
   /**
    * Constructs the array ID.

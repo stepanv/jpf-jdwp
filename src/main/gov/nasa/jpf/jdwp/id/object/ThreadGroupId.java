@@ -37,7 +37,7 @@ import gov.nasa.jpf.vm.ElementInfo;
  * @author stepan
  * 
  */
-public class ThreadGroupId extends ObjectId {
+public class ThreadGroupId extends ObjectIdImpl {
 
   /**
    * Constructs the thread group ID.

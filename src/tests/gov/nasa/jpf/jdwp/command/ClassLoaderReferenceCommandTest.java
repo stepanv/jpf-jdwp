@@ -97,7 +97,7 @@ public class ClassLoaderReferenceCommandTest extends TestJdwp {
     }
 
     @Override
-    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException, InvalidIdentifierException {
       ObjectId classLoader = loadObjectId(0);
       System.out.println(classLoader.get());
       classLoader.write(inputDataOutputStream);

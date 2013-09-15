@@ -25,7 +25,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.jdwp.VirtualMachine;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
-import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
@@ -72,7 +72,7 @@ public class ObjectReferenceCommandTest extends TestJdwp {
   CommandVerifier objectReferenceVerifier = new CommandVerifier(ObjectReferenceCommand.SETVALUES) {
 
     @Override
-    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException, InvalidIdentifierException {
       ObjectId objectId = loadObjectId(0);
       objectId.write(inputDataOutputStream);
 
@@ -112,7 +112,7 @@ public class ObjectReferenceCommandTest extends TestJdwp {
     }
 
     @Override
-    protected void processOutput(ByteBuffer outputBytes) throws InvalidObjectException {
+    protected void processOutput(ByteBuffer outputBytes) throws InvalidIdentifierException {
       int foundReferringObjectNumber = outputBytes.getInt();
 
       storeToWrapper(2, mjiEnv.newInteger(foundReferringObjectNumber));

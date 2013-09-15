@@ -61,7 +61,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
     return (T) ((ElementInfo) passedObjects[i]).asBoxObject();
   }
 
-  protected FieldId loadFieldId(ObjectId objectId, int i) {
+  protected FieldId loadFieldId(ObjectId objectId, int i) throws InvalidIdentifierException {
     String fieldString = passedObjectAs(i, ElementInfo.class).asString();
     FieldInfo fieldInfo = objectId.get().getFieldInfo(fieldString);
     return JdwpIdManager.getInstance().getFieldId(fieldInfo);
@@ -96,7 +96,7 @@ public abstract class CommandVerifier extends JdwpVerifier {
 
   abstract protected void processOutput(ByteBuffer outputBytes) throws InvalidIdentifierException;
 
-  abstract protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException;
+  abstract protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException, InvalidIdentifierException;
 
   @SuppressWarnings("unchecked")
   protected <T> T passedObjectAs(int i, Class<T> clazz) {

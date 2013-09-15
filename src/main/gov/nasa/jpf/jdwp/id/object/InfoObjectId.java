@@ -50,7 +50,7 @@ import java.lang.ref.WeakReference;
  *          the <tt>InfoObject</tt> that is bound to this identifier (in an
  *          addition to the {@link ElementInfo} instance)
  */
-public abstract class InfoObjectId<T> extends ObjectId {
+public abstract class InfoObjectId<T> extends ObjectIdImpl {
 
   /**
    * Constructs Info Object ID instance.

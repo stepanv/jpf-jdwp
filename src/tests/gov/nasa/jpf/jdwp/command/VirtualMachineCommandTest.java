@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
+import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.test.BasicJdwpVerifier;
@@ -65,7 +66,7 @@ public class VirtualMachineCommandTest extends TestJdwp {
     int index = 0;
 
     @Override
-    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException {
+    protected void prepareInput(DataOutputStream inputDataOutputStream) throws IOException, InvalidIdentifierException {
       int refTypesCount = loadBoxObject(index++, Integer.class);
       inputDataOutputStream.writeInt(refTypesCount);
 
