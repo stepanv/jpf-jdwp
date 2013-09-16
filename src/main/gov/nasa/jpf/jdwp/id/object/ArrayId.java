@@ -21,13 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import java.util.ArrayList;
-
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.ElementInfo;
-
 /**
- * This class implements the corresponding <code>arrayID</code> common data type
+ * This interface represents the corresponding <code>arrayID</code> common data type
  * from the JDWP Specification.
  * 
  * <p>
@@ -38,20 +33,6 @@ import gov.nasa.jpf.vm.ElementInfo;
  * @author stepan
  * 
  */
-public class ArrayId extends ObjectIdImpl {
-
-  /**
-   * Constructs the array ID.
-   * 
-   * @param id
-   *          The ID known by {@link ObjectIdManager}
-   * @param object
-   *          The {@link ElementInfo} instance that needs JDWP ID
-   *          representation.
-   */
-  public ArrayId(long id, ElementInfo object) {
-    super(Tag.ARRAY, id, object);
-    new ArrayList<Object>();
-  }
+public interface ArrayId extends ObjectId {
 
 }

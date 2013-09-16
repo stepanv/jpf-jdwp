@@ -42,6 +42,9 @@ import java.io.IOException;
  */
 public class VoidValue extends PrimitiveValue {
 
+  /**
+   * Constructs the void value.
+   */
   public VoidValue() {
     super(Tag.VOID);
   }

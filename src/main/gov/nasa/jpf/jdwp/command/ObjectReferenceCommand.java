@@ -270,7 +270,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
       }
       int options = bytes.getInt();
 
-      ThreadInfo thread = threadId.getInfoObject();
+      ThreadInfo thread = threadId.getThreadInfo();
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(thread)) {
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
       }

@@ -21,15 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * This class adds taggable attribute to the standard identifier.<br/>
- * This class should be inherited by all identifiers that may include a
- * {@link Tag} with the identifier itself in the JDWP communication.
+ * The base implementation of {@link TaggableIdentifier} interface.
  * 
  * @author stepan
  * 
@@ -51,6 +47,10 @@ public abstract class TaggableIdentifierBase<T> extends IdentifierBase<T> implem
     super(id, object);
   }
 
+  /*
+   * (non-Javadoc)
+   * @see gov.nasa.jpf.jdwp.id.TaggableIdentifier#writeTagged(java.io.DataOutputStream)
+   */
   @Override
   final public void writeTagged(DataOutputStream os) throws IOException {
     os.write(getIdentifier().identifier());

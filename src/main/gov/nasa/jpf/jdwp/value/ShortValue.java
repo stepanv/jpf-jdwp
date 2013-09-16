@@ -44,6 +44,12 @@ public class ShortValue extends PrimitiveValue {
 
   private short value;
 
+  /**
+   * Constructs the short value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public ShortValue(short value) {
     super(Tag.SHORT);
     this.value = value;

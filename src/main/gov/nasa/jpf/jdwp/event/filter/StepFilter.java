@@ -205,7 +205,7 @@ public abstract class StepFilter extends Filter<StepFilterable> {
     this.thread = threadId;
     this.size = size;
 
-    Iterator<StackFrame> stackFrameIterator = threadId.getInfoObject().iterator();
+    Iterator<StackFrame> stackFrameIterator = threadId.getThreadInfo().iterator();
 
     while (stackFrameIterator.hasNext()) {
       StackFrame frame = stackFrameIterator.next();

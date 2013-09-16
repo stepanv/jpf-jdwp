@@ -21,11 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.ElementInfo;
-
 /**
- * This class implements the corresponding <code>threadGroupID</code> common
+ * This interface represents the corresponding <code>threadGroupID</code> common
  * data type from the JDWP Specification.
  * 
  * <p>
@@ -37,19 +34,6 @@ import gov.nasa.jpf.vm.ElementInfo;
  * @author stepan
  * 
  */
-public class ThreadGroupId extends ObjectIdImpl {
-
-  /**
-   * Constructs the thread group ID.
-   * 
-   * @param id
-   *          The ID known by {@link ObjectIdManager}
-   * @param object
-   *          The {@link ElementInfo} instance that needs JDWP ID
-   *          representation.
-   */
-  public ThreadGroupId(long id, ElementInfo object) {
-    super(Tag.THREAD_GROUP, id, object);
-  }
+public interface ThreadGroupId extends ObjectId {
 
 }

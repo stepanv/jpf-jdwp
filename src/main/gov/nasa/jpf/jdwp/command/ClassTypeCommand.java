@@ -174,7 +174,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
       int options = bytes.getInt();
 
-      ThreadInfo thread = threadId.getInfoObject();
+      ThreadInfo thread = threadId.getThreadInfo();
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(thread)) {
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
       }
@@ -254,7 +254,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
       int options = bytes.getInt();
 
-      ThreadInfo thread = threadId.getInfoObject();
+      ThreadInfo thread = threadId.getThreadInfo();
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(thread)) {
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
       }

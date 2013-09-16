@@ -44,6 +44,12 @@ public class ByteValue extends PrimitiveValue {
 
   private byte value;
 
+  /**
+   * Constructs the byte value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public ByteValue(byte value) {
     super(Tag.BYTE);
     this.value = value;

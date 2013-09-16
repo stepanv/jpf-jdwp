@@ -23,30 +23,18 @@ package gov.nasa.jpf.jdwp.id.type;
 
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
-import gov.nasa.jpf.jdwp.exception.id.reference.InvalidReferenceTypeException;
 import gov.nasa.jpf.jdwp.id.TaggableIdentifierBase;
+import gov.nasa.jpf.jdwp.id.object.special.NullReferenceId;
 import gov.nasa.jpf.vm.ClassInfo;
 
 /**
- * This class implements the corresponding <code>referenceTypeID</code> common
- * data type from the JDWP Specification.
- * 
- * <p>
- * <h2>JDWP Specification:</h2>
- * Uniquely identifies a reference type in the target VM. It should not be
- * assumed that for a particular class, the <tt>classObjectID</tt> and the
- * <tt>referenceTypeID</tt> are the same. A particular reference type will be
- * identified by exactly one ID in JDWP commands and replies throughout its
- * lifetime A referenceTypeID is not reused to identify a different reference
- * type, regardless of whether the referenced class has been unloaded.
- * </p>
+ * The base implementation of {@link ReferenceTypeId} representation of
+ * <tt>referenceTypeID</tt> common data type from the JDWP Specification.
  * 
  * @author stepan
  * 
- * @param <T>
  */
 public abstract class ReferenceTypeIdBase extends TaggableIdentifierBase<ClassInfo> implements ReferenceTypeId {
-
 
   private TypeTag typeTag;
 
@@ -91,24 +79,33 @@ public abstract class ReferenceTypeIdBase extends TaggableIdentifierBase<ClassIn
 
   @Override
   public ClassInfo nullObjectHandler() throws InvalidIdentifierException {
-    throw new InvalidReferenceTypeException(this);
+    return NullReferenceId.getInstance().get();
+  }
+
+  /**
+   * The simple algorithm to determine what this reference ID stands for.
+   * 
+   * @param typeTag
+   *          The type tag to test for.
+   * @return Whether the type of this instance equals to the given type tag.
+   */
+  private boolean is(TypeTag typeTag) {
+    return typeTag.equals(this.typeTag);
   }
 
   @Override
   public boolean isArrayType() {
-    return TypeTag.ARRAY.equals(typeTag);
+    return is(TypeTag.ARRAY);
   }
-  
+
   @Override
   public boolean isClassType() {
-    return TypeTag.CLASS.equals(typeTag);
+    return is(TypeTag.CLASS);
   }
-  
+
   @Override
   public boolean isInterfaceType() {
-    return TypeTag.INTERFACE.equals(typeTag);
+    return is(TypeTag.INTERFACE);
   }
-  
-  
 
 }

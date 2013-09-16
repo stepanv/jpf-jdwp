@@ -57,7 +57,7 @@ public class JdwpString {
    *           If IO error occurs
    */
   public static void write(String data, DataOutputStream os) throws IOException {
-    byte[] utfEncoded = data.getBytes("UTF-8");
+    byte[] utfEncoded = data.getBytes(Charset.forName("UTF-8"));
     os.writeInt(utfEncoded.length);
     os.write(utfEncoded);
   }

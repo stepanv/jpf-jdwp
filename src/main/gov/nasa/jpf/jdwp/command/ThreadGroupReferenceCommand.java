@@ -119,7 +119,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
       for (int i = 0; i < threads.arrayLength(); i++) {
         Value value = ValueUtils.arrayIndexToValue(threads, i);
         if (value instanceof ThreadId && !((ThreadId) value).isNull()) {
-          ThreadInfo thread = ((ThreadId) value).getInfoObject();
+          ThreadInfo thread = ((ThreadId) value).getThreadInfo();
           if (thread.isAlive()) {
             logger.debug("Adding a thread {}", thread);
             value.writeUntagged(childrenDos);

@@ -72,4 +72,12 @@ public class JdwpConstants {
    */
   public static final String FIELDNAME_THREAD_GROUP = "group";
 
+  /**
+   * Field name in {@link Class} class that references the name of the class it
+   * represents.<br/>
+   * This is environment dependent and may cause problems in the future if the
+   * field name changes!
+   */
+  public static final String FIELDNAME_CLASS_NAME = "name";
+
 }

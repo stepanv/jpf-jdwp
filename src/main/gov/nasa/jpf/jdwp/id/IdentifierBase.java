@@ -26,40 +26,23 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
- * Universal identifier container for any object that needs to be referenced by
- * the debugger.<br/>
- * It is important to not prevent GC from collecting the referenced object if
- * there is no other reference.<br/>
- * It is also important to not store the reference anywhere else in the JDWP
- * back-end itself to not prevent the GC collection. The referenced object is
- * likely to be stored in the {@link JdwpIdManager} instance and there the
- * references must be intentionally handled with care.<br/>
- * It is also convenient to immediately reflect the referenced object collection
- * which is done by using {@link WeakReference} references.
+ * The base implementation of a universal {@link Identifier} container.
  * 
  * @author stepan
  * 
  * @see JdwpIdManager
- * 
+ * @see Identifier
  * @param <T>
+ *          The type this identifier works as a container for.
  */
 public abstract class IdentifierBase<T> implements Identifier<T> {
 
   private Long id;
   private WeakReference<T> objectReference;
-
-  /**
-   * This is here to keep the reference in case we don't want a garbage
-   * collection
-   * 
-   * TODO [for PJA] do I do it correctly? Maybe this is completely wrong and I
-   * need to tell JPF directly to not collect it
-   */
-  @SuppressWarnings("unused")
-  private T object;
 
   /**
    * The constructor of an identifier.
@@ -89,11 +72,19 @@ public abstract class IdentifierBase<T> implements Identifier<T> {
     return object;
   }
 
+  /*
+   * (non-Javadoc)
+   * @see gov.nasa.jpf.jdwp.id.Identifier#write(java.io.DataOutputStream)
+   */
   @Override
   final public void write(DataOutputStream os) throws IOException {
     os.writeLong(id);
   }
 
+  /*
+   * (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     try {
@@ -103,11 +94,20 @@ public abstract class IdentifierBase<T> implements Identifier<T> {
     }
   }
 
+  /**
+   * Overriden {@link Object#hashCode()} so that this object may be interchanged
+   * with {@link IdentifierPointer} in {@link HashMap} and similar maps.
+   */
   @Override
   public int hashCode() {
     return id.hashCode();
   }
 
+  /**
+   * Overriden {@link Object#equals(Object)} so that this object may be
+   * interchanged with {@link IdentifierPointer} in {@link HashMap} and similar
+   * maps.
+   */
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof Long) {

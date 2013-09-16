@@ -44,6 +44,12 @@ public class CharValue extends PrimitiveValue {
 
   private char value;
 
+  /**
+   * Constructs the char value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public CharValue(char value) {
     super(Tag.CHAR);
     this.value = value;

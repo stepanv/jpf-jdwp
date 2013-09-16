@@ -138,20 +138,22 @@ public class LineTableTest extends TestJdwp {
 
   JdwpVerifier verifierUpAndDown = new JdwpVerifier() {
 
-    final int lo = 43;
-
-    final Integer[] linesSequence = new Integer[] { lo - 3, lo - 2, lo - 1, lo - 2, lo + 1, lo + 2, lo + 3, lo + 4, lo + 5, lo + 7, lo + 8,
-        lo + 9, lo + 10, lo + 11, lo + 9, lo + 13 };
-
     @Override
     protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
-
+      
+     
       // Prepare arguments
       ElementInfo classInstance = (ElementInfo) passedObjects[0];
 
       ClassInfo clazz = classInstance.getClassInfo();
 
       MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
+      
+      final int lo = method.getFirstInsn().getLineNumber() + 3;
+
+      final Integer[] linesSequence = new Integer[] { lo - 3, lo - 2, lo - 1, lo - 2, lo + 1, lo + 2, lo + 3, lo + 4, lo + 5, lo + 7, lo + 8,
+          lo + 9, lo + 10, lo + 11, lo + 9, lo + 13 };
+
 
       LineTable lt = new LineTable(method);
 

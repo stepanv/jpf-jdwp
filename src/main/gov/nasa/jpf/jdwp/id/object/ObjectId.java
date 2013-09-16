@@ -31,7 +31,7 @@ import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 
 /**
- * This class implements the corresponding <code>objectID</code> common data
+ * This interface represents the corresponding <code>objectID</code> common data
  * type (tagged-objectID respectively) from the JDWP Specification.
  * 
  * <p>
@@ -92,10 +92,33 @@ import gov.nasa.jpf.vm.ThreadInfo;
  */
 public interface ObjectId extends TaggableIdentifier<DynamicElementInfo>, Value {
 
+  /**
+   * Disable garbage collection of the object instance this identifier
+   * represents.
+   * 
+   * @throws InvalidObjectException
+   */
   public void disableCollection() throws InvalidObjectException;
 
+  /**
+   * Enable garbage collection of the object instasnce this identifier
+   * represents.
+   * 
+   * @throws InvalidObjectException
+   */
   public void enableCollection() throws InvalidObjectException;
 
+  /**
+   * Get the modifiable element info.
+   * 
+   * @return The modifiable instance of the object this identifier stands for.
+   */
   public DynamicElementInfo getModifiable();
+
+  /**
+   * Get the element info.
+   */
+  @Override
+  public DynamicElementInfo get();
 
 }

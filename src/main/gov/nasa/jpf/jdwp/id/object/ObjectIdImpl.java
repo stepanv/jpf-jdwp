@@ -109,10 +109,32 @@ public class ObjectIdImpl extends TaggableIdentifierBase<DynamicElementInfo> imp
 
   private int objectRef;
 
-  public ObjectIdImpl(Tag tag, long id, ElementInfo object) {
+  /**
+   * Constructs the {@link ObjectIdImpl} as a part of a subclass.
+   * 
+   * @param tag
+   *          The tag of the object this taggable identifier stands for.
+   * @param id
+   *          The ID.
+   * @param objectRef
+   *          The heap object reference.
+   * @param object
+   *          The object this taggable identifier represents.
+   */
+  protected ObjectIdImpl(Tag tag, long id, ElementInfo object) {
     this(tag, id, object.getObjectRef());
   }
 
+  /**
+   * Constructs the {@link ObjectIdImpl} as a part of a subclass.
+   * 
+   * @param tag
+   *          The tag of the object this taggable identifier stands for.
+   * @param id
+   *          The ID.
+   * @param objectRef
+   *          The heap object reference.
+   */
   protected ObjectIdImpl(Tag tag, long id, int objectRef) {
     super(id, null);
     this.tag = tag;
@@ -194,17 +216,17 @@ public class ObjectIdImpl extends TaggableIdentifierBase<DynamicElementInfo> imp
      */
 
     if (classInfo.isArray()) {
-      return new ArrayId(id, object);
+      return new ArrayIdImpl(id, object);
     } else if (classInfo.isInstanceOf("java.lang.Thread")) {
-      return new ThreadId(id, object);
+      return new ThreadIdImpl(id, object);
     } else if (classInfo.isInstanceOf("java.lang.String")) {
-      return new StringId(id, object);
+      return new StringIdImpl(id, object);
     } else if (classInfo.isInstanceOf("java.lang.Class")) {
-      return new ClassObjectId(id, object);
+      return new ClassObjectIdImpl(id, object);
     } else if (classInfo.isInstanceOf("java.lang.ThreadGroup")) {
-      return new ThreadGroupId(id, object);
+      return new ThreadGroupIdImpl(id, object);
     } else if (classInfo.isInstanceOf("java.lang.ClassLoader")) {
-      return new ClassLoaderId(id, object);
+      return new ClassLoaderIdImpl(id, object);
     } else {
       // any other ElementInfos don't have a specific representation in
       // the JDWP Specification
@@ -225,12 +247,6 @@ public class ObjectIdImpl extends TaggableIdentifierBase<DynamicElementInfo> imp
 
   @Override
   public DynamicElementInfo nullObjectHandler() throws InvalidIdentifierException {
-
-    // TODO this is not used since ObjectId#get() completely overrides
-    // Identifier#get()
-    // solve nullobject pattern and also take advantage of this class
-    // structure .. now it's kind of masked
-    // since ObjectId overrides almost everything ...
     return NullObjectId.getInstance().get();
   }
 }

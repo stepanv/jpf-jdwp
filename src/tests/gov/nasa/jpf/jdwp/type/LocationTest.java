@@ -77,8 +77,6 @@ public class LocationTest extends TestJdwp {
 
   JdwpVerifier verifierOneLocation = new JdwpVerifier() {
 
-    final int lo = 50;
-
     @Override
     protected void verifyOutsideOfSuT(Object... passedObjects) throws Throwable {
 
@@ -88,6 +86,7 @@ public class LocationTest extends TestJdwp {
       ClassInfo clazz = classInstance.getClassInfo();
 
       MethodInfo method = clazz.getMethod("referenceMethod(IJS)V", false);
+      int lo = method.getFirstInsn().getLineNumber();
 
       Instruction instruction = method.getInstructionsForLine(lo + 1)[0];
       Location location = Location.factory(instruction);

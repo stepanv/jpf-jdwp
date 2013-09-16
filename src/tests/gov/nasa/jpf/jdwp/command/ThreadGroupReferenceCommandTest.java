@@ -60,7 +60,7 @@ public class ThreadGroupReferenceCommandTest extends TestJdwp {
 
       for (int i = 0; i < threads; ++i) {
         ThreadId thread = contextProvider.getObjectManager().readThreadId(outputBytes);
-        String name = thread.getInfoObject().getName();
+        String name = thread.getThreadInfo().getName();
         foundThreads.add(name);
       }
 

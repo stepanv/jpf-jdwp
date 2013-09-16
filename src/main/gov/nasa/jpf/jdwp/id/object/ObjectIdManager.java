@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
-import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidArrayException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassLoaderException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassObjectException;
@@ -49,8 +48,6 @@ import java.util.WeakHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.sun.xml.internal.txw2.IllegalSignatureException;
 
 /**
  * <p>
@@ -149,6 +146,7 @@ public class ObjectIdManager {
 
   /** This class can be subclassed only */
   protected ObjectIdManager() {
+    idMap.put(NullObjectId.getInstance(), new SoftReference<ObjectId>(NullObjectId.getInstance()));
   }
 
   private <I extends ObjectId> ObjectId get(IdentifierPointer pointer) throws InvalidObjectException {
@@ -236,45 +234,46 @@ public class ObjectIdManager {
      *         forever.
      */
     public I getIdentifier(ElementInfo object) {
-
-      if (!(object instanceof DynamicElementInfo)) {
-        throw new IllegalStateException("We have StaticElementInfo instead of DynamicElementInfo! Object: " + object);
-      }
-
+      
       ObjectId objectId;
-      IdentifierPointer pointer = new IdentifierPointer((long) object.getObjectRef());
-
-      if (idMap.containsKey(pointer)) {
-        // this ID is already managed
-
-        try {
-          objectId = get(pointer);
-        } catch (InvalidObjectException e) {
-          // the table contains this ID; however, an exception occurred which
-          // should not happened
-          // this is probably programmer's fault
-          throw new IllegalStateException("The Object ID manager contains incompatible identifier for object: '" + object + "'", e);
-        }
-
-        try {
+      
+      if (object == null) {
+        objectId = NullObjectId.getInstance();
+      } else if (!(object instanceof DynamicElementInfo)) {
+        throw new IllegalStateException("We have StaticElementInfo instead of DynamicElementInfo! Object: " + object);
+      } else {
+        
+        IdentifierPointer pointer = new IdentifierPointer((long) object.getObjectRef());
+  
+        if (idMap.containsKey(pointer)) {
+          // this ID is already managed
+  
+          try {
+            objectId = get(pointer);
+          } catch (InvalidObjectException e) {
+            // the table contains this ID; however, an exception occurred which
+            // should not happened
+            // this is probably programmer's fault
+            throw new IllegalStateException("The Object ID manager contains incompatible identifier for object: '" + object + "'", e);
+          }
+  
           if (!object.equals(objectId.get())) {
             // this exception proves that we cannot compare element infos ...
             // if this happens a redesign is required
             throw new IllegalStateException(String.format("Object '%s' is not object '%s' for objectId '%s'", object, objectId.get(),
                                                           objectId));
           }
-        } catch (InvalidIdentifierException e) {
-          throw new IllegalSignatureException("This should be a dead code!");
+  
+        } else {
+          objectId = createIdentifier(pointer.getId(), object);
+          idMap.put(objectId, new SoftReference<ObjectId>(objectId));
+  
+          logger.debug("Created object ID: {}, (identifier: {}) object: {}, class: {}, classInfo: {}", pointer.getId(), objectId, object,
+                       object.getClass(), ((ElementInfo) object).getClassInfo());
         }
-
-      } else {
-        objectId = createIdentifier(pointer.getId(), object);
-        idMap.put(objectId, new SoftReference<ObjectId>(objectId));
-
-        logger.debug("Created object ID: {}, (identifier: {}) object: {}, class: {}, classInfo: {}", pointer.getId(), objectId, object,
-                     object.getClass(), ((ElementInfo) object).getClassInfo());
+      
       }
-
+      
       if (clazz.isInstance(objectId)) {
         return clazz.cast(objectId);
       }
@@ -326,6 +325,7 @@ public class ObjectIdManager {
     public InvalidObjectException identifierIncompatible(ObjectId objectId) {
       return new InvalidObjectException(objectId);
     }
+
   };
 
   /**
@@ -335,7 +335,7 @@ public class ObjectIdManager {
       ClassLoaderId.class) {
     @Override
     public ClassLoaderId createIdentifier(long id, ElementInfo object) {
-      return new ClassLoaderId(id, object);
+      return new ClassLoaderIdImpl(id, object);
     }
 
     @Override
@@ -351,7 +351,7 @@ public class ObjectIdManager {
       ClassObjectId.class) {
     @Override
     public ClassObjectId createIdentifier(long id, ElementInfo object) {
-      return new ClassObjectId(id, object);
+      return new ClassObjectIdImpl(id, object);
     }
 
     @Override
@@ -366,7 +366,7 @@ public class ObjectIdManager {
   private IdFactory<ThreadId, InvalidThreadException> threadIdFactory = new IdFactory<ThreadId, InvalidThreadException>(ThreadId.class) {
     @Override
     public ThreadId createIdentifier(long id, ElementInfo object) {
-      return new ThreadId(id, object);
+      return new ThreadIdImpl(id, object);
     }
 
     @Override
@@ -382,7 +382,7 @@ public class ObjectIdManager {
       ThreadGroupId.class) {
     @Override
     public ThreadGroupId createIdentifier(long id, ElementInfo object) {
-      return new ThreadGroupId(id, object);
+      return new ThreadGroupIdImpl(id, object);
     }
 
     @Override
@@ -397,7 +397,7 @@ public class ObjectIdManager {
   private IdFactory<ArrayId, InvalidArrayException> arrayIdFactory = new IdFactory<ArrayId, InvalidArrayException>(ArrayId.class) {
     @Override
     public ArrayId createIdentifier(long id, ElementInfo object) {
-      return new ArrayId(id, object);
+      return new ArrayIdImpl(id, object);
     }
 
     @Override
@@ -412,7 +412,7 @@ public class ObjectIdManager {
   private IdFactory<StringId, InvalidStringException> stringIdFactory = new IdFactory<StringId, InvalidStringException>(StringId.class) {
     @Override
     public StringId createIdentifier(long id, ElementInfo object) {
-      return new StringId(id, object);
+      return new StringIdImpl(id, object);
     }
 
     @Override
@@ -436,12 +436,7 @@ public class ObjectIdManager {
    *           If the given ID doesn't represent an object
    */
   public ObjectId readObjectId(ByteBuffer bytes) throws InvalidObjectException {
-    // TODO throw ErrorType.INVALID_OBJECT
-    Long id = bytes.getLong();
-    if (id == 0) {
-      return NullObjectId.getInstance();
-    }
-    return defaultIdFactory.lookupObjectId(id);
+    return defaultIdFactory.lookupObjectId(bytes.getLong());
   }
 
   /**

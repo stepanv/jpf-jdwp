@@ -34,15 +34,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * This class implements corresponding <i>value</i> common data type from the
- * JDWP specification.<br/>
- * By default the <i>value</i> is sent across JDWP including the {@link Tag}
- * byte. To the contrary, standard IDs (subclasses of {@link Identifier}) are
- * sent by default without the {@link Tag} byte. To avoid confusion
- * {@link Value} doesn't declare <tt>write</tt> method and thus a developer must
- * decide between {@link Value#writeTagged(DataOutputStream)} and
- * {@link Value#writeUntagged(DataOutputStream)} explicitly, according to the
- * specification, when writing the <i>value</i> to the stream.
+ * This interface represents corresponding <code>value</code> common data type
+ * from the JDWP specification.<br/>
+ * By default the <code>value</code> is sent across JDWP including the
+ * {@link Tag} byte. To the contrary, standard IDs (subclasses of
+ * {@link Identifier}) are sent by default without the {@link Tag} byte. To
+ * avoid confusion {@link Value} doesn't declare <tt>write</tt> method and thus
+ * a developer must decide between {@link Value#writeTagged(DataOutputStream)}
+ * and {@link Value#writeUntagged(DataOutputStream)} explicitly, according to
+ * the specification, when writing the <i>value</i> to the stream.
  * 
  * <p>
  * <h2>JDWP Specification</h2>

@@ -54,7 +54,7 @@ public enum ClassObjectReferenceCommand implements Command, ConvertibleEnum<Byte
     @Override
     public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ClassObjectId oid = contextProvider.getObjectManager().readClassObjectId(bytes);
-      ClassInfo ci = oid.getInfoObject();
+      ClassInfo ci = oid.getClassInfo();
 
       // The difference between a ClassObjectId and a ReferenceTypeId is
       // one is stored as an ObjectId and the other as a ReferenceTypeId.

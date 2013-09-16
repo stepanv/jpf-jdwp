@@ -44,6 +44,12 @@ public class FloatValue extends PrimitiveValue {
 
   private float value;
 
+  /**
+   * Constructs the float value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public FloatValue(float value) {
     super(Tag.FLOAT);
     this.value = value;

@@ -44,12 +44,12 @@ import java.lang.ref.WeakReference;
  * @see JdwpIdManager
  * 
  * @param <T>
+ *          The type this identifier act as a container for.
  */
 public interface Identifier<T> {
 
   public static final long NULL_IDENTIFIER_ID = 0L;
   public static int SIZE = 8;
-
 
   /**
    * Whether this identifier represents a <tt>null</tt> object.

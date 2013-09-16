@@ -26,8 +26,8 @@ import gov.nasa.jpf.jdwp.id.TaggableIdentifier;
 import gov.nasa.jpf.vm.ClassInfo;
 
 /**
- * This class implements the corresponding <code>referenceTypeID</code> common
- * data type from the JDWP Specification.
+ * This interface represents the corresponding <code>referenceTypeID</code>
+ * common data type from the JDWP Specification.
  * 
  * <p>
  * <h2>JDWP Specification:</h2>
@@ -41,7 +41,6 @@ import gov.nasa.jpf.vm.ClassInfo;
  * 
  * @author stepan
  * 
- * @param <T>
  */
 public interface ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
@@ -75,9 +74,25 @@ public interface ReferenceTypeId extends TaggableIdentifier<ClassInfo> {
 
   }
 
+  /**
+   * Whether this reference type represents an array.
+   * 
+   * @return true or false
+   */
   boolean isArrayType();
 
+  /**
+   * Whether this reference type represents a class.
+   * 
+   * @return true or false
+   */
   boolean isClassType();
+
+  /**
+   * Whether this reference type represents an interface.
+   * 
+   * @return true or false
+   */
   boolean isInterfaceType();
 
 }

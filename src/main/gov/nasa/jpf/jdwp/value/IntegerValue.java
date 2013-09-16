@@ -44,6 +44,12 @@ public class IntegerValue extends PrimitiveValue {
 
   private int value;
 
+  /**
+   * Constructs the integer value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public IntegerValue(int value) {
     super(Tag.INT);
     this.value = value;

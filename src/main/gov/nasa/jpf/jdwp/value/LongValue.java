@@ -44,6 +44,12 @@ public class LongValue extends PrimitiveValue {
 
   private long value;
 
+  /**
+   * Constructs the long value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public LongValue(long value) {
     super(Tag.LONG);
     this.value = value;

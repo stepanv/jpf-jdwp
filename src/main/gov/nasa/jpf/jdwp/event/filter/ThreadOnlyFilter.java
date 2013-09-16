@@ -58,7 +58,7 @@ public class ThreadOnlyFilter extends Filter<Threadable> {
   public boolean matches(Threadable event) {
     ThreadInfo threadInfo;
     try {
-      threadInfo = threadId.getInfoObject();
+      threadInfo = threadId.getThreadInfo();
       return event.getThread() == threadInfo;
     } catch (InvalidObjectException e) {
       // info object is not accessible and therefore this filter is not

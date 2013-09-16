@@ -219,6 +219,20 @@ public class JdwpObjectManagerTest extends TestJdwp {
       bb.rewind();
       frameId = contextProvider.getObjectManager().readFrameId(bb);
       assertTrue(frameId == testedFrameId);
+      
+      System.gc();
+      System.out.println("sdflkj" + frameId);
+      System.gc();
+      System.out.println("foo");
+      forceGc();
+      System.out.println("sdfkj");
+      System.gc();System.gc();
+      System.out.println("sdflkj" + frameId);
+      System.gc();
+      System.out.println("foo");
+      forceGc();
+      System.out.println("sdfkj");
+      System.gc();
 
       // TODO this should throw an exception otherwise the FrameId is leaking
       new AssertExceptionThrown() {

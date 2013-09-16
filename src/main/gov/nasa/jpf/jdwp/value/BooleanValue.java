@@ -45,6 +45,12 @@ public class BooleanValue extends PrimitiveValue {
 
   private boolean value;
 
+  /**
+   * Constructs the boolean value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public BooleanValue(boolean value) {
     super(Tag.BOOLEAN);
     this.value = value;

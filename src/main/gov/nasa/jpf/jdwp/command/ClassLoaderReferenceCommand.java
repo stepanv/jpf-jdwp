@@ -79,7 +79,7 @@ public enum ClassLoaderReferenceCommand implements Command, ConvertibleEnum<Byte
 			// TODO maybe this will throw classcast exception ...
 			// has to be tested with system class loader!
 			ClassLoaderId classLoaderId = objectManager.readClassLoaderId(bytes);
-			ClassLoaderInfo classLoaderInfo = classLoaderId.getInfoObject();
+			ClassLoaderInfo classLoaderInfo = classLoaderId.getClassLoaderInfo();
 
 			if (classLoaderInfo == null) {
 				// system class loader

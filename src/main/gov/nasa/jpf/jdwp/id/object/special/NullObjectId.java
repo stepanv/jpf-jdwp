@@ -21,25 +21,47 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object.special;
 
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassLoaderException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassObjectException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
+import gov.nasa.jpf.jdwp.id.object.ArrayId;
+import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
+import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
+import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectIdImpl;
+import gov.nasa.jpf.jdwp.id.object.StringId;
+import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
+import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.ThreadInfo;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * A special object used to represent null in SuT.<br/>
- * Remark - We don't need NullObjectId to represent special case ObjectId
- * children since null doesn't represent Thread nor Classloader nor any other
- * meaningful object.
+ * <p>
+ * A special object used to represent null object reference in SuT.
+ * </p>
+ * <p>
+ * Note that even though null object doesn't represent Thread nor Classloader
+ * nor any other meaningful object it is still required to have this instance
+ * compatible with the special objects types (the subtypes of {@link ObjectId})
+ * so that the JDWP code is compilable and class cast exceptions free.
+ * </p>
+ * <p>
+ * <h2>JDWP Specification</h2>
+ * An objectID of 0 represents a null object.
+ * </p>
  * 
  * @author stepan
  * 
  */
-public class NullObjectId extends ObjectIdImpl {
+public class NullObjectId extends ObjectIdImpl implements ThreadId, ClassLoaderId, ClassObjectId, ArrayId, StringId, ThreadGroupId {
 
-  private NullObjectId() {
+  protected NullObjectId() {
     super(Tag.OBJECT, 0, -1);
   }
 
@@ -77,6 +99,36 @@ public class NullObjectId extends ObjectIdImpl {
   @Override
   public void push(StackFrame frame) {
     frame.pushRef(-1);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.nasa.jpf.jdwp.id.object.ThreadId#getThreadInfo()
+   */
+  @Override
+  public ThreadInfo getThreadInfo() throws InvalidThreadException {
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.nasa.jpf.jdwp.id.object.ClassLoaderId#getClassLoaderInfo()
+   */
+  @Override
+  public ClassLoaderInfo getClassLoaderInfo() throws InvalidClassLoaderException {
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see gov.nasa.jpf.jdwp.id.object.ClassObjectId#getClassInfo()
+   */
+  @Override
+  public ClassInfo getClassInfo() throws InvalidClassObjectException {
+    return null;
   }
 
 }

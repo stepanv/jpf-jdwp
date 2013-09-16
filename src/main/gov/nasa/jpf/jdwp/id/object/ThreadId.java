@@ -27,15 +27,11 @@ import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
-import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
-import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.ThreadInfo.State;
-import gov.nasa.jpf.vm.ThreadList;
-import gov.nasa.jpf.vm.VM;
 
 /**
- * This class implements the corresponding <code>threadID</code> common data
+ * This interface represents the corresponding <code>threadID</code> common data
  * type from the JDWP Specification.
  * 
  * <p>
@@ -53,7 +49,7 @@ import gov.nasa.jpf.vm.VM;
  * @author stepan
  * 
  */
-public class ThreadId extends InfoObjectId<ThreadInfo> {
+public interface ThreadId extends ObjectId {
 
   /**
    * <p>
@@ -111,7 +107,7 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
     private static ReverseEnumMap<Integer, ThreadStatus> map = new ReverseEnumMap<Integer, ThreadId.ThreadStatus>(ThreadStatus.class);
 
     @Override
-    public ThreadStatus convert(Integer val) throws IllegalArgumentException  {
+    public ThreadStatus convert(Integer val) throws IllegalArgumentException {
       return map.get(val);
     }
 
@@ -135,52 +131,6 @@ public class ThreadId extends InfoObjectId<ThreadInfo> {
     }
   }
 
-  public ThreadId(long id, ThreadInfo threadInfo) {
-    this(id, threadInfo.getThreadObject(), threadInfo);
-  }
-
-  private ThreadId(long id, ElementInfo elementInfo, ThreadInfo threadInfo) {
-    super(Tag.THREAD, id, elementInfo, threadInfo);
-  }
-
-  public ThreadId(long id, ElementInfo elementInfo) {
-    this(id, elementInfo, getThreadInfo(elementInfo));
-  }
-
-  /**
-   * Always resolves the info object because {@link ThreadInfo} instances do
-   * change during the SuT execution.
-   * 
-   * @return Resolved Thread Info instance.
-   */
-  @Override
-  public ThreadInfo getInfoObject() throws InvalidThreadException {
-    return resolveInfoObject();
-  }
-
-  public ThreadInfo resolveInfoObject() throws InvalidThreadException {
-    ElementInfo threadElementInfo = get();
-    if (threadElementInfo == null) {
-      throw new InvalidThreadException(this);
-    }
-    ThreadInfo threadInfo = getThreadInfo(threadElementInfo);
-    if (threadInfo == null) {
-      throw new InvalidThreadException(this);
-    }
-    return threadInfo;
-  }
-
-  /**
-   * TODO this method may return null .. i.e. solve the case when there is not
-   * related ThreadInfo .. it's also possible it was an exceptional state when
-   * this happened - the code contained compilation error
-   * 
-   * @param elementInfo
-   * @return
-   */
-  private static ThreadInfo getThreadInfo(ElementInfo elementInfo) {
-	ThreadList threadList = VM.getVM().getThreadList();
-	return threadList.getThreadInfoForObjRef(elementInfo.getObjectRef());
-  }
+  public ThreadInfo getThreadInfo() throws InvalidThreadException;
 
 }

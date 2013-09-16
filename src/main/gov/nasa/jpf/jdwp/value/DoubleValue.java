@@ -45,6 +45,12 @@ public class DoubleValue extends PrimitiveValue {
 
   private double value;
 
+  /**
+   * Constructs the double value for the given parameter.
+   * 
+   * @param value
+   *          The desired value of this <i>Value</i>.
+   */
   public DoubleValue(double value) {
     super(Tag.DOUBLE);
     this.value = value;

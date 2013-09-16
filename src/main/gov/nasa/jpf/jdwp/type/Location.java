@@ -28,7 +28,6 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
-import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId.TypeTag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -174,8 +173,17 @@ public class Location {
     return instruction;
   }
 
-  private TypeTag typeTag;
-
+  /**
+   * Writes this location to the given stream in accordance with the JDWP
+   * specification.
+   * 
+   * @param os
+   *          The stream where to write this location.
+   * @throws IOException
+   *           If I/O error occurs.
+   * 
+   * @see {@link Location}
+   */
   public void write(DataOutputStream os) throws IOException {
     if (methodInfo != null) {
 
@@ -185,15 +193,14 @@ public class Location {
     ClassInfo classInfo = methodInfo.getClassInfo();
     objectManager.getReferenceTypeId(classInfo).writeTagged(os);
     os.writeLong(methodInfo.getGlobalId());
-    // objectManager.getObjectId(methodInfo).write(os);
     os.writeLong(index);
 
   }
 
   @Override
   public String toString() {
-    return super.toString() + ", instruction: " + instruction + ", file: " + instruction.getFileLocation() + ", methodId: "
-        + methodInfo.getGlobalId() + ", index: " + index;
+    StringBuffer sb = new StringBuffer(super.toString());
+    return sb.append(" [instruction: '").append(instruction).append("'], [file: '").append(instruction.getFileLocation())
+        .append("'], [methodId: '").append(methodInfo.getGlobalId()).append("'], [index: '").append(index).append("']").toString();
   }
-
 }

@@ -239,7 +239,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
     // TODO frameId.get() should return InvalidFrame instead of
     // InvalidObject
-    execute(threadId.getInfoObject(), frameId.get(), bytes, os, contextProvider, threadId, frameId);
+    execute(threadId.getThreadInfo(), frameId.get(), bytes, os, contextProvider, threadId, frameId);
   }
 
   public abstract void execute(ThreadInfo threadInfo, StackFrame stackFrame, ByteBuffer bytes, DataOutputStream os,

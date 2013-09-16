@@ -86,7 +86,7 @@ public class JdwpTestListener extends ListenerAdapter implements VMListener {
         String verifierName = null;
 
         for (FieldInfo fieldInfo : testCi.getDeclaredInstanceFields()) {
-          if (testEi.getReferenceField(fieldInfo) == verifierRef) {
+          if (fieldInfo.isReference() && testEi.getReferenceField(fieldInfo) == verifierRef) {
             verifierName = fieldInfo.getName();
             break;
           }
