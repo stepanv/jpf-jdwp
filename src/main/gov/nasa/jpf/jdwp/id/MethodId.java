@@ -39,8 +39,8 @@ import gov.nasa.jpf.vm.MethodInfo;
  * method or a subtype.
  * </p>
  * 
- * TODO use MethodIds properly as other Identifiers are used, i.e. Don't rely on
- * global ids for methods.
+ * Maybe we should use MethodIds properly as other Identifiers are used, i.e.
+ * Don't rely on global ids for methods.
  * 
  * @author stepan
  * 

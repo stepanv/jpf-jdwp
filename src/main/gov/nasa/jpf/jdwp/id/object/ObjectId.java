@@ -67,7 +67,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
  * always return the up-to-date ElementInfo instance.<br/>
  * The only question is what if HEAP index is reused after the GC activity by
  * completely strange new object?<br/>
- * TODO [for PJA] is this possible?
+ * [for PJA] is this possible?
  * 
  * <br/>
  * 

@@ -352,8 +352,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
   CREATESTRING(11) {
     @Override
     public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      // is invoked when inspecting an array field for instance (TODO
-      // rewrite this method)
+      // is invoked when inspecting an array field for instance
       String string = JdwpString.read(bytes);
 
       // JPF requires a thread to create an ElementInfo

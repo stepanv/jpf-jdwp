@@ -398,13 +398,7 @@ public class VirtualMachine {
     public static final boolean CAN_USE_INSTANCE_FILTERS = true;
 
     /** Can the VM get the source debug extension? */
-    public static final boolean CAN_GET_SOURCE_DEBUG_EXTENSION = false; // TODO
-    // maybe
-    // this
-    // might
-    // be
-    // handful
-    // TODO seems there is nothing related in JPF
+    public static final boolean CAN_GET_SOURCE_DEBUG_EXTENSION = false;
 
     /** Can the VM request VM death events? */
     public static final boolean CAN_REQUEST_V_M_DEATH_EVENT = true;
@@ -438,7 +432,6 @@ public class VirtualMachine {
 
   public void disableCollection(ObjectId objectId) throws InvalidObjectException {
     synchronized (disableCollectionObjects) {
-      // TODO maybe we should use counters
       objectId.disableCollection();
       if (!disableCollectionObjects.contains(objectId)) {
         disableCollectionObjects.add(objectId);
@@ -449,7 +442,6 @@ public class VirtualMachine {
 
   public void enableCollection(ObjectId objectId) throws InvalidObjectException {
     synchronized (disableCollectionObjects) {
-      // TODO maybe we should use counters
       objectId.enableCollection();
       if (disableCollectionObjects.contains(objectId)) {
         disableCollectionObjects.remove(objectId);
@@ -508,9 +500,7 @@ public class VirtualMachine {
       } else {
         threadContextDataMap.put(threadIntId, 0);
 
-        // TODO is this possible? - it is possible
-        // throw new RuntimeException("ThreadInfo : " + threadInfo +
-        // " not known!");
+        throw new RuntimeException("ThreadInfo : " + threadInfo + " not known!");
       }
     }
 
@@ -563,8 +553,8 @@ public class VirtualMachine {
     if (inExit) {
       accessThreadCheck();
 
-      // TODO this will not print anything interesting ... what is a
-      // better way to exit the JPF thread?
+      // This won't print anything interesting ... but there is no better way to
+      // exit JPF thread is there?
       JPF.exit();
     }
   }

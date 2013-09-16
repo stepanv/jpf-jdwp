@@ -56,6 +56,7 @@ import gov.nasa.jpf.vm.VMListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -209,10 +210,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   @Override
   public void threadStarted(VM vm, ThreadInfo startedThread) {
     if (hasNonnullEventRequests(EventKind.THREAD_START)) {
-      // TODO [for PJA] I hate to say it but honestly startedThread should
-      // be
-      // alread in state State.RUNNING by now - which is not by design ...
-      // WHY???
+      // TODO Waiting for fix in JPF - already submitted to Peter
       lastKnownThreadStates.put(startedThread.getThreadObjectRef(), State.RUNNING);
       logger.info("Started thread: " + startedThread);
 
@@ -234,8 +232,8 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
    * view.</li>
    * <li>Thread deaths are so not ok. Eclipse implements deferred thread deaths
    * handling if a thread is not known which makes thread disappear right after
-   * it is created and thread start event is received. TODO needs to be
-   * investigated more ... seems to be very tricky.<br/>
+   * it is created and thread start event is received. Needs to be investigated
+   * more ... seems to be very tricky.<br/>
    * As a workaround for those weird deferred deaths handling, we're always
    * sending thread start event right before thread death event is sent - it
    * helps but doesn't avoid all the problems.</li>
@@ -270,7 +268,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   @Override
   public void classLoaded(VM vm, ClassInfo loadedClass) {
     virtualMachine.notifyClassLoaded(loadedClass);
-    // TODO [for PJA] This is weird.. According to JDWP we should sent
+    // [for PJA] This is weird.. According to JDWP we should sent
     // threadID where this class loaded event occurred
     // but in case of JPF it doesn't have a system thread
     // (which caused class load before the main thread was executed) .. does
@@ -297,12 +295,20 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   public void vmInitialized(VM vm) {
     virtualMachine.startHook(vm, postponedLoadedClasses);
 
-    // we also need to send thread start event
-    // TODO [for PJA] is this a bug in JPF main thread start doesn't
-    // trigger threadStarted event in JPF listeners
+    // we also need to send thread start event which is not generated
+    // by design by JPF
+    // TODO consult this again so that it doesn't have to be workarounded
     ThreadStartEvent threadStartEvent = new ThreadStartEvent(vm.getCurrentThread());
     lastKnownThreadStates.put(vm.getCurrentThread().getThreadObjectRef(), State.RUNNING);
     dispatchEvent(threadStartEvent);
+  }
+
+  private List<Event> addAndConditionallyInit(Event event, List<Event> events) {
+    if (events == null) {
+      events = new LinkedList<>();
+    }
+    events.add(event);
+    return events;
   }
 
   @Override
@@ -312,13 +318,13 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
     if (instructionToExecute.getMethodInfo() != null && instructionToExecute.getMethodInfo().getClassInfo() != null) {
 
-      // TODO Breakpoint events and step events are supposed to be in one
-      // composite event if occurred together!
+      List<Event> locationGroupEvents = null;
+
       if (logger.isTraceEnabled()) {
         if (instructionToExecute instanceof InvokeInstruction) {
-          // FIXME .. this requires InvokeInstruction#arguments to be
+          // This requires InvokeInstruction#arguments to be
           // public .. since this is just for debugging it has to be
-          // removed TODO
+          // removed
           // logger.trace("Instruction: '{}' args: {} line: {}",
           // instructionToExecute, ((InvokeInstruction)
           // instructionToExecute).arguments,
@@ -331,7 +337,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
       if (hasNonnullEventRequests(EventKind.BREAKPOINT)) {
         BreakpointEvent breakpointEvent = new BreakpointEvent(currentThread, locationOfInstructionToExecute);
-        dispatchEvent(breakpointEvent);
+        locationGroupEvents = addAndConditionallyInit(breakpointEvent, locationGroupEvents);
       }
 
       if (hasNonnullEventRequests(EventKind.FIELD_ACCESS, EventKind.FIELD_MODIFICATION) && instructionToExecute instanceof FieldInstruction) {
@@ -341,8 +347,10 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
       if (hasNonnullEventRequests(EventKind.SINGLE_STEP)) {
         SingleStepEvent singleStepEvent = new SingleStepEvent(currentThread, locationOfInstructionToExecute);
-        dispatchEvent(singleStepEvent);
+        locationGroupEvents = addAndConditionallyInit(singleStepEvent, locationGroupEvents);
       }
+
+      dispatchEvent(locationGroupEvents);
     }
   }
 
@@ -446,6 +454,18 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
    */
   private void dispatchEvent(Event event) {
     Jdwp.notify(event);
+  }
+
+  /**
+   * Dispatch the group of events
+   * 
+   * @param events
+   *          or null (null means no-op)
+   */
+  private void dispatchEvent(List<Event> events) {
+    if (events != null) {
+      Jdwp.notify(events);
+    }
   }
 
   Map<Integer, State> lastKnownThreadStates = new HashMap<Integer, ThreadInfo.State>();

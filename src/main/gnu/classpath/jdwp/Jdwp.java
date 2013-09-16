@@ -269,7 +269,7 @@ public class Jdwp extends Thread {
    * @param events
    *          the events to report
    */
-  public static void notify(Event... events) {
+  public static void notify(List<Event> events) {
     SuspendPolicy resultSuspendPolicy = SuspendPolicy.NONE;
     List<Event> matchedEvents = new LinkedList<Event>();
 

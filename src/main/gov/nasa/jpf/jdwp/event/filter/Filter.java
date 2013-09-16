@@ -271,8 +271,7 @@ public abstract class Filter<T extends Event> {
   private ModKind modKind;
   private Class<T> genericClazz;
 
-  public Filter(ModKind modKind, Class<T> genericClass) { // TODO remove
-    // unused parameter
+  public Filter(ModKind modKind, Class<T> genericClass) {
     this.modKind = modKind;
     this.genericClazz = genericClass;
   }

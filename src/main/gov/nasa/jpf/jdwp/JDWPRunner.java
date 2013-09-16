@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The entry point for the JDWP backend.<br/>
- * Currently, this is the only way how to initialize JDWP for JPF. (In the
- * future other ways needs to be added. TODO)<br/>
+ * The JDWP back-end can be also enabled in a listener only mode. See
+ * {@link JDWPListener#JDWPListener()}.
  * 
  * <h2>Thread overview</h2>
  * <ol>
@@ -75,7 +75,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  * <p>
  * If the command processor thread gets stuck the commands are not executed.
- * This needs to be solved. TODO
+ * TODO This needs to be solved. 
  * </p>
  * </li>
  * </ol>

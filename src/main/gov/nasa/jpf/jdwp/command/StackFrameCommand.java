@@ -223,13 +223,10 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
   private static ReverseEnumMap<Byte, StackFrameCommand> map = new ReverseEnumMap<Byte, StackFrameCommand>(StackFrameCommand.class);
 
-  @Override
   public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws JdwpException, IOException {
     ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
     FrameId frameId = contextProvider.getObjectManager().readFrameId(bytes);
 
-    // TODO frameId.get() should return InvalidFrame instead of
-    // InvalidObject
     execute(threadId.getThreadInfo(), frameId.get(), bytes, os, contextProvider, threadId, frameId);
   }
 

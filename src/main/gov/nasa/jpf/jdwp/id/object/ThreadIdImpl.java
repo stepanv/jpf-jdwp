@@ -80,7 +80,7 @@ public class ThreadIdImpl extends ObjectIdImpl implements ThreadId {
   }
 
   /**
-   * TODO this method may return null .. i.e. solve the case when there is not
+   * this method may return null .. i.e. solve the case when there is not
    * related ThreadInfo .. it's also possible it was an exceptional state when
    * this happened - the code contained compilation error
    * 

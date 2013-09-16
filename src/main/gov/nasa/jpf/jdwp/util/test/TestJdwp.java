@@ -31,10 +31,6 @@ import org.junit.Before;
 
 public abstract class TestJdwp extends TestJPF {
 
-  /**
-   * This sucks TODO - find a way how to pass the test instance to the listener
-   * without using static fields.
-   */
   static TestJdwp verifierTest;
 
   public TestJdwp() {
@@ -91,7 +87,6 @@ public abstract class TestJdwp extends TestJPF {
    */
   @Override
   protected JPF noPropertyViolation(StackTraceElement testMethod, String... args) {
-    // TODO Auto-generated method stub
     return super.noPropertyViolation(testMethod, overrideArguments(args));
   }
 
@@ -104,7 +99,6 @@ public abstract class TestJdwp extends TestJPF {
    */
   @Override
   protected JPF unhandledException(StackTraceElement testMethod, String xClassName, String details, String... args) {
-    // TODO Auto-generated method stub
     return super.unhandledException(testMethod, xClassName, details, overrideArguments(args));
   }
 
@@ -117,7 +111,6 @@ public abstract class TestJdwp extends TestJPF {
    */
   @Override
   protected JPF propertyViolation(StackTraceElement testMethod, Class<? extends Property> propertyCls, String... args) {
-    // TODO Auto-generated method stub
     return super.propertyViolation(testMethod, propertyCls, overrideArguments(args));
   }
 

@@ -212,22 +212,6 @@ public class VirtualMachineHelper {
         ci.registerClass(thread);
       }
 
-      // since this is a NEW, we also have to pushClinit
-      if (!ci.isInitialized()) {
-        if (ci.initializeClass(thread)) {
-          throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
-          // TODO return thread.getPC(); // reexecute this instruction
-          // once we return from the clinits
-        }
-      }
-
-      if (heap.isOutOfMemory()) { // simulate OutOfMemoryError
-        throw new RuntimeException("HAS TO BE IMPLEMENTED"); // TODO
-        // TODO return
-        // ti.createAndThrowException("java.lang.OutOfMemoryError",
-        // "trying to allocate new " + cname);
-      }
-
       constructedElementInfo = heap.newObject(ci, thread);
       int objRef = constructedElementInfo.getObjectRef();
 
@@ -244,9 +228,6 @@ public class VirtualMachineHelper {
 
     for (Value value : values) {
       logger.trace("Value: {}", value);
-
-      // TODO we should probably call rather frame.setArgument() as in
-      // JPF_gov_nasa_jpf_test_basic_MJITest#nativeHiddenRoundtrip__I__I
       value.push(frame);
     }
 

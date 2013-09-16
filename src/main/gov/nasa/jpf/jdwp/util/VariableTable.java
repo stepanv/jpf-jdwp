@@ -171,14 +171,9 @@ public class VariableTable {
      * Finds an instruction at position which closest from the bottom to the
      * position given as a parameter.
      * 
-     * TODO [for PJA] For some reason debug table might return endPC or startPC
-     * that doesn't contain an instruction
-     * 
      * @see MethodInfo#getInstructionAt(int)
      * @see ClassFile#parseLocalVarTableAttr(gov.nasa.jpf.classfile.ClassFileReader,
      *      Object)
-     * 
-     *      TODO handle errors properly
      * 
      * @param methodInfo
      * @param position
@@ -202,14 +197,9 @@ public class VariableTable {
      * Finds an instruction at position which closest from the top to the
      * position given as a parameter.
      * 
-     * TODO [for PJA] For some reason debug table might return endPC or startPC
-     * that doesn't contain an instruction
-     * 
      * @see MethodInfo#getInstructionAt(int)
      * @see ClassFile#parseLocalVarTableAttr(gov.nasa.jpf.classfile.ClassFileReader,
      *      Object)
-     * 
-     *      TODO handle errors properly
      * 
      * @param methodInfo
      * @param position

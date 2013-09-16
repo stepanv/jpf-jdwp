@@ -112,9 +112,6 @@ public class Location {
   /**
    * Creates a location for the given instruction.<br/>
    * This method tends to be safe but is actually pretty weird.<br/>
-   * TODO It must be analyzed when an instruction doesn't have methodInfo or
-   * when methodInfo doesn't have a clasInfo and then reflected in this piece of
-   * code.
    * 
    * @param instruction
    *          The instruction.
@@ -124,9 +121,12 @@ public class Location {
    * @return The location.
    */
   public static Location factorySafe(Instruction instruction, ThreadInfo threadInfo) {
-    while (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+    Instruction originalInstruction = instruction;
+    while ((instruction != null) && (instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null)) {
       instruction = instruction.getNext(threadInfo);
-      // TODO possible NPE
+    }
+    if (instruction == null || instruction.getMethodInfo() == null || instruction.getMethodInfo().getClassInfo() == null) {
+      throw new IllegalStateException("Cannot get good enough instruction to make a location for: '" + originalInstruction + "' in thread: " + threadInfo);
     }
     return factory(instruction);
   }
