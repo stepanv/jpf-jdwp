@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.exception.id.object;
 
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
-import gov.nasa.jpf.jdwp.exception.id.reference.InvalidReferenceTypeException;
+import gov.nasa.jpf.jdwp.exception.id.type.InvalidReferenceTypeException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
 /**
