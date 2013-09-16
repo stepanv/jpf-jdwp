@@ -24,6 +24,7 @@ package gov.nasa.jpf.jdwp.id.object.special;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassLoaderException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassObjectException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
+import gov.nasa.jpf.jdwp.exception.id.object.NullPointerObjectException;
 import gov.nasa.jpf.jdwp.id.object.ArrayId;
 import gov.nasa.jpf.jdwp.id.object.ClassLoaderId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
@@ -35,6 +36,7 @@ import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 
@@ -108,7 +110,7 @@ public class NullObjectId extends ObjectIdImpl implements ThreadId, ClassLoaderI
    */
   @Override
   public ThreadInfo getThreadInfo() throws InvalidThreadException {
-    return null;
+    throw new InvalidThreadException(this);
   }
 
   /*
@@ -118,7 +120,7 @@ public class NullObjectId extends ObjectIdImpl implements ThreadId, ClassLoaderI
    */
   @Override
   public ClassLoaderInfo getClassLoaderInfo() throws InvalidClassLoaderException {
-    return null;
+    throw new InvalidClassLoaderException(this);
   }
 
   /*
@@ -128,7 +130,19 @@ public class NullObjectId extends ObjectIdImpl implements ThreadId, ClassLoaderI
    */
   @Override
   public ClassInfo getClassInfo() throws InvalidClassObjectException {
-    return null;
+    throw new InvalidClassObjectException(this);
   }
+
+  @Override
+  public DynamicElementInfo get() throws NullPointerObjectException {
+    throw new NullPointerObjectException();
+  }
+
+  @Override
+  public DynamicElementInfo getModifiable() throws NullPointerObjectException {
+    throw new NullPointerObjectException();
+  }
+  
+  
 
 }

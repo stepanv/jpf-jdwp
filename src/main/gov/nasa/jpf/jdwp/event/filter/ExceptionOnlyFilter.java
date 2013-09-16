@@ -24,6 +24,7 @@ package gov.nasa.jpf.jdwp.event.filter;
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.id.object.special.NullReferenceId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -55,9 +56,10 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
   /**
    * 
    * @param exceptionOrNull
-   *          Exception to report. Null (0) means report exceptions of all
-   *          types. A non-null type restricts the reported exception events to
-   *          exceptions of the given type or any of its subtypes.
+   *          Exception to report. Null (0) (ie. {@link NullReferenceId}
+   *          instance) means report exceptions of all types. A non-null type
+   *          restricts the reported exception events to exceptions of the given
+   *          type or any of its subtypes.
    * @param caught
    *          Report caught exceptions
    * @param uncaught
@@ -75,12 +77,6 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
 
   @Override
   public boolean matches(ExceptionOnlyFilterable event) {
-    // TODO need to finally decide whether nulls are allowed for Identifier
-    // instances - for ObjectIds we always get NullObjectId but this doesn't
-    // work for any Identifier (like here for ReferenceTypeId)
-    if (exceptionOrNull == null || exceptionOrNull.isNull()) {
-      return true;
-    }
     return event.visit(this);
   }
 
@@ -96,11 +92,8 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
       return false;
     }
 
-    if (exceptionOrNull == null) {
+    if (exceptionOrNull == null || exceptionOrNull.isNull()) {
       // return exception of all types as the specs states
-      // it's not clear though whether we're able to receive null object
-      // for ReferenceTypeId
-      // TODO test null object here
       return true;
     }
 

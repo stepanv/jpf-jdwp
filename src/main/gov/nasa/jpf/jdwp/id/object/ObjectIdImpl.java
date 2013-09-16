@@ -167,7 +167,7 @@ public class ObjectIdImpl extends TaggableIdentifierBase<DynamicElementInfo> imp
   }
 
   @Override
-  public DynamicElementInfo get() {
+  public DynamicElementInfo get() throws InvalidObjectException {
     Heap heap = VM.getVM().getHeap();
     return (DynamicElementInfo) heap.get(objectRef);
   }
@@ -240,7 +240,7 @@ public class ObjectIdImpl extends TaggableIdentifierBase<DynamicElementInfo> imp
   }
 
   @Override
-  public DynamicElementInfo getModifiable() {
+  public DynamicElementInfo getModifiable() throws InvalidObjectException {
     Heap heap = VM.getVM().getHeap();
     return (DynamicElementInfo) heap.getModifiable(objectRef);
   }

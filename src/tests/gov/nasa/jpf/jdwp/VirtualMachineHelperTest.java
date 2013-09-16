@@ -455,15 +455,13 @@ public class VirtualMachineHelperTest extends TestJdwp {
       // pass the result through a well known field to the SuT so that it can be
       // asserted there
       ObjectId objectId = JdwpIdManager.getInstance().readObjectId(bb);
-      ElementInfo elementInfo = objectId.get();
-      returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", elementInfo == null ? -1 : elementInfo.getObjectRef());
+      returnClazz.getModifiableStaticElementInfo().setReferenceField("staticObject", objectId.isNull() ? -1 : objectId.get().getObjectRef());
 
       // tag byte is checked in the SuT
       bb.get();
       objectId = JdwpIdManager.getInstance().readObjectId(bb);
-      elementInfo = objectId.get();
       returnClazz.getModifiableStaticElementInfo().setReferenceField("staticThrowable",
-                                                                     elementInfo == null ? -1 : elementInfo.getObjectRef());
+                                                                     objectId.isNull() ? -1 : objectId.get().getObjectRef());
 
       // verify there is nothing else left in the buffer
       assertEquals(0, bb.remaining());

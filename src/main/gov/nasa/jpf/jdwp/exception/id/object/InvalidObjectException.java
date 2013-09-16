@@ -94,6 +94,22 @@ public class InvalidObjectException extends InvalidIdentifierException {
    * 
    * @param errorType
    *          The Error type.
+   * @param objectId
+   *          The invalid objectID to report.
+   * @param cause
+   *          The cause exception.
+   * @see InvalidObjectException
+   */
+  protected InvalidObjectException(ErrorType errorType, ObjectId objectId, Throwable cause) {
+    super(errorType, objectId);
+  }
+
+  /**
+   * Constructs the {@link InvalidObjectException} exception with a support for
+   * subclassing.
+   * 
+   * @param errorType
+   *          The Error type.
    * @param id
    *          The invalid ID to report.
    * @see InvalidObjectException

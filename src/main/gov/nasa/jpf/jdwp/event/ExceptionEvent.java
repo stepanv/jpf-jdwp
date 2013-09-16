@@ -103,7 +103,7 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
     ObjectId objectId = JdwpIdManager.getInstance().getObjectId(exception);
     objectId.writeTagged(os);
     if (catchLocation == null) {
-      // TODO when location is null, we need to send twice null long ...
+      // when the location is null, we need to send twice null long ...
       // do it a better way?
       // I checked the Eclipse debugger and because of that I know what is
       // it about

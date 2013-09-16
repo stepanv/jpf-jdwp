@@ -38,12 +38,27 @@ public class InvalidTagException extends IllegalArgumentException {
   private static final long serialVersionUID = 1890933796698299280L;
 
   /**
-   * @param eventType
+   * Constructs the {@link InvalidTagException} exception.
+   * 
    * @param message
+   *          The message to report.
    * @param cause
+   *          The cause exception.
    */
   public InvalidTagException(String message, Throwable cause) {
     super(ErrorType.INVALID_TAG, message, cause);
+  }
+
+  /**
+   * Constructs the {@link InvalidTagException} exception.
+   * 
+   * @param tagId
+   *          The invalid ID to report.
+   * @param cause
+   *          The cause exception.
+   */
+  public InvalidTagException(Byte tagId, Throwable cause) {
+    this("Invalid id: '" + tagId + "' byte.", cause);
   }
 
 }

@@ -27,6 +27,7 @@ import gov.nasa.jpf.jdwp.command.ObjectReferenceCommand;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.command.StackFrameCommand;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.InvalidTagException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
@@ -620,8 +621,12 @@ public abstract class PrimitiveValue implements Value {
     }
 
     @Override
-    public Tag convert(Byte val) throws IllegalArgumentException {
-      return map.get(val);
+    public Tag convert(Byte tagId) throws InvalidTagException {
+      try {
+        return map.get(tagId);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidTagException(tagId, e);
+      }
     }
 
     public static Tag fieldToTag(FieldInfo field) {

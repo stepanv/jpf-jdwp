@@ -82,8 +82,8 @@ public abstract class ThreadableEvent extends EventBase implements Event {
     ThreadId threadId = JdwpIdManager.getInstance().getThreadId(threadInfo);
     logger.debug("Thread ID: {} .. for: {}", threadId, threadInfo);
     try {
-      if (threadId.get() == null || threadId.getThreadInfo() != threadInfo) {
-        throw new RuntimeException("Identifier for thread info instance: " + threadInfo + " is not valid.");
+      if (threadId.getThreadInfo() != threadInfo) {
+        throw new IllegalStateException("Identifier for thread info instance: " + threadInfo + " is not valid.");
       }
     } catch (InvalidThreadException e) {
       throw new RuntimeException(e);

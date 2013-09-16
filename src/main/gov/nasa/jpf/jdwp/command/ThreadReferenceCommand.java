@@ -23,9 +23,9 @@ package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
-import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.VirtualMachine.ExecutionManager;
 import gov.nasa.jpf.jdwp.VirtualMachineHelper;
+import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.JdwpException.ErrorType;
 import gov.nasa.jpf.jdwp.exception.NotImplementedException;
@@ -39,7 +39,6 @@ import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.SuspendStatus;
 import gov.nasa.jpf.jdwp.id.object.ThreadId.ThreadStatus;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -334,13 +333,9 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
       // the thread was suspended by the debugger
       ElementInfo lockObject = threadInfo.getLockObject();
 
-      // TODO solve the == null
-      if (lockObject == null) {
-        NullObjectId.instanceWriteTagged(os);
-      } else {
-        ObjectId objectId = contextProvider.getObjectManager().getObjectId(lockObject);
-        objectId.writeTagged(os);
-      }
+      // null lock object if no lock - will be NullObjectId
+      ObjectId objectId = contextProvider.getObjectManager().getObjectId(lockObject);
+      objectId.writeTagged(os);
 
     }
   },

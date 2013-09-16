@@ -45,6 +45,13 @@ import org.slf4j.LoggerFactory;
  * The base implementation of all events.<br/>
  * All the common functionality of all events should go here.
  * 
+ * <p>
+ * Remark - see the discussion about unused event kinds in the {@link EventKind}
+ * enum.
+ * </p>
+ * 
+ * @see EventKind
+ * 
  * @author stepan
  * 
  */
@@ -262,7 +269,7 @@ public abstract class EventBase implements Event {
    * Converts the events into to a single JDWP {@link EventCommand#COMPOSITE}
    * packet.
    * <p>
-   * TODO Reused from GNU Classpath Event.toPacket();
+   * Reused from GNU Classpath Event.toPacket();
    * </p>
    * 
    * @param dos

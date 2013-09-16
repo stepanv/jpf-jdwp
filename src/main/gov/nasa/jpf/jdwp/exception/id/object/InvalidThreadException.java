@@ -54,6 +54,20 @@ public class InvalidThreadException extends InvalidObjectException {
   /**
    * Constructs the {@link InvalidThreadException} exception.
    * 
+   * @param objectId
+   *          The invalid objectID to report.
+   * @param cause
+   *          The exception cause.
+   * @see InvalidObjectException
+   * @see InvalidThreadException
+   */
+  public InvalidThreadException(ObjectId objectId, Throwable cause) {
+    super(ErrorType.INVALID_THREAD, objectId, cause);
+  }
+
+  /**
+   * Constructs the {@link InvalidThreadException} exception.
+   * 
    * @param id
    *          The invalid ID to report.
    * @see InvalidObjectException

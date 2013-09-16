@@ -112,13 +112,18 @@ public interface ObjectId extends TaggableIdentifier<DynamicElementInfo>, Value 
    * Get the modifiable element info.
    * 
    * @return The modifiable instance of the object this identifier stands for.
+   * @throws InvalidObjectException
+   *           If this identifier is invalid.
    */
-  public DynamicElementInfo getModifiable();
+  public DynamicElementInfo getModifiable() throws InvalidObjectException;
 
   /**
    * Get the element info.
+   * 
+   * @throws InvalidObjectException
+   *           If this identifier is invalid.
    */
   @Override
-  public DynamicElementInfo get();
+  public DynamicElementInfo get() throws InvalidObjectException;
 
 }

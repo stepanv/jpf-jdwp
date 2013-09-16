@@ -62,5 +62,19 @@ public class InvalidClassLoaderException extends InvalidObjectException {
   public InvalidClassLoaderException(long id) {
     super(ErrorType.INVALID_CLASS_LOADER, id);
   }
+  
+  /**
+   * Constructs the {@link InvalidClassLoaderException} exception.
+   * 
+   * @param objectId
+   *          The invalid objectID to report.
+   * @param cause
+   *          The exception cause.
+   * @see InvalidObjectException
+   * @see InvalidClassLoaderException
+   */
+  public InvalidClassLoaderException(ObjectId objectId, Throwable cause) {
+    super(ErrorType.INVALID_CLASS_LOADER, objectId, cause);
+  }
 
 }

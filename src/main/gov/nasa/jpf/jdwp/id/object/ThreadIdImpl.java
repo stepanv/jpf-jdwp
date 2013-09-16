@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id.object;
 
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidThreadException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -62,7 +63,12 @@ public class ThreadIdImpl extends ObjectIdImpl implements ThreadId {
   }
 
   private ThreadInfo resolveInfoObject() throws InvalidThreadException {
-    ElementInfo threadElementInfo = get();
+    ElementInfo threadElementInfo;
+    try {
+      threadElementInfo = get();
+    } catch (InvalidObjectException e) {
+      throw new InvalidThreadException(this, e);
+    }
     if (threadElementInfo == null) {
       throw new InvalidThreadException(this);
     }

@@ -391,6 +391,9 @@ public class ObjectReferenceCommandTest extends TestJdwp {
     DataOutputStream dataOutputStream = new DataOutputStream(dataOutputBytes);
     CommandContextProvider contextProvider = new CommandContextProvider(new VirtualMachine(jpf), JdwpIdManager.getInstance());
 
+    Object foo = null;
+    
+    System.out.println(foo);
     vm.initialize();
 
     ByteBuffer bytes = ByteBuffer.allocate(200);

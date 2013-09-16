@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -55,6 +58,12 @@ public class MonitorWaitedEvent extends MonitorBase {
   public MonitorWaitedEvent(ThreadInfo threadInfo, ElementInfo taggedObject, Location location, boolean timedOut) {
     super(EventKind.MONITOR_WAITED, threadInfo, taggedObject, location);
     this.timedOut = timedOut;
+  }
+  
+  @Override
+  protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
+    super.writeThreadableSpecific(os);
+    os.writeBoolean(timedOut);
   }
 
 }

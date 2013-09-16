@@ -31,7 +31,6 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidFrameIdException;
 import gov.nasa.jpf.jdwp.id.FrameId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -92,8 +91,6 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
         // object will remain as null (if it really is null)
         object = stackFrame.getLocalValueObject(localVarInfo);
 
-        // TODO solve == null for the object
-        
         Value value = Tag.taggedObjectToValue(tag, object);
         value.writeTagged(os);
 
@@ -152,12 +149,6 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
 
       if (thisObject instanceof StaticElementInfo) {
         throw new java.lang.IllegalArgumentException("Illegal object type: " + thisObject);
-      }
-
-      // TODO solve == null
-      if (thisObject == null) {
-        NullObjectId.instanceWriteTagged(os);
-        return;
       }
 
       ObjectId thisObjectId = contextProvider.getObjectManager().getObjectId(thisObject);

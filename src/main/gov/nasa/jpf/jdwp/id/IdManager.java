@@ -125,6 +125,7 @@ public abstract class IdManager<I extends Identifier<T>, T, E extends InvalidIde
       // identifier doesn't exist, lets create one
       
       if (object == null) {
+        // if null object is supported we won't be here since containsKey will return true
         throw new IllegalStateException("NULL objects not supported by this ID Manager instance! " + this);
       }
 

@@ -5,7 +5,7 @@ package gov.nasa.jpf.jdwp.id.object.special;
 
 import gov.nasa.jpf.jdwp.command.ClassTypeCommand;
 import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
-import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.object.NullPointerObjectException;
 import gov.nasa.jpf.jdwp.id.IdentifierBase;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.vm.ClassInfo;
@@ -67,8 +67,8 @@ public class NullReferenceId extends IdentifierBase<ClassInfo> implements Refere
    * @see gov.nasa.jpf.jdwp.id.Identifier#nullObjectHandler()
    */
   @Override
-  public ClassInfo nullObjectHandler() throws InvalidIdentifierException {
-    return null;
+  public ClassInfo nullObjectHandler() throws NullPointerObjectException {
+    throw new NullPointerObjectException();
   }
 
   /**

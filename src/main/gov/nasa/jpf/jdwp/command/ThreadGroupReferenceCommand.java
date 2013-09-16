@@ -21,13 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
+import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadGroupId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.ValueUtils;
@@ -83,12 +82,8 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
       ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
       logger.debug("Thread group parent: {}", parent);
 
-      if (parent == null) {
-        NullObjectId.instantWrite(os);
-      } else {
-        ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
-        parentGroup.write(os);
-      }
+      ThreadGroupId parentGroup = contextProvider.getObjectManager().getThreadGroupId(parent);
+      parentGroup.write(os);
     }
   },
 

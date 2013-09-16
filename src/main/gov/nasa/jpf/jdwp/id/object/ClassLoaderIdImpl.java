@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassLoaderException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -99,6 +100,10 @@ public class ClassLoaderIdImpl extends ObjectIdImpl implements ClassLoaderId {
   }
 
   protected ClassLoaderInfo resolveInfoObject() throws InvalidClassLoaderException {
-    return getClassLoaderInfo(get());
+    try {
+      return getClassLoaderInfo(get());
+    } catch (InvalidObjectException e) {
+      throw new InvalidClassLoaderException(this, e);
+    }
   }
 }

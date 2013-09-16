@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.event.filter;
 
 import gov.nasa.jpf.jdwp.event.InstanceOnlyFilterable;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MJIEnv;
@@ -59,7 +60,20 @@ public class InstanceOnlyFilter extends Filter<InstanceOnlyFilterable> {
   @Override
   public boolean matches(InstanceOnlyFilterable event) {
     ElementInfo eventInstance = event.instance();
-    return Objects.equals(eventInstance, objectId.get());
+
+    if (objectId.isNull()) {
+      // matching statics
+      return eventInstance == null;
+    }
+
+    ElementInfo matchInstance;
+    try {
+      matchInstance = objectId.get();
+    } catch (InvalidObjectException e) {
+      throw new IllegalStateException("This should be a dead code since it has been checked the object is not a null pointer: " + objectId,
+          e);
+    }
+    return Objects.equals(eventInstance, matchInstance);
   }
 
 }

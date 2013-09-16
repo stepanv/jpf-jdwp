@@ -32,7 +32,6 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -104,15 +103,9 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
 
       logger.debug("class info: {} has class loader: {}", classInfo, classLoaderInfo);
 
-      if (classLoaderInfo == null) {
-        // TODO do this in a uniform way - object manager should return
-        // nullObjectId by itself...
-        // system classloader
-        NullObjectId.instantWrite(os);
-      } else {
-        ObjectId objectId = contextProvider.getObjectManager().getClassLoaderId(classLoaderInfo);
-        objectId.write(os);
-      }
+      // the null object is for the system classloader
+      ObjectId objectId = contextProvider.getObjectManager().getClassLoaderId(classLoaderInfo);
+      objectId.write(os);
     }
   },
 

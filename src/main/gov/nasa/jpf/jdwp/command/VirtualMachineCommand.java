@@ -197,6 +197,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
         ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
 
         if (parent == null) {
+          // null parent means it is top level thread group
           topLevelThreadGroups.add(threadGroupElementInfo);
         }
       }
@@ -416,11 +417,11 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
       int classpathElements = 0;
       for (String pathElement : systemClassLoader.getClassPathElements()) {
-        JdwpString.write(pathElement, classpathDos);
+        JdwpString.writeNullAsEmpty(pathElement, classpathDos);
         classpathElements++;
       }
 
-      JdwpString.write(System.getProperty("user.dir"), os);
+      JdwpString.writeNullAsEmpty(System.getProperty("user.dir"), os);
       os.writeInt(classpathElements);
       os.write(classpathOs.toByteArray());
 

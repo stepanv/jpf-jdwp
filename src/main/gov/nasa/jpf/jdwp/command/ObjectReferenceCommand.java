@@ -28,11 +28,9 @@ import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.ThreadNotSuspendedException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
-import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
-import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -177,13 +175,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
 
       // The monitor owner, or null if it is not currently owned.
       ThreadInfo ownerThreadInfo = monitor.getLockingThread();
-      if (ownerThreadInfo == null) {
-        // is not currently owned
-        NullObjectId.instantWrite(os);
-      } else {
-        ThreadId ownerThreadId = contextProvider.getObjectManager().getThreadId(ownerThreadInfo);
-        ownerThreadId.write(os);
-      }
+      ThreadId ownerThreadId = contextProvider.getObjectManager().getThreadId(ownerThreadInfo);
+      ownerThreadId.write(os);
 
       // The number of times the monitor has been entered.
       int entryCount = monitor.getLockCount();
@@ -401,11 +394,6 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
 
     logger.debug("Object ID: {}", objectId);
-    if (objectId.isNull()) {
-      // null means it's collected
-      // TODO solve ObjectId#get() == null everywhere !!!
-      throw new InvalidObjectException(objectId);
-    }
     execute(objectId, bytes, os, contextProvider);
   }
 

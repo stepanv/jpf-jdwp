@@ -43,6 +43,11 @@ import java.io.IOException;
  * Notification of a field access in the target VM. Field modifications are not
  * considered field accesses. Requires canWatchFieldAccess capability
  * </p>
+ * <p>
+ * Note that the specification doesn't correspond with the expected behavior of
+ * this event and therefore this implementation is not really according the
+ * spec.
+ * </p>
  * 
  * @see VirtualMachineCommand#CAPABILITIESNEW
  * @author stepan
@@ -50,7 +55,13 @@ import java.io.IOException;
  */
 public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilterable, FieldOnlyFilterable {
 
+  /**
+   * should be used according to the specification; however it's unused in the
+   * real debugger life
+   */
+  @SuppressWarnings("unused")
   private ClassInfo fieldType;
+
   private FieldInfo fieldInfo;
   private ElementInfo objectBeingAccessed;
 
@@ -80,7 +91,7 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
     ClassInfo fieldObjectClassInfo;
 
-    // TODO this is not according the spec!
+    // this is not according the spec!
     fieldObjectClassInfo = fieldInfo.getClassInfo();
 
     ReferenceTypeId referenceTypeId = JdwpIdManager.getInstance().getReferenceTypeId(fieldObjectClassInfo);
@@ -96,7 +107,7 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
       objectId.writeTagged(os);
     }
   }
-  
+
   @Override
   public ElementInfo instance() {
     return objectBeingAccessed;

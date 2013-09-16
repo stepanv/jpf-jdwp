@@ -48,6 +48,7 @@ import java.io.IOException;
  * <h2>Remarks</h2>
  * The specification is not really clear about field modification events.
  * FieldType is actually ThisObjectType.
+ * </p>
  * 
  * 
  * @see VirtualMachineCommand#CAPABILITIESNEW
@@ -56,7 +57,9 @@ import java.io.IOException;
  */
 public class FieldModificationEvent extends LocatableEvent implements LocationOnlyFilterable, FieldOnlyFilterable {
 
+  // this is really unused - has to be discussed in my thesis!
   private ClassInfo fieldType;
+  
   private FieldInfo fieldInfo;
   private ElementInfo objectBeingModified;
   private Tag tag;
@@ -99,7 +102,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
     JdwpIdManager objectManager = JdwpIdManager.getInstance();
 
-    // TODO this is not according the spec!
+    // this is not according the spec!
     ClassInfo fieldObjectClassInfo = fieldInfo.getClassInfo();
 
     ReferenceTypeId referenceTypeId = objectManager.getReferenceTypeId(fieldObjectClassInfo);
@@ -121,7 +124,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
   public FieldInfo getFieldInfo() {
     return fieldInfo;
   }
-  
+
   @Override
   public ElementInfo instance() {
     return objectBeingModified;

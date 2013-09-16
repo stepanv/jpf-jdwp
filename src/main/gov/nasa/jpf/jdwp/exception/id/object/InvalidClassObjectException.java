@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.exception.id.object;
 
+import gov.nasa.jpf.jdwp.exception.JdwpException.ErrorType;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 
 /**
@@ -73,4 +74,17 @@ public class InvalidClassObjectException extends InvalidObjectException {
     super(ErrorType.INVALID_CLASS, id);
   }
 
+  /**
+   * Constructs the {@link InvalidClassObjectException} exception.
+   * 
+   * @param objectId
+   *          The invalid objectID to report.
+   * @param cause
+   *          The exception cause.
+   * @see InvalidObjectException
+   * @see InvalidClassObjectException
+   */
+  public InvalidClassObjectException(ObjectId objectId, Throwable cause) {
+    super(ErrorType.INVALID_CLASS, objectId, cause);
+  }
 }

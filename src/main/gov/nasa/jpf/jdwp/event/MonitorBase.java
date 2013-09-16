@@ -67,7 +67,6 @@ public class MonitorBase extends LocatableEvent {
     ObjectId taggedObjectId = JdwpIdManager.getInstance().getObjectId(taggedObject);
     taggedObjectId.write(os);
     getLocation().write(os);
-
   }
 
   @Override

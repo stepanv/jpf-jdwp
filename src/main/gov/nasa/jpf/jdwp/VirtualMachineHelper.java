@@ -136,10 +136,8 @@ public class VirtualMachineHelper {
     private Value value;
 
     public MethodResult(Value value, ObjectId exception) {
-      // TODO use Null object pattern everywhere ...
-      // TODO == null
-      this.value = value != null ? value : NullObjectId.getInstance();
-      this.exception = exception != null ? exception : NullObjectId.getInstance();
+      this.value = value;
+      this.exception = exception;
     }
 
     public void write(DataOutputStream os) throws IOException {
@@ -263,7 +261,7 @@ public class VirtualMachineHelper {
       ObjectId exception = JdwpIdManager.getInstance().getObjectId(exceptionInfo.getException());
       thread.popFrame(); // this is still the DirectCallStackFrame, and we
       // want to continue execution
-      return new MethodResult(null, exception);
+      return new MethodResult(NullObjectId.getInstance(), exception);
     }
 
     Value returnValue;
@@ -275,7 +273,7 @@ public class VirtualMachineHelper {
 
     logger.info("# exit nativeHiddenRoundtrip; returned: {}", returnValue);
 
-    return new MethodResult(returnValue, null);
+    return new MethodResult(returnValue, NullObjectId.getInstance());
 
   }
 

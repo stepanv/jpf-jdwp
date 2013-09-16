@@ -23,6 +23,7 @@ package gov.nasa.jpf.jdwp.id.object;
 
 import gov.nasa.jpf.jdwp.JdwpConstants;
 import gov.nasa.jpf.jdwp.exception.id.object.InvalidClassObjectException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
@@ -76,8 +77,8 @@ public class ClassObjectIdImpl extends ObjectIdImpl implements ClassObjectId {
       String reflectedTypeString = typeName.asString();
       ClassInfo ci = ClassLoaderInfo.getCurrentResolvedClassInfo(reflectedTypeString);
       return ci;
-    } catch (NullPointerException e) {
-      throw new InvalidClassObjectException(this);
+    } catch (NullPointerException | InvalidObjectException e) {
+      throw new InvalidClassObjectException(this, e);
     }
   }
 }

@@ -257,11 +257,15 @@ public class ObjectIdManager {
             throw new IllegalStateException("The Object ID manager contains incompatible identifier for object: '" + object + "'", e);
           }
   
-          if (!object.equals(objectId.get())) {
-            // this exception proves that we cannot compare element infos ...
-            // if this happens a redesign is required
-            throw new IllegalStateException(String.format("Object '%s' is not object '%s' for objectId '%s'", object, objectId.get(),
-                                                          objectId));
+          try {
+            if (!object.equals(objectId.get())) {
+              // this exception proves that we cannot compare element infos ...
+              // if this happens a redesign is required
+              throw new IllegalStateException(String.format("Object '%s' is not object '%s' for objectId '%s'", object, objectId.get(),
+                                                            objectId));
+            }
+          } catch (InvalidObjectException e) {
+            throw new IllegalStateException("This should be a dead code since the null object is processed in a different if clause. Null objectId: " + objectId, e);
           }
   
         } else {
