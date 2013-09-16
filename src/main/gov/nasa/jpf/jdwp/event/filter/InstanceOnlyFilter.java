@@ -35,8 +35,10 @@ import java.util.Objects;
  * Restricts reported events to those whose active 'this' object is the given
  * object. Match value is the null object for static methods. This modifier can
  * be used with any event kind except class prepare, class unload, thread start,
- * and thread end. Introduced in JDWP version 1.4.
+ * and thread end.
  * </p>
+ * 
+ * @since JDWP version 1.4.
  * 
  * @author stepan
  * 

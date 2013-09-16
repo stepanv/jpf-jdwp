@@ -419,7 +419,7 @@ public class VirtualMachine {
     public static final boolean CAN_GET_MONITOR_FRAME_INFO = false;
 
     /** Can the VM filter class prepare events by source name? */
-    public static final boolean CAN_USE_SOURCE_NAME_FILTERS = true;
+    public static final boolean CAN_USE_SOURCE_NAME_FILTERS = false;
 
     /** Can the VM return the constant pool information? */
     public static final boolean CAN_GET_CONSTANT_POOL = false;

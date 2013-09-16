@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event.filter;
 
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.event.SourceNameMatchFilterable;
 
 /**
@@ -31,10 +32,11 @@ import gov.nasa.jpf.jdwp.event.SourceNameMatchFilterable;
  * have a source name which matches the given restricted regular expression. The
  * source names are determined by the reference type's SourceDebugExtension.
  * This modifier can only be used with class prepare events. <br/>
- * Since JDWP version 1.6. <br/>
- * Requires the canUseSourceNameFilters capability - see CapabilitiesNew.
+ * 
+ * Requires the {@link CapabilitiesNew#CAN_USE_SOURCE_NAME_FILTERS} capability.
  * </p>
  * 
+ * @since JDWP version 1.6.
  * @author stepan
  * 
  */

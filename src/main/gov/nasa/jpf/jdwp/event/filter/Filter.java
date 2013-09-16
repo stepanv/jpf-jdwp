@@ -21,10 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event.filter;
 
+import gov.nasa.jpf.jdwp.VirtualMachine;
+import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.command.ConvertibleEnum;
 import gov.nasa.jpf.jdwp.command.ReverseEnumMap;
 import gov.nasa.jpf.jdwp.event.Event;
+import gov.nasa.jpf.jdwp.event.SourceNameMatchFilterable;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.NotImplementedException;
@@ -231,19 +234,27 @@ public abstract class Filter<T extends Event> {
         return new InstanceOnlyFilter(objectId);
       }
     },
-    
+
     /**
      * <p>
      * Creates the Source name match filter/modifier of a possibly sent event.<br/>
-     * For further information refer to the {@link InstanceOnlyFilter}
-     * documentation.
+     * For further information refer to the {@link SourceNameMatchFilter}
+     * documentation.<br/>
+     * Requires {@link CapabilitiesNew#CAN_GET_SOURCE_DEBUG_EXTENSION}
+     * capability
      * </p>
+     * 
+     * @see SourceNameMatchFilter
+     * @see SourceNameMatchFilterable
+     * @see CapabilitiesNew#CAN_GET_SOURCE_DEBUG_EXTENSION
+     * @see CapabilitiesNew#CAN_USE_SOURCE_NAME_FILTERS
      */
     SOURCE_NAME_MATCH(12) {
       @Override
       public Filter<? extends Event> createFilter(ByteBuffer bytes, CommandContextProvider contextProvider) throws JdwpException {
-        String sourceNamePattern = JdwpString.read(bytes);
-        return new SourceNameMatchFilter(sourceNamePattern);
+        // should be ok as far as the associated capability is false
+        throw new NotImplementedException("Cannot use source name match filter because canGetDebugExtensions is false: "
+            + VirtualMachine.CapabilitiesNew.CAN_GET_SOURCE_DEBUG_EXTENSION);
       }
     };
 
