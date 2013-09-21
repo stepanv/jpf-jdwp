@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.event.filter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.nasa.jpf.jdwp.event.ExceptionEvent;
 import gov.nasa.jpf.jdwp.event.ExceptionOnlyFilterable;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
@@ -73,7 +76,11 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
     this.exceptionOrNull = exceptionOrNull;
     this.caught = caught;
     this.uncaught = uncaught;
+    
+    logger.info("EXCEPTION_ONLY: exception {} ... caught {} ... uncaugh {}", exceptionOrNull, caught, uncaught);
   }
+  
+  final static Logger logger = LoggerFactory.getLogger(ExceptionOnlyFilter.class);
 
   @Override
   public boolean matches(ExceptionOnlyFilterable event) {
@@ -81,6 +88,8 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
   }
 
   public boolean matches(ExceptionEvent event) {
+    logger.info("EXCEPTION_ONLY: FILTER: exception {} ... caught {} ... uncaugh {}", exceptionOrNull, caught, uncaught);
+    logger.info("EXCEPTION_ONLY: EVENT: exception {} ... caught {} ... uncaugh {} ... event object: {}", event.getException().getClassInfo(), event.isCaught(), !event.isCaught(), event);
 
     // we don't want caught exceptions
     if (event.isCaught() && !caught) {
@@ -109,5 +118,13 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
       return false;
     }
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    return super.toString() + sb.append(" exception: '").append(exceptionOrNull).append("' ... caught: '").append(caught).append("' ... uncaugh: '").append(uncaught).append("'");
+  }
+  
+  
 
 }

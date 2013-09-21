@@ -94,5 +94,10 @@ public class NullReferenceId extends IdentifierBase<ClassInfo> implements Refere
   public boolean isInterfaceType() {
     return true;
   }
+  
+  @Override
+  public String toString() {
+    return "NullReferenceId: ID: 0";
+  }
 
 }

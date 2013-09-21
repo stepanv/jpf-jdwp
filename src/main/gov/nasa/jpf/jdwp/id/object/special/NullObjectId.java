@@ -142,7 +142,10 @@ public class NullObjectId extends ObjectIdImpl implements ThreadId, ClassLoaderI
   public DynamicElementInfo getModifiable() throws NullPointerObjectException {
     throw new NullPointerObjectException();
   }
-  
-  
+
+  @Override
+  public String toString() {
+    return super.toString() + "NullObjectId: ID: 0";
+  }
 
 }

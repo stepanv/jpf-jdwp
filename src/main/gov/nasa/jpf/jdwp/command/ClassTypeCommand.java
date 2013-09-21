@@ -42,6 +42,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The {@link ClassTypeCommand} enum class implements the
  * {@link CommandSet#CLASSTYPE} set of commands. For the detailed specification
@@ -265,6 +268,8 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
 
     }
   };
+  
+  final static Logger logger = LoggerFactory.getLogger(ClassTypeCommand.class);
 
   private byte commandId;
 
@@ -287,6 +292,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
   @Override
   public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
     ReferenceTypeId classTypeId = contextProvider.getObjectManager().readClassTypeId(bytes);
+    logger.info("Class type: {}", classTypeId.get());
     execute(classTypeId.get(), bytes, os, contextProvider);
   }
 
