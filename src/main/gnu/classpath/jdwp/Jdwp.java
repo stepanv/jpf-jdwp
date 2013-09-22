@@ -276,8 +276,10 @@ public class Jdwp extends Thread {
     for (Event event : events) {
       resultSuspendPolicy = eventRequestManager.populateMatchedEventsAndCalculateSuspension(event, matchedEvents, resultSuspendPolicy);
     }
-
-    sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+    Jdwp jdwp = getDefault();
+    if (jdwp != null) {
+      jdwp.sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+    }
   }
 
   /**
@@ -296,16 +298,17 @@ public class Jdwp extends Thread {
 
     resultSuspendPolicy = eventRequestManager.populateMatchedEventsAndCalculateSuspension(event, matchedEvents, resultSuspendPolicy);
 
-    sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+    Jdwp jdwp = getDefault();
+    if (jdwp != null) {
+      jdwp.sendEventsAndDoSuspend(matchedEvents, resultSuspendPolicy);
+    }
   }
 
-  private static void sendEventsAndDoSuspend(List<Event> events, SuspendPolicy resultSuspendPolicy) {
-    Jdwp jdwp = getDefault();
-
-    if (jdwp != null && events.size() > 0) {
+  private void sendEventsAndDoSuspend(List<Event> events, SuspendPolicy resultSuspendPolicy) {
+    if (events.size() > 0) {
       try {
         sendEvents(events, resultSuspendPolicy);
-        resultSuspendPolicy.doSuspend(jdwp.vm);
+        resultSuspendPolicy.doSuspend(vm);
       } catch (JPFException jpfe) {
         /*
          * A JPF generated an exception. Let's not pretend nothing happened
@@ -336,16 +339,15 @@ public class Jdwp extends Thread {
    * @throws IOException
    *           if a communications failure occurs
    */
-  public static void sendEvents(List<Event> events, SuspendPolicy suspendPolicy) throws IOException {
-    Jdwp jdwp = getDefault();
-    if (jdwp != null && isDebugging) {
-      synchronized (jdwp.holdEventsList) {
-        if (jdwp.holdEvents) {
+  public void sendEvents(List<Event> events, SuspendPolicy suspendPolicy) throws IOException {
+    if (isDebugging) {
+      synchronized (holdEventsList) {
+        if (holdEvents) {
           // put it into a queue
-          jdwp.holdEventsList.add(new HoldEvents(events, suspendPolicy));
+          holdEventsList.add(new HoldEvents(events, suspendPolicy));
         } else {
-          synchronized (jdwp._connection) {
-            jdwp._connection.sendEvents(events, suspendPolicy);
+          synchronized (_connection) {
+            _connection.sendEvents(events, suspendPolicy);
           }
         }
       }

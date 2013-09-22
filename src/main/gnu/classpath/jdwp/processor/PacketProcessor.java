@@ -172,6 +172,12 @@ public class PacketProcessor implements PrivilegedAction {
       } catch (gov.nasa.jpf.jdwp.exception.JdwpException e) {
         logger.info("Command {} returns an error", commandPkt.getCommand(), e);
         reply.setErrorCode(e.getErrorType().identifier());
+      } catch (RuntimeException e) {
+        e.printStackTrace();
+        throw e;
+      } catch (Error e) {
+        e.printStackTrace();
+        throw e;
       }
 
       _connection.sendPacket(reply);
