@@ -101,7 +101,6 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
     public void execute(ElementInfo threadGroupElementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
 
       // we need to find out the number of non-null threads and non-null groups
-      // firlst
       ByteArrayOutputStream childrenOs = new ByteArrayOutputStream(0);
       DataOutputStream childrenDos = new DataOutputStream(childrenOs);
 
@@ -111,7 +110,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
 
       int childThreads = 0;
 
-      for (int i = 0; i < threads.arrayLength(); i++) {
+      for (int i = 0; threads != null && i < threads.arrayLength(); i++) {
         Value value = ValueUtils.arrayIndexToValue(threads, i);
         if (value instanceof ThreadId && !((ThreadId) value).isNull()) {
           ThreadInfo thread = ((ThreadId) value).getThreadInfo();
@@ -132,7 +131,7 @@ public enum ThreadGroupReferenceCommand implements Command, ConvertibleEnum<Byte
       ElementInfo groups = contextProvider.getVM().getHeap().get(groupsref);
 
       int childGroups = 0;
-      for (int i = 0; i < groups.arrayLength(); i++) {
+      for (int i = 0; groups != null && i < groups.arrayLength(); i++) {
         // from the ThreadGroup implementation it seems all groups are active
         // (if the VM is not running which is a JPF case)
         Value value = ValueUtils.arrayIndexToValue(groups, i);
