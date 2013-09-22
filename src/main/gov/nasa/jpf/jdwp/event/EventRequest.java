@@ -99,8 +99,18 @@ public class EventRequest<T extends Event> {
       return suspendPolicyId < otherSuspendPolicy.suspendPolicyId;
     }
 
+    /**
+     * Suspends the virtual machine or the thread.
+     * 
+     * @param vm
+     *          The virtual machine instance.
+     * 
+     * @see SuspendPolicy#EVENT_THREAD
+     * @see SuspendPolicy#ALL
+     */
     public void doSuspend(VirtualMachine vm) {
       // do nothing by default
+      // see overridden methods
     }
   }
 
