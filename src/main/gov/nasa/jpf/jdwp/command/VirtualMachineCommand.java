@@ -190,7 +190,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
       List<ElementInfo> topLevelThreadGroups = new ArrayList<ElementInfo>();
 
       for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
-        int group = threadInfo.getThreadGroupRef();
+        int group = threadInfo.getThreadObject().getReferenceField(JdwpConstants.FIELDNAME_THREAD_GROUP);
         ElementInfo threadGroupElementInfo = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
 
         int parentref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_PARENT);
