@@ -28,6 +28,7 @@ import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.ThreadNotSuspendedException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
+import gov.nasa.jpf.jdwp.exception.id.object.InvalidObjectException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.ThreadId;
@@ -75,6 +76,10 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     @Override
     public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ElementInfo elementInfo = objectId.get();
+      
+      if (elementInfo == null) {
+        throw new InvalidObjectException(objectId);
+      }
 
       ClassInfo classInfo = elementInfo.getClassInfo();
 
@@ -112,6 +117,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
         }
 
         Value value = ValueUtils.fieldToValue(obj, field);
+        logger.trace("Value get: {}", value);
         value.writeTagged(os);
       }
 
@@ -150,6 +156,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
         ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
         Tag tag = Tag.classInfoToTag(fieldClassInfo);
         Value valueUntagged = tag.readValue(bytes);
+        
+        logger.trace("Value set: {}", valueUntagged);
 
         // set the value into the object's field
         valueUntagged.modify(obj, fieldInfo);
