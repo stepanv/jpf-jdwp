@@ -118,4 +118,13 @@ public class FieldAccessEvent extends LocatableEvent implements LocationOnlyFilt
     return fieldInfo;
   }
 
+  @Override
+  public String toString() {
+    StringBuffer sb = new StringBuffer();
+    sb.append(" [Field: ").append(fieldInfo).append("], [Object being accessed: ").append(objectBeingAccessed).append("]");
+    return super.toString() + sb.toString();
+  }
+  
+  
+
 }

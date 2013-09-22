@@ -59,7 +59,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
   // this is really unused - has to be discussed in my thesis!
   private ClassInfo fieldType;
-  
+
   private FieldInfo fieldInfo;
   private ElementInfo objectBeingModified;
   private Tag tag;
@@ -98,6 +98,10 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
   }
 
+  private Value resolveValueToBe() {
+    return tag.peekValue(stackFrame);
+  }
+
   @Override
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
     JdwpIdManager objectManager = JdwpIdManager.getInstance();
@@ -116,7 +120,7 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
     // get the value now
     // it wasn't needed sooner
-    Value value = tag.peekValue(stackFrame);
+    Value value = resolveValueToBe();
     value.writeTagged(os);
   }
 
@@ -132,7 +136,8 @@ public class FieldModificationEvent extends LocatableEvent implements LocationOn
 
   @Override
   public String toString() {
-    return super.toString() + ", field: " + fieldInfo;
+    StringBuffer sb = new StringBuffer();
+    sb.append(" [Field: ").append(fieldInfo).append("], [Object being modified: ").append(objectBeingModified).append("], [Value to be: ").append(resolveValueToBe()).append("]");
+    return super.toString() + sb.toString();
   }
-
 }
