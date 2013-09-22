@@ -80,12 +80,22 @@ public class FieldVisitor extends InstructionVisitorAdapter {
 
   @Override
   public void visit(GETFIELD ins) {
-    fieldAccess(ins, ins.getLastElementInfo());
+    // peek must be used since the conditions for getLastThis are not satisfied
+    ElementInfo object = ins.peekElementInfo(threadInfo);
+    if (object == null) {
+    	throw new IllegalStateException("Associated object not found!");
+    }
+    fieldAccess(ins, object);
   }
 
   @Override
   public void visit(PUTFIELD ins) {
-    fieldModification(ins, ins.getLastElementInfo());
+    // peek must be used since the conditions for getLastThis are not satisfied
+    ElementInfo object = ins.peekElementInfo(threadInfo);
+    if (object == null) {
+      throw new IllegalStateException("Associated object not found!");
+    }
+    fieldModification(ins, object);
   }
 
   @Override
