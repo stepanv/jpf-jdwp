@@ -211,6 +211,7 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
     } catch (JdwpException e) {
       chainError = e;
     } finally {
+      logger.trace("Command ended: {} (class: {})", command, command.getClass());
       contextProvider.getVirtualMachine().getRunLock().unlock();
 
       // This is how we detect JPF has terminated
