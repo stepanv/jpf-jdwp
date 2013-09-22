@@ -629,9 +629,6 @@ public class ObjectIdManager {
    * @return The identifier for the given array.
    */
   public ArrayId getArrayId(ElementInfo elementInfo) {
-    if (!elementInfo.isArray()) {
-      throw new IllegalStateException("Given element info '" + elementInfo + "' is not an array!");
-    }
     return arrayIdFactory.getIdentifier(elementInfo);
   }
 
@@ -647,9 +644,6 @@ public class ObjectIdManager {
    * @return The identifier for the given thread group.
    */
   public ThreadGroupId getThreadGroupId(ElementInfo elementInfo) {
-    if (!elementInfo.getClassInfo().isInstanceOf("java.lang.ThreadGroup")) {
-      throw new IllegalStateException("Given element info '" + elementInfo + "' is not a thread group!");
-    }
     return threadGroupIdFactory.getIdentifier(elementInfo);
   }
 
