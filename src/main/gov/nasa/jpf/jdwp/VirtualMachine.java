@@ -112,7 +112,7 @@ public class VirtualMachine {
 
     logger.info("Sending postponed class loads.");
     for (ClassInfo classInfo : postponedLoadedClasses) {
-      Event event = new ClassPrepareEvent(vm.getCurrentThread(), classInfo, 0);
+      Event event = new ClassPrepareEvent(vm.getCurrentThread(), classInfo);
       Jdwp.notify(event);
     }
     postponedLoadedClasses.clear();
@@ -499,8 +499,9 @@ public class VirtualMachine {
         }
       } else {
         threadContextDataMap.put(threadIntId, 0);
-
-        throw new RuntimeException("ThreadInfo : " + threadInfo + " not known!");
+        
+        // TODO this is a huge bug candidate - solve IDs for threads!
+        //throw new RuntimeException("ThreadInfo : " + threadInfo + " not known!");
       }
     }
 

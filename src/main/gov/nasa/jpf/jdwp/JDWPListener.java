@@ -275,7 +275,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     // it?
     if (vm.getCurrentThread() != null && vm.isInitialized()) {
       logger.debug("Class loaded: {}", loadedClass);
-      ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass, 0);
+      ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(vm.getCurrentThread(), loadedClass);
       dispatchEvent(classPrepareEvent);
     } else {
       logger.info("Not notifying about class load: {}", loadedClass);

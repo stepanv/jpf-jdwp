@@ -144,8 +144,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
         id.writeTagged(os);
         JdwpString.write(clazz.getSignature(), os);
 
-        // write the VERIFIED status since JPF doesn't implement them
-        ClassStatus.VERIFIED.write(os);
+        os.writeInt(ClassStatus.classStatus(clazz));
       }
     }
   },
@@ -191,7 +190,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
       for (ThreadInfo threadInfo : VM.getVM().getLiveThreads()) {
         int group = threadInfo.getThreadObject().getReferenceField(JdwpConstants.FIELDNAME_THREAD_GROUP);
-        ElementInfo threadGroupElementInfo = contextProvider.getVirtualMachine().getJpf().getVM().getHeap().get(group);
+        ElementInfo threadGroupElementInfo = contextProvider.getVM().getHeap().get(group);
 
         int parentref = threadGroupElementInfo.getReferenceField(JdwpConstants.FIELDNAME_THREADGROUP_PARENT);
         ElementInfo parent = contextProvider.getVM().getHeap().get(parentref);
@@ -615,7 +614,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
         id.writeTagged(os);
         JdwpString.write(clazz.getSignature(), os);
         JdwpString.writeNullAsEmpty(clazz.getGenericSignature(), os);
-        ClassStatus.VERIFIED.write(os);
+        os.writeInt(ClassStatus.classStatus(clazz));
       }
 
     }

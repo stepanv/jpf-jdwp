@@ -32,6 +32,7 @@ import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
 import gov.nasa.jpf.jdwp.id.FieldId;
 import gov.nasa.jpf.jdwp.id.object.ClassObjectId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
+import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.value.JdwpString;
 import gov.nasa.jpf.jdwp.value.PrimitiveValue.Tag;
@@ -102,10 +103,14 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
       ClassLoaderInfo classLoaderInfo = classInfo.getClassLoaderInfo();
 
       logger.debug("class info: {} has class loader: {}", classInfo, classLoaderInfo);
-
-      // the null object is for the system classloader
-      ObjectId objectId = contextProvider.getObjectManager().getClassLoaderId(classLoaderInfo);
-      objectId.write(os);
+      
+      if (classLoaderInfo.isSystemClassLoader()) {
+        // the null object is for the system classloader
+        NullObjectId.instantWrite(os);
+      } else {
+        ObjectId objectId = contextProvider.getObjectManager().getClassLoaderId(classLoaderInfo);
+        objectId.write(os);
+      }
     }
   },
 
@@ -249,7 +254,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
    * the VM specification. If the class is linked the PREPARED and VERIFIED bits
    * in the returned status bits will be set. If the class is initialized the
    * INITIALIZED bit in the returned status bits will be set. If an error
-   * occured during initialization then the ERROR bit in the returned status
+   * occurred during initialization then the ERROR bit in the returned status
    * bits will be set. The returned status bits are undefined for array types
    * and for primitive classes (such as java.lang.Integer.TYPE).
    * </p>
@@ -257,8 +262,7 @@ public enum ReferenceTypeCommand implements Command, ConvertibleEnum<Byte, Refer
   STATUS(9) {
     @Override
     protected void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      // In JPF there are not any other states
-      ClassStatus.VERIFIED.write(os);
+      os.writeInt(ClassStatus.classStatus(classInfo));
     }
   },
 

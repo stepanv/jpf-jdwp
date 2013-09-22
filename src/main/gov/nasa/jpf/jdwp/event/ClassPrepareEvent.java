@@ -48,10 +48,14 @@ import java.io.IOException;
 public class ClassPrepareEvent extends ThreadableEvent implements Threadable, ClassFilterable, ClassOnlyFilterable,
     SourceNameMatchFilterable {
 
-  private int status;
   private ClassInfo classInfo;
 
   /**
+   * Constructs the {@link ClassPrepareEvent} event.
+   * 
+   * <p>
+   * The class status is calculated from the given classInfo parameter hence
+   * it's not a part of the contract.
    * 
    * @param currentThread
    *          Preparing thread. In rare cases, this event may occur in a
@@ -69,22 +73,18 @@ public class ClassPrepareEvent extends ThreadableEvent implements Threadable, Cl
    *          created by the target VM during its normal (non-debug) operation.
    * @param classInfo
    *          Type being prepared
-   * @param status
-   *          Status of type. See {@link ClassStatus}.
    */
-  public ClassPrepareEvent(ThreadInfo currentThread, ClassInfo classInfo, int status) {
+  public ClassPrepareEvent(ThreadInfo currentThread, ClassInfo classInfo) {
     super(EventKind.CLASS_PREPARE, currentThread);
 
     this.classInfo = classInfo;
-    this.status = status;
-
   }
 
   @Override
   protected void writeThreadableSpecific(DataOutputStream os) throws IOException {
     JdwpIdManager.getInstance().getReferenceTypeId(classInfo).writeTagged(os);
     JdwpString.write(classInfo.getSignature(), os);
-    os.writeInt(status);
+    os.writeInt(ClassStatus.classStatus(classInfo));
   }
 
   @Override

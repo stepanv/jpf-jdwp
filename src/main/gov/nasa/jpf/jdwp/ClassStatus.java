@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp;
 
+import gov.nasa.jpf.jdwp.command.IdentifiableEnum;
+import gov.nasa.jpf.vm.ClassInfo;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -36,7 +39,7 @@ import java.io.IOException;
  * @author stepan
  * 
  */
-public enum ClassStatus {
+public enum ClassStatus implements IdentifiableEnum<Integer>{
   VERIFIED(1), PREPARED(2), INITIALIZED(4), ERROR(8);
 
   private int statusId;
@@ -51,6 +54,14 @@ public enum ClassStatus {
     this.statusId = statusId;
   }
 
+  /* (non-Javadoc)
+   * @see gov.nasa.jpf.jdwp.command.IdentifiableEnum#identifier()
+   */
+  @Override
+  public Integer identifier() {
+    return statusId;
+  }
+
   /**
    * Writes the status to the output stream.
    * 
@@ -62,4 +73,18 @@ public enum ClassStatus {
   public void write(DataOutputStream os) throws IOException {
     os.writeInt(statusId);
   }
+  
+  public static int classStatus(ClassInfo classInfo) {
+    if (classInfo.isInitialized()) {
+      // class is fully working return all bits
+      return VERIFIED.identifier() | PREPARED.identifier() | INITIALIZED.identifier();
+    } else if (classInfo.isInitializing()) {
+      return VERIFIED.identifier() | PREPARED.identifier();
+    } else {
+      return VERIFIED.identifier();
+    }
+    
+    // TODO error state is not possible?
+  }
+
 }
