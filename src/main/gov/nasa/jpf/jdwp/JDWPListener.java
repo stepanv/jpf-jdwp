@@ -211,6 +211,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   public void threadStarted(VM vm, ThreadInfo startedThread) {
     if (hasNonnullEventRequests(EventKind.THREAD_START)) {
       // TODO Waiting for fix in JPF - already submitted to Peter
+      startedThread.setState(State.RUNNING);
       lastKnownThreadStates.put(startedThread.getThreadObjectRef(), State.RUNNING);
       logger.info("Started thread: " + startedThread);
 
