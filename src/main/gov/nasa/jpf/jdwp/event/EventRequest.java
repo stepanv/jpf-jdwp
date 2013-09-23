@@ -32,7 +32,6 @@ import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.VM;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -61,17 +60,24 @@ public class EventRequest<T extends Event> {
     EVENT_THREAD(1) {
 
       @Override
-      public void doSuspend(VirtualMachine vm) {
-        ThreadInfo currentThread = VM.getVM().getCurrentThread();
-        vm.getExecutionManager().markThreadSuspended(currentThread);
-        vm.getExecutionManager().blockVMExecution();
+      public void doSuspend(VirtualMachine vm, List<Event> events) {
+        for (Event event : events) {
+          // it should not matter which event we pick - all of them are supposed to be for the same thread
+          if (event instanceof Threadable) {
+            ThreadInfo currentThread = ((Threadable) event).getThread();
+            vm.getExecutionManager().markThreadSuspended(currentThread);
+            vm.getExecutionManager().blockVMExecution();
+            return;
+          }
+        }
+        throw new IllegalStateException("Using suspend thread with nonthreadable events! " + events);
       }
     },
 
     /** Suspend all threads when this event is encountered. */
     ALL(2) {
       @Override
-      public void doSuspend(VirtualMachine vm) {
+      public void doSuspend(VirtualMachine vm, List<Event> events) {
         vm.getExecutionManager().markVMSuspended();
         vm.getExecutionManager().blockVMExecution();
       }
@@ -104,11 +110,12 @@ public class EventRequest<T extends Event> {
      * 
      * @param vm
      *          The virtual machine instance.
+     * @param events 
      * 
      * @see SuspendPolicy#EVENT_THREAD
      * @see SuspendPolicy#ALL
      */
-    public void doSuspend(VirtualMachine vm) {
+    public void doSuspend(VirtualMachine vm, List<Event> events) {
       // do nothing by default
       // see overridden methods
     }

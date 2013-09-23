@@ -308,7 +308,7 @@ public class Jdwp extends Thread {
     if (events.size() > 0) {
       try {
         sendEvents(events, resultSuspendPolicy);
-        resultSuspendPolicy.doSuspend(vm);
+        resultSuspendPolicy.doSuspend(vm, events);
       } catch (JPFException jpfe) {
         /*
          * A JPF generated an exception. Let's not pretend nothing happened
