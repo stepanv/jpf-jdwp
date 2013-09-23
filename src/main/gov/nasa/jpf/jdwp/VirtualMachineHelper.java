@@ -30,6 +30,7 @@ import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.Value;
 import gov.nasa.jpf.jdwp.value.ValueUtils;
+import gov.nasa.jpf.jvm.bytecode.InstructionFactory;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
@@ -39,6 +40,7 @@ import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Fields;
 import gov.nasa.jpf.vm.Heap;
+import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
@@ -196,8 +198,25 @@ public class VirtualMachineHelper {
     // we're not able to achieve this with JPF since JPF would inspect all
     // states and report where the deadlock occurs
 
-    logger.info("Executing method: " + method + " of object instance: " + object);
+    logger.info("Executding method '{}' in thread '{}' of object instance '{}'", method, thread, object );
+    
+    boolean noTopFrame = false;
+    if (thread.getTopFrame() == null) {
+      // when we exit the direct frame the thread will be TERMINATED which is definitively something we don't want
+      noTopFrame = true;
+      
+      MethodInfo blockingMethod = new MethodInfo(method, 0, 0);
+      blockingMethod.setCode(new Instruction[] {InstructionFactory.getFactory().nop()});
+      
+      DirectCallStackFrame blockingFrame = blockingMethod.createRunStartStackFrame(thread);
+      blockingFrame.setFireWall();
+      
+      thread.setTopFrame(blockingFrame);
+    }
 
+    
+    
+    
     DirectCallStackFrame frame = method.createDirectCallStackFrame(thread, values.length);
     frame.setFireWall();
 
@@ -243,6 +262,10 @@ public class VirtualMachineHelper {
       thread.popFrame(); // this is still the DirectCallStackFrame, and we
       // want to continue execution
       return new MethodResult(NullObjectId.getInstance(), exception);
+    } finally {
+      if (noTopFrame) {
+        thread.popDirectCallFrame();
+      }
     }
 
     Value returnValue;
