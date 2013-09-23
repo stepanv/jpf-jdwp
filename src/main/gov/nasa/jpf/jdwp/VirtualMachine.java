@@ -480,33 +480,41 @@ public class VirtualMachine {
     private final Map<Integer, Integer> threadContextDataMap = new HashMap<Integer, Integer>();
 
     public synchronized void suspensionCountInc(ThreadInfo threadInfo) {
-      int threadIntId = threadInfo.getId();
+      int suspensionCount = 1;
+      int threadIntId = threadInfo.getThreadObjectRef();
+      
       if (threadContextDataMap.containsKey(threadIntId)) {
-        int suspensionCount = threadContextDataMap.get(threadIntId);
+        suspensionCount = threadContextDataMap.get(threadIntId);
         threadContextDataMap.put(threadIntId, ++suspensionCount);
       } else {
-        threadContextDataMap.put(threadIntId, 1);
+        threadContextDataMap.put(threadIntId, suspensionCount);
       }
-
+      
+      logger.debug("Suspension count of thread {} increased to: {}", threadInfo, suspensionCount);
     }
 
     public synchronized void suspensionCountDec(ThreadInfo threadInfo) {
-      int threadIntId = threadInfo.getId();
+      int suspensionCount = 0;
+      int threadIntId = threadInfo.getThreadObjectRef();
+      
       if (threadContextDataMap.containsKey(threadIntId)) {
-        int suspensionCount = threadContextDataMap.get(threadIntId);
+        suspensionCount = threadContextDataMap.get(threadIntId);
         if (suspensionCount > 0) {
           threadContextDataMap.put(threadIntId, --suspensionCount);
         }
       } else {
-        threadContextDataMap.put(threadIntId, 0);
-        
-        // TODO this is a huge bug candidate - solve IDs for threads!
-        //throw new RuntimeException("ThreadInfo : " + threadInfo + " not known!");
+        // this can really happen - we don't have a thread and it is being suspended
+        // if a thread is started it's not here yet, then some other thread is suspended
+        // this new thread is not here yet and then all threads are resumed and bang
+        // we're here
+        threadContextDataMap.put(threadIntId, suspensionCount);
       }
+      
+      logger.debug("Suspension count of thread {} decreased to: {}", threadInfo, suspensionCount);
     }
 
     public synchronized int suspensionCount(ThreadInfo threadInfo) {
-      int threadIntId = threadInfo.getId();
+      int threadIntId = threadInfo.getThreadObjectRef();
       if (threadContextDataMap.containsKey(threadIntId)) {
         return threadContextDataMap.get(threadIntId);
       } else {
