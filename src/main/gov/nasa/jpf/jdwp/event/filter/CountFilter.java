@@ -86,4 +86,12 @@ public class CountFilter extends Filter<Event> {
     return count == 0;
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(" [count: ").append(count).append("]");
+    return super.toString() + sb;
+  }
+  
+  
+
 }

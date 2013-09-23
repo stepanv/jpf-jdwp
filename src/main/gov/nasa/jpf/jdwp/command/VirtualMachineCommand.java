@@ -168,6 +168,7 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
 
       for (ThreadInfo thread : threadList) {
         if (thread.isAlive()) {
+          logger.trace("Thread: {}", thread);
           contextProvider.getObjectManager().getThreadId(thread).write(os);
         }
       }
@@ -353,6 +354,8 @@ public enum VirtualMachineCommand implements Command, ConvertibleEnum<Byte, Virt
     public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       // is invoked when inspecting an array field for instance
       String string = JdwpString.read(bytes);
+      
+      logger.debug("String value: {}", string);
 
       // JPF requires a thread to create an ElementInfo
       // There is no better thread than the current so let's use it

@@ -294,7 +294,7 @@ public abstract class EventBase implements Event {
 
       for (Event event : matchedEvents) {
         for (EventRequest<? extends Event> eventRequest : event.matchingEventRequests()) {
-          logger.info(" >>>>>>>>> Sending event: {} for request: {}", event, eventRequest);
+          logger.info(" >>>>>>>>> Sending event: {} for request: {} ... suspend policy: {}", event, eventRequest, suspendPolicy);
           event.write(eventsOutputStream, eventRequest.getId());
           events++;
         }

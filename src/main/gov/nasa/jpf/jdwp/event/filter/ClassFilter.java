@@ -96,4 +96,11 @@ public abstract class ClassFilter extends Filter<ClassFilterable> {
     return className.equals(classPattern);
   }
 
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(" [class pattern: ").append(classPattern).append("]");
+    return super.toString() + sb;
+  }
+
 }
