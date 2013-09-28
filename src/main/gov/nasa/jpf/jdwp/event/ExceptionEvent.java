@@ -25,8 +25,11 @@ import gov.nasa.jpf.jdwp.event.filter.ExceptionOnlyFilter;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.type.Location;
+import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.VM;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -100,6 +103,12 @@ public class ExceptionEvent extends LocatableEvent implements ExceptionOnlyFilte
 
   @Override
   protected void writeLocatableSpecific(DataOutputStream os) throws IOException {
+    if (exception == null) {
+      // property violation
+      ClassInfo c = ClassLoaderInfo.getSystemResolvedClassInfo("javax.xml.bind.PropertyException");
+      ElementInfo ei = VM.getVM().getHeap().newObject(c, getThread());
+      exception = ei;
+    }
     ObjectId objectId = JdwpIdManager.getInstance().getObjectId(exception);
     objectId.writeTagged(os);
     if (catchLocation == null) {

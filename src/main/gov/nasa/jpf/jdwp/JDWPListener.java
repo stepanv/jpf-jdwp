@@ -517,31 +517,31 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
   @Override
   public void stateBacktracked(Search search) {
-    logger.trace("Processing search");
+    logger.trace("State backtracked: {}");
     fixThreadNotificationState();
   }
 
   @Override
   public void stateAdvanced(Search search) {
-    logger.trace("Processing search");
+    logger.trace("State advanced: {}", search);
     fixThreadNotificationState();
   }
 
   @Override
   public void stateProcessed(Search search) {
-    logger.trace("Processing search");
+    logger.trace("State processed: {}", search);
     fixThreadNotificationState();
   }
 
   @Override
   public void statePurged(Search search) {
-    logger.trace("Processing search");
+    logger.trace("State purged: {}", search);
     fixThreadNotificationState();
   }
 
   @Override
   public void stateStored(Search search) {
-    logger.trace("Processing search");
+    logger.trace("State stored: {}", search);
     fixThreadNotificationState();
   }
 
@@ -569,6 +569,16 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
       // Exception could have been thrown from both locked and unlocked
       // sections
       virtualMachine.getRunLock().unlockIfOwned();
+    }
+  }
+
+  @Override
+  public void propertyViolated(Search search) {
+    Instruction instruction = search.getVM().getInstruction();
+    ThreadInfo currentThread = ThreadInfo.getCurrentThread();
+    if (instruction != null) {
+      ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), null, null);
+      dispatchEvent(exceptionEvent);
     }
   }
 

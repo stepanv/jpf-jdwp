@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * @author stepan
  * 
  */
-public class JDWPSearchBase extends JDWPListenerBase implements SearchListener {
+public abstract class JDWPSearchBase extends JDWPListenerBase implements SearchListener {
 
   final static Logger logger = LoggerFactory.getLogger(JDWPListenerBase.class);
 
@@ -70,12 +70,6 @@ public class JDWPSearchBase extends JDWPListenerBase implements SearchListener {
 
   @Override
   public void stateRestored(Search search) {
-    logger.trace("Processing search");
-
-  }
-
-  @Override
-  public void propertyViolated(Search search) {
     logger.trace("Processing search");
 
   }

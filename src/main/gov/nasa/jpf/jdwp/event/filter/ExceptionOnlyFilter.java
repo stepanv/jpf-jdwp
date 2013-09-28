@@ -105,8 +105,12 @@ public class ExceptionOnlyFilter extends Filter<ExceptionOnlyFilterable> {
       // return exception of all types as the specs states
       return true;
     }
-
+    
     ElementInfo exception = event.getException();
+    if (exception == null) {
+    	// this should be property violation kind
+    	return true;
+    }
     ClassInfo exceptionClassInfo = exception.getClassInfo();
 
     try {
