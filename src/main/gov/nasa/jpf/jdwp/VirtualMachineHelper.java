@@ -22,10 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp;
 
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
-import gov.nasa.jpf.jdwp.exception.JdwpException;
-import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
-import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.object.special.NullObjectId;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -145,21 +142,6 @@ public class VirtualMachineHelper {
       }
     }
     return frameCount;
-  }
-
-  public static MethodInfo getClassMethod(ClassInfo clazz, long id) throws JdwpException {
-    logger.debug("looking for METHOD global id:  of CLASS: {}", id, clazz);
-    for (MethodInfo methodInfo : clazz.getDeclaredMethodInfos()) {
-      if (id == methodInfo.getGlobalId()) {
-        logger.debug("METHOD found: {}", methodInfo);
-        return methodInfo;
-      }
-    }
-    // also try super types
-    if (clazz.getSuperClass() != null) {
-      return getClassMethod(clazz.getSuperClass(), id);
-    }
-    throw new InvalidMethodIdException(new MethodId(id));
   }
 
   /**

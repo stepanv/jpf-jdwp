@@ -80,7 +80,7 @@ public class FrameId extends IdentifierBase<StackFrame> {
    * @param depth
    *          The depth of the frame of the given thread's call stack.
    */
-  public FrameId(ThreadInfo threadInfo, int depth) {
+  FrameId(ThreadInfo threadInfo, int depth) {
     this(threadInfo.getThreadObjectRef(), depth);
   }
 
@@ -95,7 +95,7 @@ public class FrameId extends IdentifierBase<StackFrame> {
    * @param id
    *          The frame ID.
    */
-  public FrameId(long id) {
+  FrameId(long id) {
     this(toThreadRef(id), toDepth(id));
   }
 

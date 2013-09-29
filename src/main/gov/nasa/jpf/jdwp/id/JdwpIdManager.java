@@ -24,6 +24,7 @@ package gov.nasa.jpf.jdwp.id;
 import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidFrameIdException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.jdwp.exception.id.type.InvalidArrayTypeException;
 import gov.nasa.jpf.jdwp.exception.id.type.InvalidClassTypeException;
 import gov.nasa.jpf.jdwp.exception.id.type.InvalidReferenceTypeException;
@@ -132,6 +133,7 @@ public class JdwpIdManager extends ObjectIdManager {
   private ReferenceIdManager referenceIdManager = new ReferenceIdManager();
   private FrameIdManager frameIdManager = new FrameIdManager();
   private FieldIdManager fieldIdManager = new FieldIdManager();
+  private MethodIdManager methodIdManager = new MethodIdManager();
 
   /**
    * All Reference IDs manager.<br/>
@@ -217,6 +219,84 @@ public class JdwpIdManager extends ObjectIdManager {
      */
     public FrameId getIdentifierId(ThreadInfo threadInfo, int i) {
       return new FrameId(threadInfo, i);
+    }
+
+  }
+
+  /**
+   * All the methods ID manager.</br> This manager relies on
+   * {@link MethodInfo#getGlobalId()} global ID that is promised to be unique
+   * not only for a {@link ClassInfo} instance which would be just fine but also
+   * for the whole Classloader and the classes it loaded.
+   * 
+   * @author stepan
+   * 
+   */
+  private static class MethodIdManager extends IdManager<MethodId, MethodInfo, InvalidMethodIdException> {
+
+    @Override
+    public MethodId createIdentifier(Long id, MethodInfo stackFrame) {
+      throw new UnsupportedOperationException("This method is not supported!");
+    }
+
+    @Override
+    public InvalidMethodIdException identifierNotFound(long id) {
+      return new InvalidMethodIdException(id);
+    }
+
+    @Override
+    public synchronized MethodId getIdentifierId(MethodInfo method) {
+      return new MethodId(method);
+    }
+
+    /**
+     * Reads the identifier from the buffer of bytes and verifies that the
+     * method is also declared in the provided class or its supertypes.
+     * 
+     * @param classInfo
+     *          The class.
+     * @param bytes
+     *          The buffer of bytes.
+     * @return The method ID.
+     * @throws InvalidMethodIdException
+     *           If the given ID is not valid method.
+     */
+    MethodId readIdentifier(ClassInfo classInfo, ByteBuffer bytes) throws InvalidMethodIdException {
+      long id = bytes.getLong();
+
+      MethodId methodId = new MethodId(id);
+
+      if (methodId.get() != methodInfoLookup(classInfo, id)) {
+        throw identifierNotFound(id);
+      }
+      return methodId;
+    }
+
+    /**
+     * Recursively looks up a method in the given class and its supertypes.
+     * 
+     * @param classInfo
+     *          The class.
+     * @param id
+     *          The ID of the method.
+     * @return The method info.
+     * @throws InvalidMethodIdException
+     *           If the given ID doesn't stand for a method or the method is not
+     *           declared by the provided class or its supertypes.
+     */
+    private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws InvalidMethodIdException {
+      logger.debug("looking for METHOD global id: {} of CLASS: {}", id, classInfo);
+      for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
+        if (id == methodInfo.getGlobalId()) {
+          logger.trace("METHOD found: {}", methodInfo);
+          return methodInfo;
+        }
+      }
+      // also try super types
+      if (classInfo.getSuperClass() != null) {
+        return methodInfoLookup(classInfo.getSuperClass(), id);
+      }
+      throw new InvalidMethodIdException(new MethodId(id));
     }
 
   }
@@ -328,14 +408,28 @@ public class JdwpIdManager extends ObjectIdManager {
   }
 
   /**
-   * Gets or creates an ID for the given frame.
+   * Gets or creates an ID for a frame at the call stack depth of the given
+   * thread.
    * 
-   * @param stackFrame
-   *          The frame.
+   * @param thread
+   *          The thread of which the frame is looked for.
+   * @param depth
+   *          The call stack depth where to get the frame at.
    * @return The ID that represents the given frame.
    */
   public FrameId getFrameId(ThreadInfo thread, int depth) {
     return frameIdManager.getIdentifierId(thread, depth);
+  }
+
+  /**
+   * Gets or creates an ID for the given method.
+   * 
+   * @param methodInfo
+   *          The method.
+   * @return The ID that represents the given method.
+   */
+  public MethodId getMethodId(MethodInfo methodInfo) {
+    return methodIdManager.getIdentifierId(methodInfo);
   }
 
   /**
@@ -362,6 +456,19 @@ public class JdwpIdManager extends ObjectIdManager {
    */
   public FrameId readFrameId(ByteBuffer bytes) throws InvalidIdentifierException {
     return frameIdManager.readIdentifier(bytes);
+  }
+
+  /**
+   * Reads a method ID from the given buffer of bytes.
+   * 
+   * @param bytes
+   *          The buffer of bytes to read the ID from.
+   * @return The method ID.
+   * @throws InvalidIdentifierException
+   *           If given ID is not a valid ID of a method.
+   */
+  public MethodId readMethodId(ClassInfo classInfo, ByteBuffer bytes) throws InvalidIdentifierException {
+    return methodIdManager.readIdentifier(classInfo, bytes);
   }
 
 }

@@ -21,13 +21,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.vm.MethodInfo;
 
 /**
  * This class implements the corresponding <code>methodID</code> common data
  * type from the JDWP Specification.
+ * 
+ * <p>
+ * All the methods in the JPF are promised to have a unique ID which is true for
+ * one classloader. Therefore these IDs can be safely used since the IDs are
+ * definitively unique for any clazz and all its supertypes.
+ * </p>
  * 
  * <p>
  * <h2>JDWP Specification</h2>
@@ -39,9 +44,7 @@ import gov.nasa.jpf.vm.MethodInfo;
  * method or a subtype.
  * </p>
  * 
- * Maybe we should use MethodIds properly as other Identifiers are used, i.e.
- * Don't rely on global ids for methods.
- * 
+ * @see JdwpIdManager#MethodIdManager
  * @author stepan
  * 
  */
@@ -51,14 +54,34 @@ public class MethodId extends IdentifierBase<MethodInfo> {
    * Method ID constructor.
    * 
    * @param id
-   *          The numerical ID of this identifier.
+   *          The numerical ID of this identifier which must be
+   *          {@link MethodInfo} GID.
    */
-  public MethodId(long globalMethodId) {
-    super(globalMethodId, MethodInfo.getMethodInfo((int) globalMethodId));
+  MethodId(long id) {
+    super(id, null);
+  }
+
+  /**
+   * Method ID constructor.
+   * 
+   * @param method
+   *          The method info to construct the <code>methodID</code> for.
+   */
+  MethodId(MethodInfo method) {
+    super((long) method.getGlobalId(), null);
   }
 
   @Override
-  public MethodInfo nullObjectHandler() throws InvalidIdentifierException {
+  public MethodInfo get() throws InvalidMethodIdException {
+    MethodInfo method = MethodInfo.getMethodInfo(id().intValue());
+    if (method == null) {
+      nullObjectHandler();
+    }
+    return method;
+  }
+
+  @Override
+  public MethodInfo nullObjectHandler() throws InvalidMethodIdException {
     throw new InvalidMethodIdException(this);
   }
 
