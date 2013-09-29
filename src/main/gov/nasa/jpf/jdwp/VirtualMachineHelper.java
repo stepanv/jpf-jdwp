@@ -69,7 +69,8 @@ public class VirtualMachineHelper {
   final static Logger logger = LoggerFactory.getLogger(VirtualMachineHelper.class);
 
   /**
-   * Returns the thread's call stack
+   * Returns the thread's call stack without JPD specific synthetic frames that
+   * are not supported by the JPDA specification.
    * 
    * @param thread
    *          thread for which to get call stack
@@ -101,7 +102,35 @@ public class VirtualMachineHelper {
   }
 
   /**
-   * Returns the number of frames in the thread's stack
+   * Returns the thread's frame at the specified depth. The depth doesn't count
+   * with the JPF specific synthetic frames that are not supported by the JPDA
+   * specification.
+   * 
+   * @param thread
+   *          The thread to get the frame for.
+   * @param depth
+   *          The depth of the frame to get, starting with 0 for the first frame
+   *          that was added to the call stack of the thread.
+   * @return The stack frame of the provided thread and the specified depth.
+   */
+  public static StackFrame getFrame(ThreadInfo thread, int depth) {
+
+    Iterator<StackFrame> stackIterator = thread.iterator();
+
+    for (int currentDepth = 0; stackIterator.hasNext();) {
+      StackFrame stackFrame = stackIterator.next();
+      if (!stackFrame.isSynthetic()) {
+        if (currentDepth++ == depth) {
+          return stackFrame;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the number of frames in the thread's stack. The JPF specific
+   * synthetic frames are not included in the returned count.
    * 
    * @param thread
    *          the thread for which to get a frame count
@@ -133,15 +162,46 @@ public class VirtualMachineHelper {
     throw new InvalidMethodIdException(new MethodId(id));
   }
 
+  /**
+   * The result of a method call.<br/>
+   * It can be either a {@link Value} instance or an exception thrown by the
+   * call.
+   * 
+   * <p>
+   * <h2>JDWP Specification</h2>
+   * The return value (possibly the void value) is included in the reply packet.
+   * If the invoked method throws an exception, the exception object ID is set
+   * in the reply packet; otherwise, the exception object ID is null.
+   * </p>
+   * 
+   * @author stepan
+   * 
+   */
   public static class MethodResult {
     private ObjectId exception;
     private Value value;
 
+    /**
+     * The {@link MethodResult} method result constructor.
+     * 
+     * @param value
+     *          The value of the method result or a {@link NullObjectId}.
+     * @param exception
+     *          The exception thrown from the method or a {@link NullObjectId}.
+     */
     public MethodResult(Value value, ObjectId exception) {
       this.value = value;
       this.exception = exception;
     }
 
+    /**
+     * Writes the method result into the output stream.
+     * 
+     * @param os
+     *          The output stream where to write the method result.
+     * @throws IOException
+     *           If an I/O error occurs.
+     */
     public void write(DataOutputStream os) throws IOException {
       value.writeTagged(os);
       exception.writeTagged(os);
@@ -198,25 +258,23 @@ public class VirtualMachineHelper {
     // we're not able to achieve this with JPF since JPF would inspect all
     // states and report where the deadlock occurs
 
-    logger.info("Executding method '{}' in thread '{}' of object instance '{}'", method, thread, object );
-    
+    logger.info("Executding method '{}' in thread '{}' of object instance '{}'", method, thread, object);
+
     boolean noTopFrame = false;
     if (thread.getTopFrame() == null) {
-      // when we exit the direct frame the thread will be TERMINATED which is definitively something we don't want
+      // when we exit the direct frame the thread will be TERMINATED which is
+      // definitively something we don't want
       noTopFrame = true;
-      
+
       MethodInfo blockingMethod = new MethodInfo(method, 0, 0);
-      blockingMethod.setCode(new Instruction[] {InstructionFactory.getFactory().nop()});
-      
+      blockingMethod.setCode(new Instruction[] { InstructionFactory.getFactory().nop() });
+
       DirectCallStackFrame blockingFrame = blockingMethod.createRunStartStackFrame(thread);
       blockingFrame.setFireWall();
-      
+
       thread.setTopFrame(blockingFrame);
     }
 
-    
-    
-    
     DirectCallStackFrame frame = method.createDirectCallStackFrame(thread, values.length);
     frame.setFireWall();
 

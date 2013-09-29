@@ -21,11 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.id;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
-import gov.nasa.jpf.jvm.JVMStackFrame;
-import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.IntegerFieldInfo;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -52,16 +53,16 @@ public class IdManagerPreciseTest {
     Map<I, WeakReference<I>> identifierSet = new WeakHashMap<I, WeakReference<I>>();
     Map<T, I> objectToIdentifierMap = new WeakHashMap<T, I>();
 
-    public void initMap(T frame, I frameId) {
-      objectToIdentifierMap.put(frame, frameId);
+    public void initMap(T field, I fieldId) {
+      objectToIdentifierMap.put(field, fieldId);
     }
 
-    public void initMap(I frameId) {
-      identifierSet.put(frameId, new WeakReference<I>(frameId));
+    public void initMap(I fieldId) {
+      identifierSet.put(fieldId, new WeakReference<I>(fieldId));
     }
   }
 
-  public static class SpecificIdentifier extends GenericIdentifier<FrameId, StackFrame> {
+  public static class SpecificIdentifier extends GenericIdentifier<FieldId, FieldInfo> {
 
     public int objectToIdMapSize() {
       return objectToIdentifierMap.size();
@@ -71,25 +72,25 @@ public class IdManagerPreciseTest {
       return identifierSet.size();
     }
 
-    public FrameId prepareFrame() {
-      StackFrame frame = new JVMStackFrame(new MethodInfo("foo", "I(I)", 0));
+    public FieldId prepareField() {
+      FieldInfo field = new IntegerFieldInfo("foobar", 0);
       Long l = new Long(1);
-      FrameId frameId = new FrameId(l, frame);
+      FieldId fieldId = new FieldId(l, field);
 
-      initMap(frameId);
-      initMap(frame, frameId);
-      return frameId;
+      initMap(fieldId);
+      initMap(field, fieldId);
+      return fieldId;
 
     }
 
-    public FrameId get(Object l) {
-      Reference<FrameId> ref = identifierSet.get(l);
+    public FieldId get(Object l) {
+      Reference<FieldId> ref = identifierSet.get(l);
       return ref.get();
     }
 
     public void printObjectToIdentifier() {
       System.out.println("Print Object to Identifier");
-      for (StackFrame key : objectToIdentifierMap.keySet()) {
+      for (FieldInfo key : objectToIdentifierMap.keySet()) {
         System.out.println("Contains key:" + key + " ... value: " + objectToIdentifierMap.get(key));
       }
       System.out.println("Print Object to Identifier ... done");
@@ -99,7 +100,7 @@ public class IdManagerPreciseTest {
 
     public void printIdToIdentifier() {
       System.out.println("Print ID to Identifier");
-      for (FrameId key : identifierSet.keySet()) {
+      for (FieldId key : identifierSet.keySet()) {
         System.out.println("Contains key:" + key + " ... value: " + identifierSet.get(key));
       }
       System.out.println("Print ID to Identifier ... done");
@@ -110,96 +111,104 @@ public class IdManagerPreciseTest {
   }
 
   /**
-   * This test proves that an existence of a reference to {@link StackFrame}
+   * This test proves that an existence of a reference to {@link FieldInfo}
    * does prevent the GC from collecting items in both
    * {@link GenericIdentifier#identifierSet} and
    * {@link GenericIdentifier#objectToIdentifierMap} maps.
    */
   @Test
   public void testObjectRemains() {
-    SpecificIdentifier frameFoo = new SpecificIdentifier();
+    SpecificIdentifier fieldFoo = new SpecificIdentifier();
 
-    frameFoo.prepareFrame();
-    StackFrame frame = null;
-    assertNotNull(frameFoo.get(new IdentifierPointer(1L)));
-    assertEquals(1, frameFoo.idMapSize());
-    assertEquals(1, frameFoo.objectToIdMapSize());
+    fieldFoo.prepareField();
+    FieldInfo field = null;
+    assertNotNull(fieldFoo.get(new IdentifierPointer(1L)));
+    assertEquals(1, fieldFoo.idMapSize());
+    assertEquals(1, fieldFoo.objectToIdMapSize());
 
     try {
-      frame = frameFoo.get(new IdentifierPointer(1L)).get();
+      field = fieldFoo.get(new IdentifierPointer(1L)).get();
     } catch (InvalidIdentifierException e) {
     }
 
     System.gc();
     System.gc();
 
-    assertEquals(1, frameFoo.idMapSize());
-    assertEquals(1, frameFoo.objectToIdMapSize());
-    assertNotNull(frame);
-    assertNotNull(frameFoo.get(new IdentifierPointer(1L)));
+    assertEquals(1, fieldFoo.idMapSize());
+    assertEquals(1, fieldFoo.objectToIdMapSize());
+    assertNotNull(field);
+    assertNotNull(fieldFoo.get(new IdentifierPointer(1L)));
 
   }
 
   /**
-   * This test proves the fact that if no reference to {@link FrameId} and to
-   * {@link StackFrame} exists both
+   * This test proves the fact that if no reference to {@link FieldId} and to
+   * {@link FieldInfo} exists both
    * {@link GenericIdentifier#objectToIdentifierMap} and
    * {@link GenericIdentifier#identifierSet} maps will cleanup provided the GC
    * runs.
    */
   @Test(expected = NullPointerException.class)
   public void testObjectDiscarded() {
-    SpecificIdentifier frameFoo = new SpecificIdentifier();
+    SpecificIdentifier fieldFoo = new SpecificIdentifier();
 
-    frameFoo.prepareFrame();
-    assertEquals(1, frameFoo.idMapSize());
-    assertEquals(1, frameFoo.objectToIdMapSize());
+    fieldFoo.prepareField();
+    assertEquals(1, fieldFoo.idMapSize());
+    assertEquals(1, fieldFoo.objectToIdMapSize());
 
     System.gc();
-    frameFoo.printIdToIdentifier();
-    frameFoo.printObjectToIdentifier();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
     System.gc();
-    frameFoo.printIdToIdentifier();
-    frameFoo.printObjectToIdentifier();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
 
     // This test is really weird
     // If one comments out the printing above the assert below may fail
     // So .. if this fails it's maybe just that the GC doesn't collect
     // everything in the idMap map even if it should be collected
-    assertEquals(0, frameFoo.idMapSize());
+    assertEquals(0, fieldFoo.idMapSize());
 
-    assertEquals(0, frameFoo.objectToIdMapSize());
-    frameFoo.get(new IdentifierPointer(1L));
+    assertEquals(0, fieldFoo.objectToIdMapSize());
+    fieldFoo.get(new IdentifierPointer(1L));
 
   }
 
   /**
    * This test proves the fact that an existence of a reference to
-   * {@link FrameId} doesn't prevent the GC from cleaning up the
+   * {@link FieldId} doesn't prevent the GC from cleaning up the
    * {@link GenericIdentifier#objectToIdentifierMap} map.
    */
   @Test
-  public void testObjectDiscardedFrameIdRemains() {
-    SpecificIdentifier frameFoo = new SpecificIdentifier();
+  public void testObjectDiscardedFieldIdRemains() {
+    SpecificIdentifier fieldFoo = new SpecificIdentifier();
 
-    FrameId frameId = frameFoo.prepareFrame();
-    assertEquals(1, frameFoo.idMapSize());
-    assertEquals(1, frameFoo.objectToIdMapSize());
+    FieldId fieldId = fieldFoo.prepareField();
+    assertEquals(1, fieldFoo.idMapSize());
+    assertEquals(1, fieldFoo.objectToIdMapSize());
 
     System.gc();
-    frameFoo.printIdToIdentifier();
-    frameFoo.printObjectToIdentifier();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
     System.gc();
-    frameFoo.printIdToIdentifier();
-    frameFoo.printObjectToIdentifier();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
+    
+    System.gc();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
+    System.gc();
+    fieldFoo.printIdToIdentifier();
+    fieldFoo.printObjectToIdentifier();
 
-    assertEquals(1, frameFoo.idMapSize());
-    assertEquals(0, frameFoo.objectToIdMapSize());
-    assertNotNull(frameId);
-    assertTrue(frameId.isNull());
 
-    FrameId frameId2 = frameFoo.get(new IdentifierPointer(1L));
-    assertEquals(frameId2, frameId);
+    assertEquals(1, fieldFoo.idMapSize());
+    assertEquals(0, fieldFoo.objectToIdMapSize());
+    assertNotNull(fieldId);
+    assertTrue(fieldId.isNull());
+
+    FieldId fieldId2 = fieldFoo.get(new IdentifierPointer(1L));
+    assertEquals(fieldId2, fieldId);
 
   }
 

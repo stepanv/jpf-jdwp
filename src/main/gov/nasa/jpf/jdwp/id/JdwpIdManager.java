@@ -85,17 +85,16 @@ import java.nio.ByteBuffer;
  * <li>
  * <h2>Stack frame ID</h2>
  * Well, we're actually not that fine as I thought.<br/>
- * Even though the frame IDs should be valid only during the time JPF is suspended
- * by the debugger and thus they cannot be reused nor GCed.<br/>
- * The problem is that if I need to modify a value on a stack, I would obtain
- * a modifiable frame in case it's frozen and this new frame is not equal
- * with the old one (ie. the {@link Object#equals(Object)} doesn't return true.
- * So the question is whether there is a better way how to identify a frame than
- * by combining a thread id and the frame's position on a stack.<br/>
- * <span style="text-decoration: line-through;">The only question is whether 
- * {@link StackFrame#equals(Object)} method would
- * always return <tt>false</tt> for all other StackFrames that are used by other
- * threads?<br/>
+ * Even though the frame IDs should be valid only during the time JPF is
+ * suspended by the debugger and thus they cannot be reused nor GCed.<br/>
+ * The problem is that if I need to modify a value on a stack, I would obtain a
+ * modifiable frame in case it's frozen and this new frame is not equal with the
+ * old one (ie. the {@link Object#equals(Object)} doesn't return true. So the
+ * question is whether there is a better way how to identify a frame than by
+ * combining a thread id and the frame's position on a stack.<br/>
+ * <span style="text-decoration: line-through;">The only question is whether
+ * {@link StackFrame#equals(Object)} method would always return <tt>false</tt>
+ * for all other StackFrames that are used by other threads?<br/>
  * I have this bad feeling that this method would return <tt>true</tt> if there
  * are two similar threads executing the same code and stopped at the same
  * instruction.</span></li>
@@ -142,7 +141,7 @@ public class JdwpIdManager extends ObjectIdManager {
    * 
    */
   private static class ReferenceIdManager extends IdManager<ReferenceTypeId, ClassInfo, InvalidReferenceTypeException> {
-    
+
     public ReferenceIdManager() {
       super(NullReferenceId.getInstance());
     }
@@ -182,7 +181,8 @@ public class JdwpIdManager extends ObjectIdManager {
 
   /**
    * All frame IDs manager.<br/>
-   * IDs for frames have dedicated numbering.
+   * IDs for frames are computed from the thread object reference id and it's
+   * call stack depth.
    * 
    * @author stepan
    * 
@@ -191,12 +191,32 @@ public class JdwpIdManager extends ObjectIdManager {
 
     @Override
     public FrameId createIdentifier(Long id, StackFrame stackFrame) {
-      return new FrameId(id, stackFrame);
+      throw new UnsupportedOperationException("This method is not supported!");
     }
 
     @Override
     public InvalidFrameIdException identifierNotFound(long id) {
       return new InvalidFrameIdException(id);
+    }
+
+    @Override
+    public synchronized FrameId getIdentifierId(StackFrame object) {
+      throw new UnsupportedOperationException("This method is not supported!");
+    }
+
+    @Override
+    public FrameId readIdentifier(ByteBuffer bytes) throws InvalidFrameIdException {
+      long id = bytes.getLong();
+      return new FrameId(id);
+    }
+
+    /**
+     * @param threadInfo
+     * @param i
+     * @return
+     */
+    public FrameId getIdentifierId(ThreadInfo threadInfo, int i) {
+      return new FrameId(threadInfo, i);
     }
 
   }
@@ -314,8 +334,8 @@ public class JdwpIdManager extends ObjectIdManager {
    *          The frame.
    * @return The ID that represents the given frame.
    */
-  public FrameId getFrameId(StackFrame stackFrame) {
-    return frameIdManager.getIdentifierId(stackFrame);
+  public FrameId getFrameId(ThreadInfo thread, int depth) {
+    return frameIdManager.getIdentifierId(thread, depth);
   }
 
   /**

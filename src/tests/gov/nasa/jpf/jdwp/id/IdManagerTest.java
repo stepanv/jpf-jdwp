@@ -22,11 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.id;
 
 import static org.junit.Assert.assertEquals;
-import gov.nasa.jpf.jdwp.exception.id.InvalidFrameIdException;
+import gov.nasa.jpf.jdwp.exception.id.InvalidFieldIdException;
 import gov.nasa.jpf.jdwp.util.test.BasicJdwpVerifier;
-import gov.nasa.jpf.jvm.JVMStackFrame;
-import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.FieldInfo;
+import gov.nasa.jpf.vm.IntegerFieldInfo;
 
 import java.nio.ByteBuffer;
 
@@ -39,37 +38,37 @@ public class IdManagerTest extends BasicJdwpVerifier {
     
     JdwpIdManager manager = JdwpIdManager.getInstance();
     
-    StackFrame frame = new JVMStackFrame(new MethodInfo("foo", "I(I)", 0));
+    FieldInfo field = new IntegerFieldInfo("foobar", 0);
     
     this.init();
-    manager.getFrameId(frame).write(dataOutputStream);
+    manager.getFieldId(field).write(dataOutputStream);
     ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
     
     // Run GC two times
     System.gc();
     System.gc();
     
-    // verify we can get the frame
-    FrameId frameId = manager.readFrameId(bb);
-    assertEquals(frame, frameId.get());
+    // verify we can get the field
+    FieldId fieldId = manager.readFieldId(bb);
+    assertEquals(field, fieldId.get());
   }
   
-  @Test(expected=InvalidFrameIdException.class)
+  @Test(expected=InvalidFieldIdException.class)
   public void testObjectDiscarded() throws Exception {
     
     JdwpIdManager manager = JdwpIdManager.getInstance();
     
     this.init();
-    manager.getFrameId(new JVMStackFrame(new MethodInfo("foo", "I(I)", 0))).write(dataOutputStream);
+    manager.getFieldId(new IntegerFieldInfo("foobar", 0)).write(dataOutputStream);
     ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
     
     // Run GC two times
     System.gc();
     System.gc();
     
-    // verify we can get the frame
-    FrameId frameId = manager.readFrameId(bb);
-    frameId.get();
+    // verify we can get the field
+    FieldId fieldId = manager.readFieldId(bb);
+    fieldId.get();
   }
 
 }

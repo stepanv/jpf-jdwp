@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
 import org.junit.Test;
 
 /**
@@ -45,6 +46,8 @@ public class ThreadReferenceCommandTest extends TestJdwp {
 
   public ThreadReferenceCommandTest() {
   }
+  
+  private static final int MAX_ITERATIONS = 1000;
 
   CommandVerifier stopVerifier = new CommandVerifier(ThreadReferenceCommand.STOP) {
 
@@ -91,10 +94,7 @@ public class ThreadReferenceCommandTest extends TestJdwp {
    */
   @Test
   public void stopTest() throws IOException, JdwpException, ClassNotFoundException, InterruptedException {
-    if (verifyNoPropertyViolation("+search=.search.RandomSearch"/*
-                                                                 * "+listener=.jdwp.JDWPListener"
-                                                                 * ,
-                                                                 */)) {
+    if (verifyNoPropertyViolation("+search=.search.RandomSearch" /*, "+listener=.jdwp.JDWPListener" */)) {
 
       Thread thread1 = new Thread(new StopRunner(), "thread1");
 
@@ -111,9 +111,14 @@ public class ThreadReferenceCommandTest extends TestJdwp {
 
         stopVerifier.verify(thread1, new RuntimeException("end test"));
 
+        int i = 0;
         while (threadsRunning.get() >= DESIRED_COUNT_ALIVETHREADS) {
           // yield
           Thread.yield();
+          if (++i > MAX_ITERATIONS) {
+            System.err.println("The thread1 didn't exit even after " + MAX_ITERATIONS + " yields.");
+            assertTrue("The thread1 didn't exit even after " + MAX_ITERATIONS + " yields.", false);
+          }
         }
 
         // yield for once more so that the thread can really exit
@@ -184,9 +189,17 @@ public class ThreadReferenceCommandTest extends TestJdwp {
 
       interruptVerifier.verify(thread1);
 
+      int i = 0;
       while (threadsRunning.get() >= DESIRED_COUNT_ALIVETHREADS) {
         // yield
         Thread.yield();
+        
+        if (++i > MAX_ITERATIONS) {
+          if (++i > MAX_ITERATIONS) {
+            System.err.println("The thread1 was not interrupted even after " + MAX_ITERATIONS + " yields.");
+            assertTrue("The thread1 was not interrupted even after " + MAX_ITERATIONS + " yields.", false);
+          }
+        }
       }
 
       // yield for once more so that the thread can really exit
