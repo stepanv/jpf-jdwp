@@ -120,10 +120,7 @@ public enum StackFrameCommand implements Command, ConvertibleEnum<Byte, StackFra
                         CommandContextProvider contextProvider, ThreadId threadId, FrameId frameId) throws JdwpException {
       int slotValues = bytes.getInt();
 
-      // THIS IS BAD we have to use threadInfo.getModifiableFrame(stackFrame);
-      // but unfortunatelly this creates non-equal object hence the ID
-      // management for frames must be redesigned! TODO
-      StackFrame stackFrameModifiable = stackFrame;
+      StackFrame stackFrameModifiable = threadInfo.getModifiableFrame(stackFrame);
 
       for (int i = 0; i < slotValues; ++i) {
         int slot = bytes.getInt();
