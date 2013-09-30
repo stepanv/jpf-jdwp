@@ -8,6 +8,7 @@ General Information about JPF JPDA
 
 All following repositories at BitBucket:
  * https://bitbucket.org/stepanv/jpf-jdwp
+ * https://bitbucket.org/stepanv/jpf-jdwptest
  * https://bitbucket.org/stepanv/jpf-core
  * https://bitbucket.org/stepanv/eclipse-jpf
  * https://bitbucket.org/stepanv/eclipse-jpf-updatesite
