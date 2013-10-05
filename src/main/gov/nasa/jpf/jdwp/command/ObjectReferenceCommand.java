@@ -74,13 +74,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    */
   REFERENCETYPE(1) {
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ElementInfo elementInfo = objectId.get();
-      
-      if (elementInfo == null) {
-        throw new InvalidObjectException(objectId);
-      }
-
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ClassInfo classInfo = elementInfo.getClassInfo();
 
       ReferenceTypeId refId = contextProvider.getObjectManager().getReferenceTypeId(classInfo);
@@ -99,8 +93,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    */
   GETVALUES(2) {
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ElementInfo obj = (DynamicElementInfo) objectId.get();
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       int fields = bytes.getInt();
 
       os.writeInt(fields);
@@ -110,13 +103,13 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
         FieldInfo field = fieldId.get();
 
         ClassInfo classInfo = field.getClassInfo();
-        if (!obj.getClassInfo().isInstanceOf(classInfo)) {
+        if (!elementInfo.getClassInfo().isInstanceOf(classInfo)) {
           // this is here just for completeness
           // it's not required since fieldId doesn't need classInfo to resolve
           throw new InvalidFieldIdException(fieldId);
         }
 
-        Value value = ValueUtils.fieldToValue(obj, field);
+        Value value = ValueUtils.fieldToValue(elementInfo, field);
         logger.trace("Value get: {}", value);
         value.writeTagged(os);
       }
@@ -138,8 +131,9 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    */
   SETVALUES(3) {
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ElementInfo obj = objectId.getModifiable();
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      
+      ElementInfo obj = elementInfo.getModifiableInstance();
       int values = bytes.getInt();
 
       for (int i = 0; i < values; ++i) {
@@ -156,7 +150,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
         ClassInfo fieldClassInfo = fieldInfo.getTypeClassInfo();
         Tag tag = Tag.classInfoToTag(fieldClassInfo);
         Value valueUntagged = tag.readValue(bytes);
-        
+
         logger.trace("Value set: {}", valueUntagged);
 
         // set the value into the object's field
@@ -177,8 +171,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    */
   MONITORINFO(5) {
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ElementInfo elementInfo = objectId.get();
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      
       Monitor monitor = elementInfo.getMonitor();
 
       // The monitor owner, or null if it is not currently owned.
@@ -260,7 +254,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    */
   INVOKEMETHOD(6) {
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+     
       ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
       ReferenceTypeId clazz = contextProvider.getObjectManager().readReferenceTypeId(bytes);
       MethodInfo methodInfo = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
@@ -276,7 +271,7 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
         throw new ThreadNotSuspendedException("Thread not suspended: " + thread);
       }
 
-      MethodResult methodResult = VirtualMachineHelper.invokeMethod(objectId.get(), methodInfo, values, thread, options);
+      MethodResult methodResult = VirtualMachineHelper.invokeMethod(elementInfo, methodInfo, values, thread, options);
       methodResult.write(os);
     }
 
@@ -308,6 +303,11 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       contextProvider.getVirtualMachine().disableCollection(objectId);
     }
+
+    @Override
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      // empty on a purpose
+    }
   },
 
   /**
@@ -325,6 +325,11 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       contextProvider.getVirtualMachine().enableCollection(objectId);
     }
+
+    @Override
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      // empty on a purpose
+    }
   },
 
   /**
@@ -339,6 +344,11 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
       boolean isCollected = objectId.isNull();
       logger.debug("Is collect: {}", isCollected);
       os.writeBoolean(isCollected);
+    }
+
+    @Override
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+      // empty on a purpose
     }
   },
 
@@ -355,15 +365,14 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
   REFERRINGOBJECTS(10) {
 
     @Override
-    public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-
+    public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       int maxReferrers = bytes.getInt();
 
       if (maxReferrers < 0) {
         throw new IllegalArgumentException("The max referrers cannot be negative: " + maxReferrers);
       }
 
-      Set<ObjectId> referringObjectRefs = VirtualMachineHelper.getReferringObjects(objectId.get().getObjectRef(), maxReferrers,
+      Set<ObjectId> referringObjectRefs = VirtualMachineHelper.getReferringObjects(elementInfo.getObjectRef(), maxReferrers,
                                                                                    contextProvider);
 
       // write the results
@@ -397,6 +406,20 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     return map.get(val);
   }
 
+  /**
+   * Checks whether given objectID is a proper object identifier.
+   * 
+   * @param objectId
+   *          The objectID to check.
+   * @throws InvalidObjectException
+   *           If the given objectID is not valid.
+   */
+  protected void checkObjectId(ObjectId objectId) throws InvalidObjectException {
+    if (objectId == null || objectId.isNull()) {
+      throw new InvalidObjectException(objectId);
+    }
+  }
+
   @Override
   public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
     ObjectId objectId = contextProvider.getObjectManager().readObjectId(bytes);
@@ -405,6 +428,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     execute(objectId, bytes, os, contextProvider);
   }
 
+  public abstract void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
+  
   /**
    * The {@link ObjectReferenceCommand} specific extension of command execution.
    * 
@@ -421,6 +446,12 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
    * @throws JdwpException
    *           If any JDWP based error occurs.
    */
-  public abstract void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException;
+  public void execute(ObjectId objectId, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
+    DynamicElementInfo elementInfo = objectId.get();
+    if (elementInfo == null) {
+      throw new InvalidObjectException(objectId);
+    }
+    execute(elementInfo, bytes, os, contextProvider);
+  };
 
 }
