@@ -43,6 +43,7 @@ import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
 import gov.nasa.jpf.vm.HandlerContext;
@@ -576,9 +577,35 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   public void propertyViolated(Search search) {
     Instruction instruction = search.getVM().getInstruction();
     ThreadInfo currentThread = ThreadInfo.getCurrentThread();
+    
+    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 0 only the class");
+    
+    ClassInfo propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.Throwable");
+    
+    ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+    dispatchEvent(classPrepareEvent);
+    
+    propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.Exception");
+    
+    classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+    dispatchEvent(classPrepareEvent);
+    
+    propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.RuntimeException");
+    
+    classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+    dispatchEvent(classPrepareEvent);
+    
+    System.out.println("!!!!!!!!!!!!!!!!!! Class prepare event sent.");
+    
     if (instruction != null) {
-      ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), null, null);
+      
+      System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1");
+      
+      ElementInfo ei = VM.getVM().getHeap().newObject(propertyViolatedClass, currentThread);
+      ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), ei, null);
       dispatchEvent(exceptionEvent);
+      
+      System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 2");
     }
   }
 
