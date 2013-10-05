@@ -37,6 +37,7 @@ import gov.nasa.jpf.vm.ClassLoaderInfo;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Heap;
+import gov.nasa.jpf.vm.MJIEnv;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 
@@ -578,7 +579,7 @@ public class ObjectIdManager {
    * @return The identifier for the given class loader.
    */
   public ClassLoaderId getClassLoaderId(ClassLoaderInfo classLoaderInfo) {
-    ElementInfo classLoaderObject = VM.getVM().getHeap().get(classLoaderInfo.getClassLoaderObjectRef());
+    ElementInfo classLoaderObject = VM.getVM().getHeap().get(classLoaderInfo == null ? MJIEnv.NULL : classLoaderInfo.getClassLoaderObjectRef());
     return classLoaderIdFactory.getIdentifier(classLoaderObject);
   }
 
@@ -601,7 +602,7 @@ public class ObjectIdManager {
    * @return The identifier for the given class object.
    */
   public ClassObjectId getClassObjectId(ClassInfo classInfo) {
-    return classObjectIdFactory.getIdentifier(classInfo.getClassObject());
+    return classObjectIdFactory.getIdentifier(classInfo == null ? null : classInfo.getClassObject());
   }
 
   /**
@@ -615,7 +616,7 @@ public class ObjectIdManager {
    * @return The identifier for the given thread.
    */
   public ThreadId getThreadId(ThreadInfo threadInfo) {
-    return threadIdFactory.getIdentifier(threadInfo.getThreadObject());
+    return threadIdFactory.getIdentifier(threadInfo == null ? null : threadInfo.getThreadObject());
   }
 
   /**
