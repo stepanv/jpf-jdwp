@@ -35,6 +35,7 @@ import gov.nasa.jpf.jdwp.event.MethodExitWithReturnValueEvent;
 import gov.nasa.jpf.jdwp.event.SingleStepEvent;
 import gov.nasa.jpf.jdwp.event.ThreadDeathEvent;
 import gov.nasa.jpf.jdwp.event.ThreadStartEvent;
+import gov.nasa.jpf.jdwp.exception.special.NoPropertyViolationException;
 import gov.nasa.jpf.jdwp.type.Location;
 import gov.nasa.jpf.jdwp.util.FieldVisitor;
 import gov.nasa.jpf.jdwp.value.Value;
@@ -43,7 +44,9 @@ import gov.nasa.jpf.jvm.bytecode.FieldInstruction;
 import gov.nasa.jpf.jvm.bytecode.InvokeInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassInfoException;
 import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.ClassParseException;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionHandler;
 import gov.nasa.jpf.vm.HandlerContext;
@@ -55,7 +58,10 @@ import gov.nasa.jpf.vm.ThreadInfo.State;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.VMListener;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -577,36 +583,72 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
   public void propertyViolated(Search search) {
     Instruction instruction = search.getVM().getInstruction();
     ThreadInfo currentThread = ThreadInfo.getCurrentThread();
-    
-    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 0 only the class");
-    
-    ClassInfo propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.Throwable");
-    
-    ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+
+    // load and notify about the superclass of the NoPropertyViolationException
+    // class
+    ClassInfo throwableClass = ClassLoaderInfo.getSystemResolvedClassInfo(Throwable.class.getName());
+    ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(currentThread, throwableClass);
     dispatchEvent(classPrepareEvent);
-    
-    propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.Exception");
-    
-    classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
-    dispatchEvent(classPrepareEvent);
-    
-    propertyViolatedClass = ClassLoaderInfo.getSystemResolvedClassInfo("java.lang.RuntimeException");
-    
-    classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
-    dispatchEvent(classPrepareEvent);
-    
-    System.out.println("!!!!!!!!!!!!!!!!!! Class prepare event sent.");
-    
-    if (instruction != null) {
+
+    try (InputStream is = NoPropertyViolationException.class.getResourceAsStream(NoPropertyViolationException.class.getSimpleName()
+        + ".class");) {
       
-      System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1");
-      
-      ElementInfo ei = VM.getVM().getHeap().newObject(propertyViolatedClass, currentThread);
-      ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), ei, null);
-      dispatchEvent(exceptionEvent);
-      
-      System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 2");
+      // load and notify about the NoPropertyViolationException class
+      byte[] data = readData(is);
+      ClassInfo propertyViolatedClass = ClassLoaderInfo.getCurrentClassLoader()
+          .getResolvedClassInfo(NoPropertyViolationException.class.getName(), data, 0, data.length);
+
+      classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+
+      // as a callback for the dispatch of this event an exception request will
+      // be created
+      dispatchEvent(classPrepareEvent);
+
+      // now, there should be a request matching the
+      // NoPropertyViolationException exception throw
+
+      if (instruction != null) {
+
+        // print out the banner
+        System.out
+            .println("====================================================== JPF JDWP Stopped the execution due to a property violation.");
+        System.out.println(search.getCurrentError().getDescription());
+        System.out.println(search.getCurrentError().getDetails());
+
+        // create an exception instance so that the throw can be simulated and
+        // reported back to the debugger
+        ElementInfo ei = VM.getVM().getHeap().newObject(propertyViolatedClass, currentThread);
+        ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), ei, null);
+        dispatchEvent(exceptionEvent);
+
+      }
+    } catch (ClassInfoException | ClassParseException | IOException e) {
+      logger.error("An error occurred during a property violation notification.", e);
     }
+  }
+
+  /**
+   * Reads the data from the input stream.
+   * 
+   * @param is
+   *          The input stream to read from.
+   * @return
+   * @throws ClassParseException
+   * @throws IOException
+   */
+  private static byte[] readData(InputStream is) throws ClassParseException, IOException {
+    byte[] data = new byte[5 * 1024];
+    int nRead = 0;
+
+    while (nRead < data.length) {
+      int n = is.read(data, nRead, (data.length - nRead));
+      if (n < 0) {
+        return Arrays.copyOf(data, nRead);
+      }
+      nRead += n;
+    }
+
+    throw new ClassParseException("Prepared buffer too short.");
   }
 
 }

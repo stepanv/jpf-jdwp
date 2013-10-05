@@ -238,7 +238,7 @@ public class EventRequest<T extends Event> {
         filters.append(filter.toString()).append(", ");
       }
     }
-    return String.format("Request ID %d, kind: %s; >>> %s <<<", id, eventKind, filters);
+    return String.format("Request ID %d, kind: %s; suspend policy: %s >>> %s <<<", id, eventKind, suspendPolicy, filters);
   }
 
 }
