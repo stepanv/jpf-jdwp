@@ -80,4 +80,12 @@ public class LocationOnlyFilter extends Filter<LocationOnlyFilterable> {
   public boolean matches(LocationOnlyFilterable event) {
     return location.equals(event.getLocation());
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(" Location: ").append(location);
+    return super.toString() + sb;
+  }
+  
+  
 }
