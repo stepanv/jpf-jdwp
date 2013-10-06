@@ -199,8 +199,8 @@ public enum CommandSet implements ConvertibleEnum<Byte, CommandSet> {
     Throwable chainError = null;
 
     try {
-      logger.info("Running command: {} (class: {})", command, command.getClass());
       contextProvider.getVirtualMachine().getRunLock().lock();
+      logger.info("Running command: {} (class: {})", command, command.getClass());
       command.execute(bytes, os, contextProvider);
     } catch (RuntimeException e) {
       logger.error("Fatal error occured during the execution of command: {} (class: {})", command, command.getClass(), e);

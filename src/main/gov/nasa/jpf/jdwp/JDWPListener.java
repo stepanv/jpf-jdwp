@@ -597,7 +597,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
       byte[] data = readData(is);
       ClassInfo propertyViolatedClass = ClassLoaderInfo.getCurrentClassLoader()
           .getResolvedClassInfo(NoPropertyViolationException.class.getName(), data, 0, data.length);
-
+      
       classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
 
       // as a callback for the dispatch of this event an exception request will
@@ -618,11 +618,12 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
         // create an exception instance so that the throw can be simulated and
         // reported back to the debugger
         ElementInfo ei = VM.getVM().getHeap().newObject(propertyViolatedClass, currentThread);
-        ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, Location.factorySafe(instruction, currentThread), ei, null);
+        Location location = Location.factorySafe(instruction, currentThread);
+        ExceptionEvent exceptionEvent = new ExceptionEvent(currentThread, location, ei, location);
         dispatchEvent(exceptionEvent);
 
       }
-    } catch (ClassInfoException | ClassParseException | IOException e) {
+    } catch (ClassInfoException | IOException | ClassParseException e) {
       logger.error("An error occurred during a property violation notification.", e);
     }
   }
