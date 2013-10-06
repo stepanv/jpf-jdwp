@@ -584,12 +584,6 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     Instruction instruction = search.getVM().getInstruction();
     ThreadInfo currentThread = ThreadInfo.getCurrentThread();
 
-    // load and notify about the superclass of the NoPropertyViolationException
-    // class
-    ClassInfo throwableClass = ClassLoaderInfo.getSystemResolvedClassInfo(Throwable.class.getName());
-    ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(currentThread, throwableClass);
-    dispatchEvent(classPrepareEvent);
-
     try (InputStream is = NoPropertyViolationException.class.getResourceAsStream(NoPropertyViolationException.class.getSimpleName()
         + ".class");) {
       
@@ -598,7 +592,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
       ClassInfo propertyViolatedClass = ClassLoaderInfo.getCurrentClassLoader()
           .getResolvedClassInfo(NoPropertyViolationException.class.getName(), data, 0, data.length);
       
-      classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
+      ClassPrepareEvent classPrepareEvent = new ClassPrepareEvent(currentThread, propertyViolatedClass);
 
       // as a callback for the dispatch of this event an exception request will
       // be created
