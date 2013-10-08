@@ -24,7 +24,6 @@ package gov.nasa.jpf.jdwp.type;
 import gov.nasa.jpf.jdwp.command.CommandContextProvider;
 import gov.nasa.jpf.jdwp.exception.InvalidLocationException;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
-import gov.nasa.jpf.jdwp.exception.id.InvalidMethodIdException;
 import gov.nasa.jpf.jdwp.id.JdwpIdManager;
 import gov.nasa.jpf.jdwp.id.MethodId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
@@ -131,35 +130,19 @@ public class Location {
     return factory(instruction);
   }
 
-  private static MethodInfo methodInfoLookup(ClassInfo classInfo, long id) throws InvalidMethodIdException {
-    logger.debug("looking for METHOD global id: {} of CLASS: {}", id, classInfo);
-    for (MethodInfo methodInfo : classInfo.getDeclaredMethodInfos()) {
-      if (id == methodInfo.getGlobalId()) {
-        logger.trace("METHOD found: {}", methodInfo);
-        return methodInfo;
-      }
-    }
-    // also try super types
-    if (classInfo.getSuperClass() != null) {
-      return methodInfoLookup(classInfo.getSuperClass(), id);
-    }
-    throw new InvalidMethodIdException(new MethodId(id));
-  }
-
   public static Location factory(ByteBuffer bytes, CommandContextProvider contextProvider) throws InvalidIdentifierException, InvalidLocationException {
     // we don't mix IDs of classes and interfaces and thus this byte is not
     // required
     @SuppressWarnings("unused")
     byte typeTag = bytes.get();
+    
     ReferenceTypeId referenceTypeId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-
     ClassInfo classInfo = referenceTypeId.get();
-
-    long id = bytes.getLong();
-
+    
+    MethodId methodId = contextProvider.getObjectManager().readMethodId(classInfo, bytes);
+    MethodInfo methodInfo = methodId.get();
+    
     long index = bytes.getLong();
-
-    MethodInfo methodInfo = methodInfoLookup(classInfo, id);
     Instruction instruction = methodInfo.getInstruction((int) index);
 
     if (instruction == null) {

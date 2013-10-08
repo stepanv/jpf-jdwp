@@ -226,7 +226,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
       for (int i = 0; i < frames.size(); i++) {
         StackFrame frame = (StackFrame) frames.get(i);
 
-        FrameId frameId = contextProvider.getObjectManager().getFrameId(frame);
+        FrameId frameId = contextProvider.getObjectManager().getFrameId(threadInfo, i);
         frameId.write(os);
 
         Location location = Location.factorySafe(frame.getPC(), threadInfo);

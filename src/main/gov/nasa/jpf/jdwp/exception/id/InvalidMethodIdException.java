@@ -51,4 +51,16 @@ public class InvalidMethodIdException extends InvalidIdentifierException {
     super(ErrorType.INVALID_METHODID, methodId);
   }
 
+  /**
+   * Constructs the {@link InvalidMethodIdException} exception.
+   * 
+   * @param id
+   *          The invalid ID to report.
+   * @see InvalidIdentifierException
+   * @see InvalidMethodIdException
+   */
+  public InvalidMethodIdException(long id) {
+    super(ErrorType.INVALID_METHODID, id);
+  }
+
 }

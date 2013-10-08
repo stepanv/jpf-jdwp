@@ -165,8 +165,8 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
   INVOKEMETHOD(3) {
     @Override
     public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
-      ThreadId threadId = JdwpIdManager.getInstance().readThreadId(bytes);
-      MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
+      ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
+      MethodInfo method = contextProvider.getObjectManager().readMethodId(classInfo, bytes).get();
 
       int arguments = bytes.getInt();
       Value[] values = new Value[arguments];
@@ -246,7 +246,7 @@ public enum ClassTypeCommand implements Command, ConvertibleEnum<Byte, ClassType
     @Override
     public void execute(ClassInfo classInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
       ThreadId threadId = JdwpIdManager.getInstance().readThreadId(bytes);
-      MethodInfo method = VirtualMachineHelper.getClassMethod(classInfo, bytes.getLong());
+      MethodInfo method = JdwpIdManager.getInstance().readMethodId(classInfo, bytes).get();
 
       int arguments = bytes.getInt();
       Value[] values = new Value[arguments];

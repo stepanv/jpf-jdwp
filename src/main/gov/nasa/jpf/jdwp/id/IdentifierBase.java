@@ -74,6 +74,7 @@ public abstract class IdentifierBase<T> implements Identifier<T> {
 
   /*
    * (non-Javadoc)
+   * 
    * @see gov.nasa.jpf.jdwp.id.Identifier#write(java.io.DataOutputStream)
    */
   @Override
@@ -83,6 +84,7 @@ public abstract class IdentifierBase<T> implements Identifier<T> {
 
   /*
    * (non-Javadoc)
+   * 
    * @see java.lang.Object#toString()
    */
   @Override
@@ -110,14 +112,26 @@ public abstract class IdentifierBase<T> implements Identifier<T> {
    */
   @Override
   public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
     if (obj instanceof Long) {
       return id.equals(obj);
     }
-    if (obj instanceof IdentifierBase<?>) {
+    if (getClass().isInstance(obj) && obj.getClass().isInstance(this)) {
       return Objects.equals(id, ((IdentifierBase<?>) obj).id)
           && Objects.equals(objectReference.get(), ((IdentifierBase<?>) obj).objectReference.get());
     }
     return false;
+  }
+
+  /**
+   * The ID of this identifier.
+   * 
+   * @return
+   */
+  protected final Long id() {
+    return id;
   }
 
 }

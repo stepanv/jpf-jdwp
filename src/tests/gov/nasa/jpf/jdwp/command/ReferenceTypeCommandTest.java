@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 package gov.nasa.jpf.jdwp.command;
 
-import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.id.InvalidIdentifierException;
 import gov.nasa.jpf.jdwp.id.object.ObjectId;
 import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
@@ -97,7 +96,7 @@ public class ReferenceTypeCommandTest extends TestJdwp {
       // assert all results
       assertEquals(3, bb.getInt());
 
-      MethodInfo methodActual = VirtualMachineHelper.getClassMethod(classInfo, bb.getLong());
+      MethodInfo methodActual = contextProvider.getObjectManager().readMethodId(classInfo, bb).get();
 
       assertEquals(methodExpected, methodActual);
       assertEquals(methodExpected.getName(), JdwpString.read(bb));

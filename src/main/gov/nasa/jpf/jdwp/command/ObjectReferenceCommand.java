@@ -257,8 +257,8 @@ public enum ObjectReferenceCommand implements Command, ConvertibleEnum<Byte, Obj
     public void execute(DynamicElementInfo elementInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
      
       ThreadId threadId = contextProvider.getObjectManager().readThreadId(bytes);
-      ReferenceTypeId clazz = contextProvider.getObjectManager().readReferenceTypeId(bytes);
-      MethodInfo methodInfo = VirtualMachineHelper.getClassMethod(clazz.get(), bytes.getLong());
+      ReferenceTypeId clazzId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
+      MethodInfo methodInfo = contextProvider.getObjectManager().readMethodId(clazzId.get(), bytes).get();
       int arguments = bytes.getInt();
       Value[] values = new Value[arguments];
       for (int i = 0; i < arguments; ++i) {

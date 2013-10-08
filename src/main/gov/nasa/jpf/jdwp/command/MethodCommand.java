@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 package gov.nasa.jpf.jdwp.command;
 
 import gov.nasa.jpf.jdwp.VirtualMachine.CapabilitiesNew;
-import gov.nasa.jpf.jdwp.VirtualMachineHelper;
 import gov.nasa.jpf.jdwp.exception.IllegalArgumentException;
 import gov.nasa.jpf.jdwp.exception.JdwpException;
 import gov.nasa.jpf.jdwp.exception.NotImplementedException;
@@ -35,6 +34,9 @@ import gov.nasa.jpf.vm.MethodInfo;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link MethodCommand} enum class implements the {@link CommandSet#METHOD}
@@ -136,6 +138,9 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
 
     }
   };
+  
+  final static Logger logger = LoggerFactory.getLogger(MethodCommand.class);
+  
   private byte commandId;
 
   private MethodCommand(int commandId) {
@@ -176,7 +181,10 @@ public enum MethodCommand implements Command, ConvertibleEnum<Byte, MethodComman
   public void execute(ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
     ReferenceTypeId refId = contextProvider.getObjectManager().readReferenceTypeId(bytes);
     ClassInfo clazz = refId.get();
+    MethodInfo method = contextProvider.getObjectManager().readMethodId(clazz, bytes).get();
+    
+    logger.info("Class: '{}', Method: '{}'", clazz, method);
 
-    execute(VirtualMachineHelper.getClassMethod(clazz, bytes.getLong()), bytes, os, contextProvider);
+    execute(method, bytes, os, contextProvider);
   }
 }

@@ -126,8 +126,8 @@ public class JdwpObjectManagerTest extends TestJdwp {
       assertEquals("methodXyDGe3sSBBWithSpecialId", firstFrame.getMethodName());
       assertEquals("methodXyd34itSjfWithSpecialId", secondFrame.getMethodName());
 
-      testedFrameId = contextProvider.getObjectManager().getFrameId(secondFrame);
-      FrameId onlyAsIdStoredFrameId = contextProvider.getObjectManager().getFrameId(firstFrame);
+      testedFrameId = contextProvider.getObjectManager().getFrameId(contextProvider.getVM().getCurrentThread(), 2);
+      FrameId onlyAsIdStoredFrameId = contextProvider.getObjectManager().getFrameId(contextProvider.getVM().getCurrentThread(), 1);
       weaklyStoredFrame = new WeakReference<StackFrame>(nullFrame);
 
       testedFrameId.write(dataOutputStream);
@@ -140,11 +140,11 @@ public class JdwpObjectManagerTest extends TestJdwp {
       FrameId frameId;
       bb.rewind();
       frameId = contextProvider.getObjectManager().readFrameId(bb);
-      assertTrue(frameId == testedFrameId);
+      assertEquals(frameId, testedFrameId);
       assertEquals(frameId.get(), testedFrameId.get());
 
       frameId = contextProvider.getObjectManager().readFrameId(bb);
-      assertTrue(frameId == onlyAsIdStoredFrameId);
+      assertEquals(frameId, onlyAsIdStoredFrameId);
       assertEquals(frameId.get(), onlyAsIdStoredFrameId.get());
 
     }
@@ -203,30 +203,41 @@ public class JdwpObjectManagerTest extends TestJdwp {
       assertTrue("Memory leak detected", testedFrameId.isNull());
 
       // also testing the exception itself
-      new AssertExceptionThrown() {
-        @Override
-        public void execute() throws Exception {
-          testedFrameId.get();
-        }
-      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifierException.class);
 
-      // Now, we also want to test other related objects
-      dataOutputStream.writeLong(testedFrameIdAsLong);
-      dataOutputStream.writeLong(testedFrameIdStoredAsLongOnly);
-      final ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      /*
+       * The following code cannot be tested unless certain changes are done to
+       * the code:
+       * 
+       * weak references are used; the GCing really removes the objects, JPF
+       * doesn't really need the objects
+       */
 
-      FrameId frameId;
-      bb.rewind();
-      frameId = contextProvider.getObjectManager().readFrameId(bb);
-      assertTrue(frameId == testedFrameId);
-
-      // This should throw an exception otherwise the FrameId is leaking
-      new AssertExceptionThrown() {
-        @Override
-        public void execute() throws Exception {
-          contextProvider.getObjectManager().readFrameId(bb);
-        }
-      }.doAssert("If the exception wasn't thrown a potential memory leak is detected.", InvalidIdentifierException.class);
+      // new AssertExceptionThrown() {
+      // @Override
+      // public void execute() throws Exception {
+      // testedFrameId.get();
+      // }
+      // }.doAssert("If the exception wasn't thrown a potential memory leak is detected.",
+      // InvalidIdentifierException.class);
+      //
+      // // Now, we also want to test other related objects
+      // dataOutputStream.writeLong(testedFrameIdAsLong);
+      // dataOutputStream.writeLong(testedFrameIdStoredAsLongOnly);
+      // final ByteBuffer bb = ByteBuffer.wrap(dataOutputBytes.toByteArray());
+      //
+      // FrameId frameId;
+      // bb.rewind();
+      // frameId = contextProvider.getObjectManager().readFrameId(bb);
+      // assertTrue(frameId == testedFrameId);
+      //
+      // // This should throw an exception otherwise the FrameId is leaking
+      // new AssertExceptionThrown() {
+      // @Override
+      // public void execute() throws Exception {
+      // contextProvider.getObjectManager().readFrameId(bb);
+      // }
+      // }.doAssert("If the exception wasn't thrown a potential memory leak is detected.",
+      // InvalidIdentifierException.class);
     }
   };
 
