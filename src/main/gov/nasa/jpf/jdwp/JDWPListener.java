@@ -581,6 +581,12 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
   @Override
   public void propertyViolated(Search search) {
+    
+    if(!search.getVM().getConfig().getBoolean("jpf-jdwp.notification.propertyviolation", false)) {
+      // the property violation notification is off by default 
+      return;
+    }
+    
     Instruction instruction = search.getVM().getInstruction();
     ThreadInfo currentThread = ThreadInfo.getCurrentThread();
 
@@ -605,7 +611,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
 
         // print out the banner
         System.out
-            .println("====================================================== JPF JDWP Stopped the execution due to a property violation.");
+            .println("====================================================== JPF JDWP registered a property violation.");
         System.out.println(search.getCurrentError().getDescription());
         System.out.println(search.getCurrentError().getDetails());
 
@@ -620,6 +626,7 @@ public class JDWPListener extends JDWPSearchBase implements VMListener {
     } catch (ClassInfoException | IOException | ClassParseException e) {
       logger.error("An error occurred during a property violation notification.", e);
     }
+    
   }
 
   /**
