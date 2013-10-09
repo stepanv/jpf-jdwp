@@ -30,6 +30,8 @@ import gov.nasa.jpf.jdwp.value.ValueUtils;
 import gov.nasa.jpf.jvm.bytecode.InstructionFactory;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.ClassInfo;
+import gov.nasa.jpf.vm.ClassLoaderInfo;
+import gov.nasa.jpf.vm.ClassLoaderList;
 import gov.nasa.jpf.vm.DirectCallStackFrame;
 import gov.nasa.jpf.vm.DynamicElementInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -40,6 +42,7 @@ import gov.nasa.jpf.vm.Heap;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
+import gov.nasa.jpf.vm.Statics;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.UncaughtException;
 
@@ -337,13 +340,93 @@ public class VirtualMachineHelper {
   public static Set<ObjectId> getReferringObjects(int searchedObjRef, int maxReferrers, CommandContextProvider contextProvider) {
     Set<ObjectId> referringObjectRefs = new HashSet<ObjectId>();
 
+    fetchHeapReferences(searchedObjRef, maxReferrers, contextProvider, referringObjectRefs);
+    fetchStaticReferences(searchedObjRef, maxReferrers, contextProvider, referringObjectRefs);
+    return referringObjectRefs;
+  }
+
+  /**
+   * Fetches class objects that has given object reference as a reference in
+   * their static fields.
+   * 
+   * @param searchedObjRef
+   *          The object reference to search for.
+   * @param maxReferrers
+   *          The maximum number of referees that is to be returned or zero for
+   *          all of them.
+   * @param contextProvider
+   *          The context provider instance.
+   * @param referringObjectRefs
+   *          A set of objects that reference the given object.
+   */
+  private static void fetchStaticReferences(int searchedObjRef, int maxReferrers, CommandContextProvider contextProvider,
+                                            Set<ObjectId> referringObjectRefs) {
+
+    ClassLoaderList classLoaderList = contextProvider.getVM().getClassLoaderList();
+    for (ClassLoaderInfo classLoaderInfo : classLoaderList) {
+      Statics statics = classLoaderInfo.getStatics();
+
+      // iterate over all classes and their respective static areas
+      STATIC_EI: for (ElementInfo staticElementInfo : statics) {
+
+        // according to the spec we should return maximum number of
+        // referring objects if maxReferrers is greater than 0
+        if (hasEnoughReferences(maxReferrers, referringObjectRefs)) {
+          return;
+        }
+
+        logger.trace("Looking at {} static element info", staticElementInfo);
+
+        // iterate over all static fields
+        for (int i = 0; i < staticElementInfo.getNumberOfFields(); ++i) {
+          FieldInfo fi = staticElementInfo.getFieldInfo(i);
+          if (!fi.isReference()) {
+            // the field info does not represent a reference
+            continue;
+          }
+
+          int objref = staticElementInfo.getReferenceField(fi);
+
+          if (objref == searchedObjRef) {
+            // the searched object was found
+
+            ElementInfo classObjectElementInfo = staticElementInfo.getClassInfo().getClassObject();
+            ObjectId referringObjectId = contextProvider.getObjectManager().getObjectId(classObjectElementInfo);
+            referringObjectRefs.add(referringObjectId);
+
+            logger.debug("Found referring object: {}", classObjectElementInfo);
+
+            continue STATIC_EI;
+          }
+
+        }
+      }
+    }
+
+  }
+
+  /**
+   * Fetches objects from the heap that references the given object reference.
+   * 
+   * @param searchedObjRef
+   *          The object reference to search for.
+   * @param maxReferrers
+   *          The maximum number of referees that is to be returned or zero for
+   *          all of them.
+   * @param contextProvider
+   *          The context provider instance.
+   * @param referringObjectRefs
+   *          A set of objects that reference the given object.
+   */
+  private static void fetchHeapReferences(int searchedObjRef, int maxReferrers, CommandContextProvider contextProvider,
+                                          Set<ObjectId> referringObjectRefs) {
     EI_LOOP: for (ElementInfo elementInfo : contextProvider.getVM().getHeap()) {
       int i, n;
       Fields fields = elementInfo.getFields();
 
       // according to the spec we should return maximum number of
       // referring objects if maxReferrers is greater than 0
-      if (maxReferrers > 0 && maxReferrers == referringObjectRefs.size()) {
+      if (hasEnoughReferences(maxReferrers, referringObjectRefs)) {
         break;
       }
 
@@ -394,8 +477,15 @@ public class VirtualMachineHelper {
         } while (ci != null);
       }
     }
+  }
 
-    return referringObjectRefs;
+  /**
+   * @param maxReferrers
+   * @param referringObjectRefs
+   * @return
+   */
+  private static boolean hasEnoughReferences(int maxReferrers, Set<ObjectId> referringObjectRefs) {
+    return maxReferrers > 0 && maxReferrers == referringObjectRefs.size();
   }
 
   /**
