@@ -15,7 +15,7 @@ All following repositories at BitBucket:
 
 are intended for my master thesis https://is.cuni.cz/studium/eng/dipl_st/index.php?doo=detail&did=114827 as well as my Google Summer of Code 2013 project http://www.google-melange.com/gsoc/project/google/gsoc2013/stepanv/21001.
 
-Javadoc ocumentation links:
+Javadoc documentation links:
  * http://stepanv.bitbucket.org/jpf-jdwp/javadoc/
  * http://stepanv.bitbucket.org/eclipse-jpf/javadoc/
 
