@@ -28,7 +28,6 @@ import gov.nasa.jpf.jdwp.id.type.ReferenceTypeId;
 import gov.nasa.jpf.jdwp.util.test.BasicJdwpVerifier;
 import gov.nasa.jpf.jdwp.util.test.CommandVerifier;
 import gov.nasa.jpf.jdwp.util.test.TestJdwp;
-import gov.nasa.jpf.test.java.net.LoadUtility;
 import gov.nasa.jpf.util.test.TestJPF;
 import gov.nasa.jpf.vm.ClassInfo;
 
@@ -90,9 +89,9 @@ public class ClassLoaderReferenceCommandTest extends TestJdwp {
    * the system classloader hence they can be loaded by a custom classloader.<br/>
    * I would say the behavior of classloaders is not standard in JPF.
    * </p>
-   * Reused from {@link LoadUtility}.
+   * Reused from {@link gov.nasa.jpf.test.java.net.LoadUtility}.
    * 
-   * @see LoadUtility
+   * @see gov.nasa.jpf.test.java.net.LoadUtility
    */
   public static class JdwpLoadUtility {
     public String user_dir = System.getProperty("user.dir");
