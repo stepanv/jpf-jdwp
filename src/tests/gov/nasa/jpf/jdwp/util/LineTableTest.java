@@ -60,7 +60,7 @@ public class LineTableTest extends TestJdwp {
     void referenceMethod(int i, long longish, short shortish) {
       boolean foaa = false;
       synchronized (this) {
-        System.out.println("from synchronzed " + foaa);
+        System.out.println("from synchronized " + foaa);
       }
       System.out.println("Hello from runnable: " + id + " ... iteration number: " + i);
       if (!Thread.currentThread().getName().contains("second")) {

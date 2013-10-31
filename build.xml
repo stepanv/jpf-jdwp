@@ -250,7 +250,7 @@
       </not>
     </condition>
 
-    <junit printsummary="on" showoutput="off" haltonfailure="yes" dir="${basedir}"
+    <junit printsummary="on" showoutput="off" dir="${basedir}" failureproperty="test.failed"
            fork="yes" forkmode="perTest" maxmemory="1024m" outputtoformatters="true">
       <formatter type="plain" usefile="${junit.usefile}"/>
 
@@ -271,6 +271,8 @@
       </batchtest>
 
     </junit>
+
+    <fail message="Test failure detected, check test results." if="test.failed" />
 
   </target>
 

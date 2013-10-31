@@ -164,7 +164,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
       os.writeInt(threadStatus.identifier());
 
       // This is how it is implemented in Harmony and OpenJDK (0 if not
-      // suspended); however, the JDWP specification isn't clear about this.
+      // suspended); however, the JDWP specification isn't clear about
+      // this.
       int suspendStatus = 0;
       if (contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(threadInfo)) {
         // There's only one possible SuspendStatus...
@@ -213,8 +214,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
     protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
 
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(threadInfo)) {
-        // even though the specification says nothing about what to do if the
-        // thread is not suspended we have to do something!
+        // even though the specification says nothing about what to do
+        // if the thread is not suspended we have to do something!
         throw new ThreadNotSuspendedException();
       }
 
@@ -283,8 +284,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
     protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
 
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(threadInfo)) {
-        // even though the specification says nothing about what to do if the
-        // thread is not suspended we have to do something!
+        // even though the specification says nothing about what to do
+        // if the thread is not suspended we have to do something!
         throw new ThreadNotSuspendedException();
       }
 
@@ -325,8 +326,8 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
     protected void execute(ThreadInfo threadInfo, ByteBuffer bytes, DataOutputStream os, CommandContextProvider contextProvider) throws IOException, JdwpException {
 
       if (!contextProvider.getVirtualMachine().getExecutionManager().isThreadSuspended(threadInfo)) {
-        // even though the specification says nothing about what to do if the
-        // thread is not suspended we have to do something!
+        // even though the specification says nothing about what to do
+        // if the thread is not suspended we have to do something!
         throw new ThreadNotSuspendedException();
       }
 
@@ -357,10 +358,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
         throw new InvalidObjectException(exceptionId);
       }
 
-      MethodInfo method = threadInfo.getClassInfo().getMethod("stop(Ljava/lang/Throwable;)V", true);
-
-      VirtualMachineHelper.invokeMethod((DynamicElementInfo) threadInfo.getThreadObject(), method, new Value[] { exceptionId }, threadInfo,
-                                        0);
+      threadInfo.throwException(exceptionId.get().getObjectRef());
     }
   },
 
@@ -487,7 +485,7 @@ public enum ThreadReferenceCommand implements Command, ConvertibleEnum<Byte, Thr
   }
 
   private static ReverseEnumMap<Byte, ThreadReferenceCommand> map = new ReverseEnumMap<Byte, ThreadReferenceCommand>(
-      ThreadReferenceCommand.class);
+                                                                                                                     ThreadReferenceCommand.class);
 
   @Override
   public Byte identifier() {
